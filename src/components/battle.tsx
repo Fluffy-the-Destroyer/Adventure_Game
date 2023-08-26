@@ -7,7 +7,6 @@ import {
 	IonIcon,
 	IonModal,
 	IonPage,
-	IonTitle,
 	IonToolbar
 } from "@ionic/react";
 import {enemy} from "../functionality/enemies";
@@ -19,6 +18,8 @@ import {
 import {Fragment, useState} from "react";
 import {actionChoice} from "../functionality/data";
 import {close} from "ionicons/icons";
+import {spell} from "../functionality/spells";
+import {weapon} from "../functionality/weapons";
 
 export const POISON_MULTIPLIER = 1;
 export const BLEED_MULTIPLIER = 1;
@@ -38,11 +39,15 @@ export const REGEN_MULTIPLIER = 1;
  * 7 - Player dead
  */
 
-export const BattlePage: React.FC<{
+/**Displays the Battle page */
+export function BattlePage(props: {
+	/**The player */
 	playerCharacter: player;
+	/**The enemy */
 	opponent: enemy;
+	/**Ends the battle (will cause parent component to stop displaying battle) */
 	endBattle: () => void;
-}> = (props) => {
+}): JSX.Element {
 	/**Holds the battle log */
 	const [battleLog, setBattleLog] = useState<string[]>([]);
 	/**Tracks whether the battle log is open */
@@ -114,19 +119,25 @@ export const BattlePage: React.FC<{
 									</IonButtons>
 								</IonToolbar>
 							</IonHeader>
+							<IonContent></IonContent>
 						</IonModal>
 					</IonButtons>
 				</IonToolbar>
 			</IonFooter>
 		</IonPage>
 	);
-};
-export const BattleHandler: React.FC<{
+}
+/**Handles the actual battle */
+export function BattleHandler(props: {
+	/**The player */
 	playerCharacter: player;
+	/**The enemy */
 	opponent: enemy;
+	/**Ends the battle */
 	endBattle: () => void;
+	/**Array containing the battle log */
 	battleLog: string[];
-}> = (props) => {
+}): JSX.Element {
 	/**Tracks whose turn it is, true is player turn */
 	const [playerTurn, setPlayerTurn] = useState<boolean>(
 		props.playerCharacter.rollInitiative() > props.opponent.rollInitiative()
@@ -181,7 +192,7 @@ export const BattleHandler: React.FC<{
 		}
 		return false;
 	}
-	switch (phaseCounter) {
+	phaseSwitch: switch (phaseCounter) {
 		case -1:
 			props.battleLog.push(props.opponent.getIntroduction());
 			props.battleLog.push(
@@ -215,6 +226,7 @@ export const BattleHandler: React.FC<{
 		case 0:
 			if (playerTurn) {
 				props.playerCharacter.turnStart();
+				deathCheck();
 				return (
 					<Fragment>
 						<ChoosePlayerAction
@@ -226,24 +238,76 @@ export const BattleHandler: React.FC<{
 								setPhaseCounter(0.5);
 							}}
 						/>
-						<IonFooter></IonFooter>
 					</Fragment>
 				);
 			} else {
 				props.opponent.turnStart();
+				deathCheck();
 				setEnemySelection(props.opponent.chooseAction(0, firstTurn));
 				setPhaseCounter(0.5);
 			}
 			break;
 		case 0.5:
 			if (playerTurn) {
-				if (playerSelection.actionType == 0) {
-					setPhaseCounter(0);
-					setPlayerTurn(false);
-					break;
+				switch (playerSelection.actionType) {
+					case 0:
+						setPhaseCounter(0);
+						setPlayerTurn(false);
+						break phaseSwitch;
+					case 1:
+						weaponDeclare(
+							props.playerCharacter,
+							props.playerCharacter.getWeapon(
+								playerSelection.slot1
+							)
+						);
+						break;
+					case 3:
+						weaponDeclare(
+							props.playerCharacter,
+							props.playerCharacter.getWeapon(
+								playerSelection.slot1
+							),
+							props.playerCharacter.getWeapon(
+								playerSelection.slot2
+							)
+						);
+						break;
+					case 2:
+						spellDeclare(
+							props.playerCharacter.getSpell(
+								playerSelection.slot1
+							),
+							props.playerCharacter
+						);
 				}
+				setPhaseCounter(1);
+				break;
 			} else {
-				if (enemySelection.actionType == 0) {
+				switch (enemySelection.actionType) {
+					case 0:
+						props.battleLog.push(
+							`${props.opponent.getName()} does nothing`
+						);
+						return (
+							<IonContent>
+								<div className="ion-text-center">
+									{props.opponent.getName()} does nothing
+								</div>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										setPhaseCounter(0);
+										setPlayerTurn(false);
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					case 1:
+					case 3:
+					case 2:
 				}
 			}
 		case 1:
@@ -272,4 +336,138 @@ export const BattleHandler: React.FC<{
 			</IonButton>
 		</IonContent>
 	);
-};
+}
+
+/**Weapon declare
+ * @param attacker - The attacker
+ * @param weapon1 - The first weapon
+ * @param weapon2 - The second weapon (if present)
+ */
+function weaponDeclare(
+	attacker: player | enemy,
+	weapon1: weapon,
+	weapon2?: weapon
+): void {
+	attacker.modifyHealth(weapon1.getHealthChange());
+	attacker.modifyMana(weapon1.getManaChange());
+	attacker.modifyProjectiles(weapon1.getProjectileChange());
+	if (weapon2 != undefined) {
+		attacker.modifyHealth(weapon2.getHealthChange());
+		attacker.modifyMana(weapon2.getManaChange());
+		attacker.modifyProjectiles(weapon2.getProjectileChange());
+	}
+}
+
+/**Weapon attack */
+function WeaponAttack(props: {
+	weapon1: weapon;
+	weapon2?: weapon;
+	attacker: player;
+	target: enemy;
+	counter?: boolean;
+}): JSX.Element;
+function WeaponAttack(props: {
+	weapon1: weapon;
+	weapon2?: weapon;
+	attacker: enemy;
+	target: player;
+	counter?: boolean;
+}): JSX.Element;
+function WeaponAttack(props: {
+	/**First weapon */
+	weapon1: weapon;
+	/**Second weapon (if present) */
+	weapon2?: weapon;
+	/**Attacker */
+	attacker: player | enemy;
+	/**Target */
+	target: player | enemy;
+	/**Is it a counter attack */
+	counter?: boolean;
+}): JSX.Element {
+	return <Fragment></Fragment>;
+}
+
+/**Weapon hit */
+function WeaponHit(props: {
+	weaponry: weapon;
+	attacker: player;
+	target: enemy;
+}): JSX.Element;
+function WeaponHit(props: {
+	weaponry: weapon;
+	attacker: enemy;
+	target: player;
+}): JSX.Element;
+function WeaponHit(props: {
+	/**The weapon */
+	weaponry: weapon;
+	/**The attacker */
+	attacker: player | enemy;
+	/**The target */
+	target: player | enemy;
+}): JSX.Element {
+	return <Fragment></Fragment>;
+}
+
+/**Spell declare
+ * @param magic - The spell
+ * @param caster - The caster
+ */
+function spellDeclare(magic: spell, caster: player | enemy): void {
+	magic.startCooldown();
+	caster.modifyHealth(magic.getHealthChange());
+	caster.modifyMana(magic.getManaChange());
+	caster.modifyProjectiles(magic.getProjectileChange());
+}
+
+/**Spell cast */
+function SpellCast(props: {
+	magic: spell;
+	caster: player;
+	target: enemy;
+	counter?: boolean;
+}): JSX.Element;
+function SpellCast(props: {
+	magic: spell;
+	caster?: enemy;
+	target: player;
+	counter?: boolean;
+}): JSX.Element;
+function SpellCast(props: {
+	/**The spell */
+	magic: spell;
+	/**The caster */
+	caster?: player | enemy;
+	/**The target */
+	target: player | enemy;
+	/**Is it a counter attack */
+	counter?: boolean;
+}): JSX.Element {
+	if (props.counter == undefined) {
+		props.counter = false;
+	}
+	return <Fragment></Fragment>;
+}
+
+/**Spell hit */
+function SpellHit(props: {
+	magic: spell;
+	caster: player;
+	target: enemy;
+}): JSX.Element;
+function SpellHit(props: {
+	magic: spell;
+	caster?: enemy;
+	target: player;
+}): JSX.Element;
+function SpellHit(props: {
+	/**The spell */
+	magic: spell;
+	/**The caster */
+	caster?: player | enemy;
+	/**The target */
+	target: player | enemy;
+}): JSX.Element {
+	return <Fragment></Fragment>;
+}

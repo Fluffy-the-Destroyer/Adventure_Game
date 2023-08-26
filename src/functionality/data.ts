@@ -10,15 +10,36 @@ export class itemKey {
 		return this.value;
 	}
 }
-/**For holding a choice of action */
-export interface actionChoice {
-	/**0 is nothing, 1 is weapon, 2 is spell, 3 is dual weapons */
-	actionType: 0 | 1 | 2 | 3;
-	/**Slot of 1st chosen item */
-	slot1?: number;
-	/**Slot of 2nd weapon, if dual wielding */
-	slot2?: number;
+interface noAction {
+	/**0 is no action, 1 is a weapon, 2 is a spell, 3 is dual weapons */
+	actionType: 0;
 }
+interface weaponAction {
+	/**0 is no action, 1 is a weapon, 2 is a spell, 3 is dual weapons */
+	actionType: 1;
+	/**Slot of selected weapon */
+	slot1: number;
+}
+interface dualWeaponAction {
+	/**0 is no action, 1 is a weapon, 2 is a spell, 3 is dual weapons */
+	actionType: 3;
+	/**Slot of first selected weapon */
+	slot1: number;
+	/**Slot of second weapon */
+	slot2: number;
+}
+interface spellAction {
+	/**0 is no action, 1 is a weapon, 2 is a spell, 3 is dual weapons */
+	actionType: 2;
+	/**Slot of selected spell */
+	slot1: number;
+}
+/**Holds a choice of action */
+export type actionChoice =
+	| noAction
+	| weaponAction
+	| dualWeaponAction
+	| spellAction;
 
 export function numFromString(input: string): {value: number; output: string} {
 	input = input.split(" ").join("");

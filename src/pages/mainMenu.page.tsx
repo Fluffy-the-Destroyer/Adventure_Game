@@ -4,11 +4,10 @@ import {
 	IonFooter,
 	IonHeader,
 	IonPage,
-	IonTitle,
+	IonTitle
 } from "@ionic/react";
-import React, {Fragment} from "react";
 
-const MainMenuPage: React.FC = () => {
+function MainMenuPage(): JSX.Element {
 	return (
 		<IonPage>
 			<IonHeader className="main-menu-header ion-text-center">
@@ -37,6 +36,6 @@ const MainMenuPage: React.FC = () => {
 			</IonFooter>
 		</IonPage>
 	);
-};
+}
 
 export default MainMenuPage;

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import {useState} from "react";
 import {Fragment} from "react";
 import {errorMessages, floatFromString, itemKey, numFromString} from "./data";
 import armourData from "../data/armour.json";
@@ -611,8 +611,11 @@ export class armour {
 		}
 	}
 }
-
-export const DisplayArmourName: React.FC<{armourPiece: armour}> = (props) => {
+/**Displays the armour's inventory panel */
+export function DisplayArmourName(props: {
+	/**The piece of armour */
+	armourPiece: armour;
+}): JSX.Element {
 	const [isOpen, setIsOpen] = useState<boolean>(false);
 	let type: string;
 	switch (props.armourPiece.armourType()) {
@@ -680,8 +683,12 @@ export const DisplayArmourName: React.FC<{armourPiece: armour}> = (props) => {
 			</IonModal>
 		</Fragment>
 	);
-};
-export const DisplayArmourStats: React.FC<{armourPiece: armour}> = (props) => {
+}
+/**Displays armour's stats */
+export function DisplayArmourStats(props: {
+	/**The armour piece */
+	armourPiece: armour;
+}): JSX.Element {
 	const type: string = props.armourPiece.armourType();
 	return (
 		<IonList className="ion-text-center">
@@ -936,7 +943,7 @@ export const DisplayArmourStats: React.FC<{armourPiece: armour}> = (props) => {
 			) : null}
 		</IonList>
 	);
-};
+}
 export class armourHead extends armour {
 	armourType(): string {
 		return "HEAD";

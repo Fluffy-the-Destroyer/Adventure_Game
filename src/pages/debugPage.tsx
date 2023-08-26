@@ -10,13 +10,14 @@ import {
 	IonToolbar,
 	useIonToast
 } from "@ionic/react";
-import React, {useState} from "react";
+import {useState} from "react";
 import {ShowPlayerInventory, player} from "../functionality/player";
 import {errorMessages} from "../functionality/data";
 import {enemy} from "../functionality/enemies";
 import {BattlePage} from "../components/battle";
 
-export const DebugPage: React.FC = () => {
+/**Debugging page */
+export function DebugPage(): JSX.Element {
 	const [playerCharacter, setPlayerCharacter] = useState<player>(
 		new player()
 	);
@@ -28,6 +29,7 @@ export const DebugPage: React.FC = () => {
 	const [battle, setBattle] = useState<boolean>(false);
 	//const [isIntroductionOpen, setIsIntroductionOpen] =
 	//useState<boolean>(false);
+	/**Loads new player class */
 	function playerClickHandler(): void {
 		try {
 			setPlayerCharacter(new player(classInputValue));
@@ -67,6 +69,7 @@ export const DebugPage: React.FC = () => {
 		});
 		errorMessages.length = 0;
 	}
+	/**Loads new enemy class */
 	function enemyClickHandler(): void {
 		setOpponent(new enemy(enemyInputValue));
 		if (errorMessages.length == 0) {
@@ -152,24 +155,24 @@ export const DebugPage: React.FC = () => {
 					Start Battle
 				</IonButton>
 				{/*<IonModal
-					id="introduction-modal"
-					isOpen={isIntroductionOpen}
-					backdropDismiss={false}
-				>
-					<div className="ion-margin">
-						{opponent.getIntroduction()}
-					</div>
-					<IonButton
-						mode="ios"
-						onClick={() => {
-							setIsIntroductionOpen(false);
-							setBattle(true);
-						}}
-					>
-						To Battle!
-					</IonButton>
-				</IonModal>*/}
+                id="introduction-modal"
+                isOpen={isIntroductionOpen}
+                backdropDismiss={false}
+            >
+                <div className="ion-margin">
+                    {opponent.getIntroduction()}
+                </div>
+                <IonButton
+                    mode="ios"
+                    onClick={() => {
+                        setIsIntroductionOpen(false);
+                        setBattle(true);
+                    }}
+                >
+                    To Battle!
+                </IonButton>
+            </IonModal>*/}
 			</IonContent>
 		</IonPage>
 	);
-};
+}

@@ -1,5 +1,4 @@
-import React, {useState} from "react";
-import {Fragment} from "react";
+import {useState} from "react";
 import {errorMessages, floatFromString, itemKey, numFromString} from "./data";
 import {randomInt} from "./rng";
 import spellData from "../data/spells.json";
@@ -2084,13 +2083,19 @@ export class spell {
 		return false;
 	}
 }
-export const DisplaySpellName: React.FC<{
+/**Displays a spell panel in the inventory or in battle */
+export function DisplaySpellName(props: {
+	/**The spell */
 	magic: spell;
+	/**True if displaying for selection in battle */
 	inBattle?: boolean;
+	/**Is it currently selected */
 	selected?: boolean;
-	canAfford?: boolean;
-	onSelect?: () => void;
-}> = (props) => {
+	/**Is the player allowed to use it */
+	canUse?: boolean;
+	/**A function to be run on selection being toggled */
+	onToggle?: () => void;
+}): JSX.Element {
 	if (!props.magic.getReal()) {
 		return (
 			<IonItem>
@@ -2145,11 +2150,11 @@ export const DisplaySpellName: React.FC<{
 			</IonLabel>
 			{props.inBattle ? (
 				<IonToggle
-					aria-label="select weapon"
+					aria-label="select spell"
 					slot="end"
 					checked={props.selected}
-					disabled={!props.canAfford}
-					onIonChange={props.onSelect}
+					disabled={!props.canUse}
+					onIonChange={props.onToggle}
 				></IonToggle>
 			) : (
 				<IonButton
@@ -2192,8 +2197,12 @@ export const DisplaySpellName: React.FC<{
 			</IonModal>
 		</IonItem>
 	);
-};
-export const DisplaySpellStats: React.FC<{magic: spell}> = (props) => {
+}
+/**Displays spell stats */
+export function DisplaySpellStats(props: {
+	/**The spell */
+	magic: spell;
+}): JSX.Element {
 	let healingMin: number = 0,
 		healingMax: number = 0,
 		healingSelfMin: number = 0,
@@ -3115,4 +3124,4 @@ export const DisplaySpellStats: React.FC<{magic: spell}> = (props) => {
 			) : null}
 		</IonList>
 	);
-};
+}

@@ -1030,6 +1030,7 @@ export class enemy {
 		let selectedType: 0 | 1 | 2 | 3 = 0,
 			selection1: number | undefined = 0,
 			selection2: number | undefined = 0; //For holding slot selection
+		let selection: actionChoice;
 		if (firstTurn && timing == 0) {
 			//If an initial spell is set, cast if possible
 			if (this.initialSpell >= 0) {
@@ -1055,29 +1056,13 @@ export class enemy {
 							}
 							//Make attack check
 							if (this.attackCheck()) {
-								({
-									actionType: selectedType,
-									slot1: selection1,
-									slot2: selection2
-								} = this.chooseAttack());
-								switch (selectedType) {
-									case 1:
-										return {
-											actionType: 1,
-											slot1: selection1
-										};
-									case 2:
-										return {
-											actionType: 2,
-											slot1: selection1
-										};
+								selection = this.chooseAttack();
+								switch (selection.actionType) {
 									case 3:
 										this.currentBonusActions--;
-										return {
-											actionType: 3,
-											slot1: selection1,
-											slot2: selection2
-										};
+									case 1:
+									case 2:
+										return selection;
 								}
 								//Cast utility spell
 								selection1 = this.chooseSpell(3);
@@ -1093,57 +1078,25 @@ export class enemy {
 								return {actionType: 2, slot1: selection1};
 							}
 							//Try attack
-							({
-								actionType: selectedType,
-								slot1: selection1,
-								slot2: selection2
-							} = this.chooseAttack());
-							switch (selectedType) {
-								case 1:
-									return {
-										actionType: 1,
-										slot1: selection1
-									};
-								case 2:
-									return {
-										actionType: 2,
-										slot1: selection1
-									};
+							selection = this.chooseAttack();
+							switch (selection.actionType) {
 								case 3:
 									this.currentBonusActions--;
-									return {
-										actionType: 3,
-										slot1: selection1,
-										slot2: selection2
-									};
+								case 1:
+								case 2:
+									return selection;
 							}
 							//No survivable actions
 							return this.chooseSuicide();
 						}
 						if (this.attackCheck()) {
-							({
-								actionType: selectedType,
-								slot1: selection1,
-								slot2: selection2
-							} = this.chooseAttack());
-							switch (selectedType) {
-								case 1:
-									return {
-										actionType: 1,
-										slot1: selection1
-									};
-								case 2:
-									return {
-										actionType: 2,
-										slot1: selection1
-									};
+							selection = this.chooseAttack();
+							switch (selection.actionType) {
 								case 3:
 									this.currentBonusActions--;
-									return {
-										actionType: 3,
-										slot1: selection1,
-										slot2: selection2
-									};
+								case 1:
+								case 2:
+									return selection;
 							}
 							//Couldn't find attack, make another healing check
 							if (this.healingCheck()) {
@@ -1183,57 +1136,25 @@ export class enemy {
 							if (selection1 >= 0) {
 								return {actionType: 2, slot1: selection1};
 							}
-							({
-								actionType: selectedType,
-								slot1: selection1,
-								slot2: selection2
-							} = this.chooseAttack());
-							switch (selectedType) {
-								case 1:
-									return {
-										actionType: 1,
-										slot1: selection1
-									};
-								case 2:
-									return {
-										actionType: 2,
-										slot1: selection1
-									};
+							selection = this.chooseAttack();
+							switch (selection.actionType) {
 								case 3:
 									this.currentBonusActions--;
-									return {
-										actionType: 3,
-										slot1: selection1,
-										slot2: selection2
-									};
+								case 1:
+								case 2:
+									return selection;
 							}
 							//Suicide
 							return this.chooseSuicide();
 						}
 						//Look for attack
-						({
-							actionType: selectedType,
-							slot1: selection1,
-							slot2: selection2
-						} = this.chooseAttack());
-						switch (selectedType) {
-							case 1:
-								return {
-									actionType: 1,
-									slot1: selection1
-								};
-							case 2:
-								return {
-									actionType: 2,
-									slot1: selection1
-								};
+						selection = this.chooseAttack();
+						switch (selection.actionType) {
 							case 3:
 								this.currentBonusActions--;
-								return {
-									actionType: 3,
-									slot1: selection1,
-									slot2: selection2
-								};
+							case 1:
+							case 2:
+								return selection;
 						}
 						//Heal
 						selection1 = this.chooseSpell(2);
@@ -1444,25 +1365,14 @@ export class enemy {
 							}
 						}
 						if (this.attackCheck()) {
-							({
-								actionType: selectedType,
-								slot1: selection1,
-								slot2: selection2
-							} = this.chooseAttack(3, false, firstTurn));
-							switch (selectedType) {
-								case 1:
+							selection = this.chooseAttack(3, false, firstTurn);
+							switch (selection.actionType) {
+								case 3:
 									this.currentBonusActions--;
-									return {actionType: 1, slot1: selection1};
+								case 1:
 								case 2:
 									this.currentBonusActions--;
-									return {actionType: 2, slot1: selection1};
-								case 3:
-									this.currentBonusActions -= 2;
-									return {
-										actionType: 3,
-										slot1: selection1,
-										slot2: selection2
-									};
+									return selection;
 							}
 							selection1 = this.chooseSpell(
 								3,
@@ -1481,29 +1391,17 @@ export class enemy {
 							this.currentBonusActions--;
 							return {actionType: 2, slot1: selection1};
 						}
-						({
-							actionType: selectedType,
-							slot1: selection1,
-							slot2: selection2
-						} = this.chooseAttack(3, false, firstTurn));
-						switch (selectedType) {
-							case 1:
+						selection = this.chooseAttack(3, false, firstTurn);
+						switch (selection.actionType) {
+							case 3:
 								this.currentBonusActions--;
-								return {actionType: 1, slot1: selection1};
+							case 1:
 							case 2:
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
-							case 3:
-								this.currentBonusActions -= 2;
-								return {
-									actionType: 3,
-									slot1: selection1,
-									slot2: selection2
-								};
+							default:
+								return selection;
 						}
-						return {actionType: 0};
 				}
-				break;
 			case 4:
 			case 5:
 			case 6:
@@ -1533,21 +1431,12 @@ export class enemy {
 									return {actionType: 2, slot1: selection1};
 								}
 							}
-							({
-								actionType: selectedType,
-								slot1: selection1,
-								slot2: selection2
-							} = this.chooseWeapon());
-							switch (selectedType) {
-								case 1:
-									return {actionType: 1, slot1: selection1};
+							selection = this.chooseWeapon();
+							switch (selection.actionType) {
 								case 3:
 									this.currentBonusActions--;
-									return {
-										actionType: 3,
-										slot1: selection1,
-										slot2: selection2
-									};
+								case 1:
+									return selection;
 							}
 							return this.chooseSuicide();
 						}
@@ -1575,21 +1464,12 @@ export class enemy {
 									return {actionType: 2, slot1: selection1};
 								}
 							}
-							({
-								actionType: selectedType,
-								slot1: selection1,
-								slot2: selection2
-							} = this.chooseWeapon());
-							switch (selectedType) {
-								case 1:
-									return {actionType: 1, slot1: selection1};
+							selection = this.chooseWeapon();
+							switch (selection.actionType) {
 								case 3:
 									this.currentBonusActions--;
-									return {
-										actionType: 3,
-										slot1: selection1,
-										slot2: selection2
-									};
+								case 1:
+									return selection;
 							}
 							return this.chooseSuicide();
 						}
@@ -1616,21 +1496,12 @@ export class enemy {
 								return {actionType: 2, slot1: selection1};
 							}
 						}
-						({
-							actionType: selectedType,
-							slot1: selection1,
-							slot2: selection2
-						} = this.chooseWeapon());
-						switch (selectedType) {
-							case 1:
-								return {actionType: 1, slot1: selection1};
+						selection = this.chooseWeapon();
+						switch (selection.actionType) {
 							case 3:
 								this.currentBonusActions--;
-								return {
-									actionType: 3,
-									slot1: selection1,
-									slot2: selection2
-								};
+							case 1:
+								return selection;
 						}
 						return this.chooseSuicide();
 					case 4:
@@ -1873,66 +1744,38 @@ export class enemy {
 								return {actionType: 2, slot1: selection1};
 							}
 						}
-						({
-							actionType: selectedType,
-							slot1: selection1,
-							slot2: selection2
-						} = this.chooseWeapon(3, false, firstTurn));
-						switch (selectedType) {
+						selection = this.chooseWeapon(3, false, firstTurn);
+						switch (selection.actionType) {
+							case 3:
+								this.currentBonusActions--;
 							case 1:
 								this.currentBonusActions--;
-								return {actionType: 1, slot1: selection1};
-							case 3:
-								this.currentBonusActions -= 2;
-								return {
-									actionType: 3,
-									slot1: selection1,
-									slot2: selection2
-								};
+							default:
+								return selection;
 						}
-						return {actionType: 0};
 				}
-				break;
 			case 7: //Melee berserker
 				switch (timing) {
 					case 0:
-						({
-							actionType: selectedType,
-							slot1: selection1,
-							slot2: selection2
-						} = this.chooseWeapon());
-						switch (selectedType) {
-							case 1:
-								return {actionType: 1, slot1: selection1};
+						selection = this.chooseWeapon();
+						switch (selection.actionType) {
 							case 3:
 								this.currentBonusActions--;
-								return {
-									actionType: 3,
-									slot1: selection1,
-									slot2: selection2
-								};
+							case 1:
+								return selection;
 						}
 						return this.chooseSuicide();
 					case 3:
 						if (this.currentBonusActions <= 0) {
 							return {actionType: 0};
 						}
-						({
-							actionType: selectedType,
-							slot1: selection1,
-							slot2: selection2
-						} = this.chooseWeapon(3, false, firstTurn));
-						switch (selectedType) {
+						selection = this.chooseWeapon(3, false, firstTurn);
+						switch (selection.actionType) {
+							case 3:
+								this.currentBonusActions--;
 							case 1:
 								this.currentBonusActions--;
-								return {actionType: 1, slot1: selection1};
-							case 3:
-								this.currentBonusActions -= 2;
-								return {
-									actionType: 3,
-									slot1: selection1,
-									slot2: selection2
-								};
+								return selection;
 						}
 						return this.chooseSuicide();
 				}
@@ -1955,6 +1798,9 @@ export class enemy {
 		kamikaze: boolean = false,
 		firstTurn: boolean = false
 	): boolean {
+		if (timing != 0 && this.currentBonusActions <= 0) {
+			return false;
+		}
 		let currentHealth = this.health,
 			currentMana = this.mana,
 			currentConstRegen = this.turnRegen,
@@ -2203,7 +2049,6 @@ export class enemy {
 				this.projectiles = currentProjectiles;
 				return true;
 		}
-		return false;
 	}
 	/**Simulates a turn of dot/regen */
 	simulateTurn(): void {
@@ -2432,21 +2277,18 @@ export class enemy {
 		let selectedType: 0 | 1 | 2 | 3,
 			selection1: number | undefined,
 			selection2: number | undefined;
+		let selection: actionChoice;
 		switch (this.AIType) {
 			case 1:
 			case 2:
 			case 3:
-				({
-					actionType: selectedType,
-					slot1: selection1,
-					slot2: selection2
-				} = this.chooseAttack(0, true));
-				if (selectedType != 0) {
-					return {
-						actionType: selectedType,
-						slot1: selection1,
-						slot2: selection2
-					};
+				selection = this.chooseAttack(0, true);
+				switch (selection.actionType) {
+					case 3:
+						this.currentBonusActions--;
+					case 1:
+					case 2:
+						return selection;
 				}
 				selection1 = this.chooseSpell(3, 0, true);
 				if (selection1 >= 0) {
@@ -2464,21 +2306,13 @@ export class enemy {
 				if (selection1 >= 0) {
 					return {actionType: 2, slot1: selection1};
 				}
-				({
-					actionType: selectedType,
-					slot1: selection1,
-					slot2: selection2
-				} = this.chooseWeapon(0, true));
-				switch (selectedType) {
-					case 1:
-						return {actionType: 1, slot1: selection1};
+				selection = this.chooseWeapon(0, true);
+				switch (selection.actionType) {
 					case 3:
 						this.currentBonusActions--;
-						return {
-							actionType: 3,
-							slot1: selection1,
-							slot2: selection2
-						};
+					case 1:
+					case 2:
+						return selection;
 				}
 				selection1 = this.chooseSpell(3, 0, true);
 				if (selection1 >= 0) {
@@ -2490,21 +2324,13 @@ export class enemy {
 				}
 				return {actionType: 0};
 			case 7:
-				({
-					actionType: selectedType,
-					slot1: selection1,
-					slot2: selection2
-				} = this.chooseWeapon(0, true));
-				switch (selectedType) {
-					case 1:
-						return {actionType: 1, slot1: selection1};
+				selection = this.chooseWeapon(0, true);
+				switch (selection.actionType) {
 					case 3:
 						this.currentBonusActions--;
-						return {
-							actionType: 3,
-							slot1: selection1,
-							slot2: selection2
-						};
+					case 1:
+					case 2:
+						return selection;
 				}
 		}
 		return {actionType: 0};
@@ -2562,6 +2388,12 @@ export class enemy {
 		kamikaze: boolean = false,
 		firstTurn: boolean = false
 	): boolean {
+		if (
+			this.currentBonusActions <= 0 ||
+			(timing != 0 && this.currentBonusActions <= 1)
+		) {
+			return false;
+		}
 		let currentHealth: number = this.health,
 			currentProjectiles: number = this.projectiles,
 			currentMana: number = this.mana,
@@ -2577,30 +2409,13 @@ export class enemy {
 			return false;
 		}
 		if (
-			Math.max(weapon1, weapon2) >= this.weapons.length ||
+			weapon2 >= this.weapons.length ||
 			!this.weapons[weapon2].getReal()
 		) {
 			return false;
 		}
-		switch (timing) {
-			case 0:
-				if (
-					this.currentBonusActions <= 0 ||
-					this.weapons[weapon2].getHitCount() <= 0
-				) {
-					return false;
-				}
-				break;
-			case 3:
-				if (
-					this.currentBonusActions <= 1 ||
-					this.weapons[weapon2].getCounterHits() <= 0
-				) {
-					return false;
-				}
-				break;
-			default:
-				return false;
+		if (!this.check(false, weapon2, timing, kamikaze, firstTurn)) {
+			return false;
 		}
 		this.modifyHealth(this.weapons[weapon1].getHealthChange());
 		this.modifyMana(this.weapons[weapon1].getManaChange());

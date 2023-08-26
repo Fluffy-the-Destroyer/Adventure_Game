@@ -1,5 +1,4 @@
-import React, {useState} from "react";
-import {Fragment} from "react";
+import {useState} from "react";
 import {errorMessages, floatFromString, itemKey, numFromString} from "./data";
 import {randomInt} from "./rng";
 import weaponData from "../data/weapons.json";
@@ -849,8 +848,11 @@ export class weapon {
 		return false;
 	}
 }
-
-export const DisplayWeaponStats: React.FC<{weaponry: weapon}> = (props) => {
+/**Displays weapon stats */
+export function DisplayWeaponStats(props: {
+	/**The weapon */
+	weaponry: weapon;
+}): JSX.Element {
 	let healingMin: number = 0,
 		healingMax: number = 0,
 		healingSelfMin: number = 0,
@@ -1154,15 +1156,20 @@ export const DisplayWeaponStats: React.FC<{weaponry: weapon}> = (props) => {
 			) : null}
 		</IonList>
 	);
-};
-
-export const DisplayWeaponName: React.FC<{
+}
+/**Displays weapon panel in inventory or battle */
+export function DisplayWeaponName(props: {
+	/**The weapon */
 	weaponry: weapon;
+	/**True if making a selection in battle */
 	inBattle?: boolean;
+	/**Is it currently selected */
 	selected?: boolean;
-	canAfford?: boolean;
-	onSelect?: () => void;
-}> = (props) => {
+	/**Is the player allowed to select it */
+	canUse?: boolean;
+	/**A function to call on the weapon being toggled */
+	onToggle?: () => void;
+}): JSX.Element {
 	if (!props.weaponry.getReal()) {
 		return (
 			<IonItem>
@@ -1224,8 +1231,8 @@ export const DisplayWeaponName: React.FC<{
 					aria-label="select weapon"
 					slot="end"
 					checked={props.selected}
-					disabled={!props.canAfford}
-					onIonChange={props.onSelect}
+					disabled={!props.canUse}
+					onIonChange={props.onToggle}
 				></IonToggle>
 			) : (
 				<IonButton
@@ -1270,4 +1277,4 @@ export const DisplayWeaponName: React.FC<{
 			</IonModal>
 		</IonItem>
 	);
-};
+}

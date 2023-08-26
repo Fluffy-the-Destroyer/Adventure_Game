@@ -1,4 +1,4 @@
-import React, {Fragment, useState} from "react";
+import {Fragment, useState} from "react";
 import {DisplayWeaponName, weapon} from "./weapons";
 import {DisplaySpellName, spell} from "./spells";
 import {
@@ -1422,149 +1422,232 @@ export class player {
 		return false;
 	}
 	/**Checks if the player can use the specified item
-	 * @param type - 1 is a weapon, 2 is a spell, 3 is dual weapons
+	 * @param type - false is a weapon, true is a spell
 	 * @param timing - current timing
-	 * @param slot1 - the slot containing the (first) item
-	 * @param slot2 - the slot containing the second weapon
+	 * @param slot - the slot containing the item
 	 * @returns whether the player can use it
 	 */
-	check(
-		type: 1 | 2 | 3,
+	check(type: boolean, timing: 0 | 1 | 2 | 3 | 4, slot: number): boolean {
+		if (type) {
+			if (
+				slot < 0 ||
+				slot >= this.spells.length ||
+				!this.spells[slot].getReal()
+			) {
+				return false;
+			}
+			switch (timing) {
+				//Main action
+				case 0:
+					if (
+						this.spells[slot].getTiming() == 2 ||
+						this.spells[slot].getHitCount() <= 0
+					) {
+						return false;
+					}
+					break;
+				//Responding to weapon
+				case 1:
+				//Responding to spell
+				case 2:
+				//Responding to dual weapons
+				case 4:
+					if (
+						this.spells[slot].getTiming() == 0 ||
+						this.currentBonusActions <= 0
+					) {
+						return false;
+					}
+					break;
+				//Counter attacking
+				case 3:
+					if (
+						this.spells[slot].getCounterHits() <= 0 ||
+						this.currentBonusActions <= 0
+					) {
+						return false;
+					}
+					break;
+			}
+			if (
+				this.spells[slot].getCurrentCooldown() > 0 ||
+				(this.spells[slot].getManaChange() < 0 &&
+					this.mana + this.spells[slot].getManaChange() < 0) ||
+				(this.spells[slot].getHealthChange() < 0 &&
+					this.health + this.spells[slot].getHealthChange() < 0) ||
+				(this.spells[slot].getProjectileChange() < 0 &&
+					this.projectiles + this.spells[slot].getProjectileChange() <
+						0)
+			) {
+				return false;
+			}
+		} else {
+			if (
+				slot < 0 ||
+				slot >= this.weapons.length ||
+				!this.weapons[slot].getReal()
+			) {
+				return false;
+			}
+			switch (timing) {
+				case 0:
+					if (this.weapons[slot].getHitCount() <= 0) {
+						return false;
+					}
+					break;
+				case 3:
+					if (
+						this.weapons[slot].getCounterHits() <= 0 ||
+						this.currentBonusActions <= 0
+					) {
+						return false;
+					}
+					break;
+				case 1:
+				case 2:
+				case 4:
+					return false;
+			}
+			if (
+				(this.weapons[slot].getProjectileChange() < 0 &&
+					this.projectiles +
+						this.weapons[slot].getProjectileChange() <
+						0) ||
+				(this.weapons[slot].getManaChange() < 0 &&
+					this.mana + this.weapons[slot].getManaChange() < 0) ||
+				(this.weapons[slot].getHealthChange() < 0 &&
+					this.health + this.weapons[slot].getHealthChange() < 0)
+			) {
+				return false;
+			}
+		}
+		return true;
+	}
+	/**Checks if two weapons can be dual wielded
+	 * @param timing - action timing
+	 * @param slot1 - the first weapon slot
+	 * @param slot2 - the second weapon slot
+	 * @returns whether they can
+	 */
+	checkDualWeapons(
 		timing: 0 | 1 | 2 | 3 | 4,
 		slot1: number,
-		slot2?: number
+		slot2: number
 	): boolean {
-		switch (type) {
-			case 2:
-				if (
-					slot1 < 0 ||
-					slot1 >= this.spells.length ||
-					!this.spells[slot1].getReal()
-				) {
-					return false;
-				}
-				switch (timing) {
-					//Main action
-					case 0:
-						if (
-							this.spells[slot1].getTiming() == 2 ||
-							this.spells[slot1].getHitCount() <= 0
-						) {
-							return false;
-						}
-						break;
-					//Responding to weapon
-					case 1:
-					//Responding to spell
-					case 2:
-					//Responding to dual weapons
-					case 4:
-						if (this.spells[slot1].getTiming() == 0) {
-							return false;
-						}
-						break;
-					//Counter attacking
-					case 3:
-						if (this.spells[slot1].getCounterHits() <= 0) {
-							return false;
-						}
-						break;
-				}
-				if (
-					this.spells[slot1].getCurrentCooldown() >= 0 ||
-					(this.spells[slot1].getManaChange() < 0 &&
-						this.mana + this.spells[slot1].getManaChange() < 0) ||
-					(this.spells[slot1].getHealthChange() < 0 &&
-						this.health + this.spells[slot1].getHealthChange() <
-							0) ||
-					(this.spells[slot1].getProjectileChange() < 0 &&
-						this.projectiles +
-							this.spells[slot1].getProjectileChange() <
-							0)
-				) {
-					return false;
-				}
-				break;
-			case 1:
-				if (
-					slot1 < 0 ||
-					slot1 >= this.weapons.length ||
-					!this.weapons[slot1].getReal()
-				) {
-					return false;
-				}
-				switch (timing) {
-					case 0:
-						if (this.weapons[slot1].getHitCount() <= 0) {
-							return false;
-						}
-						break;
-					case 3:
-						if (this.weapons[slot1].getCounterHits() <= 0) {
-							return false;
-						}
-						break;
-					case 1:
-					case 2:
-					case 4:
-						return false;
-				}
-				if (
-					(this.weapons[slot1].getProjectileChange() < 0 &&
-						this.projectiles +
-							this.weapons[slot1].getProjectileChange() <
-							0) ||
-					(this.weapons[slot1].getManaChange() < 0 &&
-						this.mana + this.weapons[slot1].getManaChange() < 0) ||
-					(this.weapons[slot1].getHealthChange() < 0 &&
-						this.health + this.weapons[slot1].getHealthChange() < 0)
-				) {
-					return false;
-				}
-				break;
-			case 3:
+		if (slot1 == slot2) {
+			return false;
+		}
+		if (
+			slot1 < 0 ||
+			slot2 < 0 ||
+			slot1 >= this.weapons.length ||
+			slot2 >= this.weapons.length ||
+			!this.weapons[slot1].getReal() ||
+			!this.weapons[slot2].getReal()
+		) {
+			return false;
+		}
+		if (
+			!this.weapons[slot1].getDualWield() ||
+			!this.weapons[slot2].getDualWield()
+		) {
+			return false;
+		}
+		if (
+			!this.check(false, timing, slot1) ||
+			!this.check(false, timing, slot2)
+		) {
+			return false;
+		}
+		//timing must be 0 or 3 at this point, as otherwise the earlier checks would have returned false
+		if (timing == 0) {
+			if (this.currentBonusActions <= 0) {
+				return false;
+			}
+		} else {
+			if (this.currentBonusActions <= 1) {
+				return false;
+			}
+		}
+		const totHealthChange: number =
+				this.weapons[slot1].getHealthChange() +
+				this.weapons[slot2].getHealthChange(),
+			totManaChange: number =
+				this.weapons[slot1].getManaChange() +
+				this.weapons[slot2].getManaChange(),
+			totProjectileChange: number =
+				this.weapons[slot1].getProjectileChange() +
+				this.weapons[slot2].getProjectileChange();
+		if (
+			(totHealthChange < 0 && this.health + totHealthChange < 0) ||
+			(totManaChange < 0 && this.mana + totManaChange < 0) ||
+			(totProjectileChange < 0 &&
+				this.projectiles + totProjectileChange < 0)
+		) {
+			return false;
 		}
 		return true;
 	}
 }
-export const EquipWeapon: React.FC<{
+/**Equips a weapon */
+export function EquipWeapon(props: {
+	/**The player */
 	playerCharacter: player;
+	/**The weapon to equip */
 	weaponry: weapon;
-}> = (props) => {
+}): JSX.Element {
 	return <Fragment></Fragment>;
-};
-export const EquipSpell: React.FC<{playerCharacter: player; magic: spell}> = (
-	props
-) => {
-	return <Fragment></Fragment>;
-};
-export const EquipHelmet: React.FC<{
+}
+/**Equips a spell */
+export function EquipSpell(props: {
+	/**The player */
 	playerCharacter: player;
+	/**The spell to equip */
+	magic: spell;
+}): JSX.Element {
+	return <Fragment></Fragment>;
+}
+/**Equips a helmet */
+export function EquipHelmet(props: {
+	/**The player */
+	playerCharacter: player;
+	/**The helmet to equip */
 	helmet: armourHead;
-}> = (props) => {
+}): JSX.Element {
 	return <Fragment></Fragment>;
-};
-export const EquipChestPlate: React.FC<{
+}
+/**Equips a chestplate */
+export function EquipChestPlate(props: {
+	/**The player */
 	playerCharacter: player;
+	/**The chestplate to equip */
 	chestPlate: armourTorso;
-}> = (props) => {
+}): JSX.Element {
 	return <Fragment></Fragment>;
-};
-export const EquipGreaves: React.FC<{
+}
+/**Equips greaves */
+export function EquipGreaves(props: {
+	/**The player */
 	playerCharacter: player;
+	/**The greaves to equip */
 	greaves: armourLegs;
-}> = (props) => {
+}): JSX.Element {
 	return <Fragment></Fragment>;
-};
-export const EquipBoots: React.FC<{
+}
+/**Equips boots */
+export function EquipBoots(props: {
+	/**The player */
 	playerCharacter: player;
+	/**The boots to equip */
 	boots: armourFeet;
-}> = (props) => {
+}): JSX.Element {
 	return <Fragment></Fragment>;
-};
-export const ShowPlayerEquipment: React.FC<{playerCharacter: player}> = (
-	props
-) => {
+}
+/**Displays the player's equipment */
+export function ShowPlayerEquipment(props: {
+	/**The player */
+	playerCharacter: player;
+}): JSX.Element {
 	const playerWeapons: weapon[] = [];
 	const playerSpells: spell[] = [];
 	let weaponCount: number = props.playerCharacter.getWeaponSlots();
@@ -1629,10 +1712,12 @@ export const ShowPlayerEquipment: React.FC<{playerCharacter: player}> = (
 			</IonGrid>
 		</Fragment>
 	);
-};
-export const DisplayPlayerStats: React.FC<{playerCharacter: player}> = (
-	props
-) => {
+}
+/**Displays the player's stats */
+export function DisplayPlayerStats(props: {
+	/**The player */
+	playerCharacter: player;
+}): JSX.Element {
 	return (
 		<IonGrid className="ion-text-center ion-no-padding">
 			<IonRow className="player-stats-row">
@@ -1849,11 +1934,14 @@ export const DisplayPlayerStats: React.FC<{playerCharacter: player}> = (
 			</IonRow>
 		</IonGrid>
 	);
-};
-export const ShowPlayerInventory: React.FC<{
+}
+/**Displays the player's inventory */
+export function ShowPlayerInventory(props: {
+	/**The player */
 	playerCharacter: player;
+	/**A function which closes the inventory */
 	closeInventory: () => void;
-}> = (props) => {
+}): JSX.Element {
 	/**True is inventory, false is stats */
 	const [segment, setSegment] = useState<boolean>(true);
 	return (
@@ -1946,15 +2034,22 @@ export const ShowPlayerInventory: React.FC<{
 			</IonContent>
 		</Fragment>
 	);
-};
-export const ChoosePlayerAction: React.FC<{
+}
+/**Allows the player to choose an action */
+export function ChoosePlayerAction(props: {
+	/**The player */
 	playerCharacter: player;
+	/**The name of the enemy */
 	enemyName: string;
+	/**Action timing */
 	timing: 0 | 1 | 2 | 3 | 4;
+	/**A function which takes a choice and proceeds to next battle phase */
 	submitChoice: (choice: actionChoice) => void;
+	/**Name of first item enemy is using */
 	itemName1?: string;
+	/**Name of second item enemy is using */
 	itemName2?: string;
-}> = (props) => {
+}): JSX.Element {
 	/**Tracks currently selected weapons/spells */
 	const [currentChoice, setCurrentChoice] = useState<actionChoice>({
 		actionType: 0
@@ -1991,10 +2086,100 @@ export const ChoosePlayerAction: React.FC<{
 			}
 		}
 		//Selecting a new weapon
-		if (!props.playerCharacter.getWeapon(slot).getDualWield()) {
-			setCurrentChoice({actionType: 1, slot1: slot});
-			return;
+		if (props.playerCharacter.getWeapon(slot).getDualWield()) {
+			if (currentChoice.actionType == 1) {
+				if (currentChoice.slot1 != undefined) {
+					if (
+						props.playerCharacter.checkDualWeapons(
+							props.timing,
+							currentChoice.slot1,
+							slot
+						)
+					) {
+						setCurrentChoice({
+							actionType: 3,
+							slot1: currentChoice.slot1,
+							slot2: slot
+						});
+						return;
+					}
+				}
+			}
 		}
+		setCurrentChoice({actionType: 1, slot1: slot});
+		return;
 	}
-	return <IonContent></IonContent>;
-};
+	const weaponArray: boolean[] = Array(
+			props.playerCharacter.getWeaponSlots()
+		).fill(false),
+		spellArray: boolean[] = Array(
+			props.playerCharacter.getSpellSlots()
+		).fill(false);
+	switch (currentChoice.actionType) {
+		case 3:
+			weaponArray[currentChoice.slot2!] = true;
+		case 1:
+			weaponArray[currentChoice.slot1!] = true;
+			break;
+		case 2:
+			spellArray[currentChoice.slot1!] = true;
+	}
+	return (
+		<IonContent>
+			<IonGrid>
+				<IonRow>
+					<IonCol>
+						<IonList>
+							<IonListHeader>Weapons</IonListHeader>
+							{weaponArray.map((v, i) => (
+								<DisplayWeaponName
+									key={props.playerCharacter
+										.getWeapon(i)
+										.getKey()}
+									weaponry={props.playerCharacter.getWeapon(
+										i
+									)}
+									inBattle
+									selected={v}
+									canUse={props.playerCharacter.check(
+										false,
+										props.timing,
+										i
+									)}
+									onToggle={() => selectHandler(false, i)}
+								/>
+							))}
+						</IonList>
+					</IonCol>
+					<IonCol>
+						<IonList>
+							<IonListHeader>Spells</IonListHeader>
+							{spellArray.map((v, i) => (
+								<DisplaySpellName
+									key={props.playerCharacter
+										.getSpell(i)
+										.getKey()}
+									magic={props.playerCharacter.getSpell(i)}
+									inBattle
+									selected={v}
+									canUse={props.playerCharacter.check(
+										true,
+										props.timing,
+										i
+									)}
+									onToggle={() => selectHandler(true, i)}
+								/>
+							))}
+						</IonList>
+					</IonCol>
+				</IonRow>
+			</IonGrid>
+			<IonButton
+				mode="ios"
+				onClick={() => props.submitChoice(currentChoice)}
+			>
+				Submit
+			</IonButton>
+		</IonContent>
+	);
+}

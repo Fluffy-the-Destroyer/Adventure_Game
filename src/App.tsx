@@ -37,7 +37,7 @@ import {DebugPage} from "./pages/debugPage";
 */
 
 setupIonicReact();
-const App: React.FC = () => {
+function App(): JSX.Element {
 	return (
 		<IonApp>
 			<IonReactRouter>
@@ -53,6 +53,6 @@ const App: React.FC = () => {
 			</IonReactRouter>
 		</IonApp>
 	);
-};
+}
 
 export default App;
