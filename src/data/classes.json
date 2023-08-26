@@ -1,0 +1,59 @@
+{
+	"WARRIOR": {
+		"className": "Warrior",
+		"maxHealth": 150,
+		"maxMana": 75,
+		"turnManaRegen": 5,
+		"battleManaRegen": 10,
+		"poisonResist": 0.2,
+		"battleRegen": 15,
+		"projectiles": 0,
+		"weapons": ["HEAVY_MELEE_WEAPON_START_LIST", "EMPTY", "EMPTY", "EMPTY"],
+		"spells": ["EMPTY", "EMPTY"],
+		"helmet": "IRON_HELMET_1",
+		"chestPlate": "IRON_CHESTPLATE_1",
+		"greaves": "IRON_GREAVES_1",
+		"boots": "IRON_BOOTS_1",
+		"flatDamageModifier": 3,
+		"flatMagicDamageModifier": -3
+	},
+	"ROGUE": {
+		"className": "Rogue",
+		"maxHealth": 125,
+		"maxMana": 100,
+		"turnManaRegen": 10,
+		"battleManaRegenModifier": 20,
+		"battleRegen": 10,
+		"projectiles": 15,
+		"weapons": ["DUAL_DAGGER", "DUAL_DAGGER", "DUAL_CROSSBOW"],
+		"spells": ["EMPTY", "EMPTY", "EMPTY"],
+		"helmet": "LEATHER_HELMET_1",
+		"chestPlate": "LEATHER_CHESTPLATE_1",
+		"greaves": "LEATHER_GREAVES_1",
+		"boots": "LEATHER_BOOTS_1",
+		"flatDamageModifier": 1,
+		"evadeChance": 0.2,
+		"counterAttackChance": 0.2,
+		"bonusActions": 2,
+		"initiative": 15
+	},
+	"MAGE": {
+		"className": "Mage",
+		"maxHealth": 150,
+		"maxMana": 200,
+		"turnManaRegen": 15,
+		"battleManaRegen": 30,
+		"battleRegen": 10,
+		"projectiles": 0,
+		"weapons": ["STAFF_1", "EMPTY"],
+		"spells": [
+			"WIZARD_SPELL_START_LIST",
+			"HEALING_SPELL_1",
+			"ARMOUR_SPELL",
+			"EMPTY"
+		],
+		"chestPlate": "ROBES_1",
+		"flatMagicDamageModifier": 3,
+		"bonusActions": 2
+	}
+}

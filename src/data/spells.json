@@ -1,0 +1,48 @@
+{
+	"COUNTERSPELL": {
+		"name": "Counterspell",
+		"description": "It counters things",
+		"manaChange": -30,
+		"cooldown": 5,
+		"spellType": 5,
+		"timing": 2,
+		"counterSpell": 3
+	},
+	"WIZARD_SPELL_START_LIST": ["POISON_SPELL_1"],
+	"POISON_SPELL_1": {
+		"name": "Poison Gas",
+		"description": "Launches a cloud of poisonous gas at the target.",
+		"flatMagicDamageMin": 15,
+		"flatMagicDamageMax": 20,
+		"noEvade": true,
+		"manaChange": -20,
+		"poison": 5,
+		"cooldown": 2,
+		"spellType": 1
+	},
+	"HEALING_SPELL_1": {
+		"name": "Heal",
+		"description": "Heals the caster and removes negative status effects.",
+		"flatSelfDamageMin": -50,
+		"flatSelfDamageMax": -25,
+		"manaChange": -30,
+		"selfPoison": -255,
+		"selfBleed": -255,
+		"tempRegenSelf": 5,
+		"cooldown": 4,
+		"spellType": 2,
+		"selfOverHeal": true
+	},
+	"ARMOUR_SPELL": {
+		"name": "Magical Armour",
+		"description": "Gives the caster magical armour",
+		"manaChange": -30,
+		"maxHealthModifier": 20,
+		"flatArmourModifier": "rng(10,15)",
+		"flatMagicArmourModifier": "rng(10,15)",
+		"poisonResistModifier": 1,
+		"bleedResistModifier": 1,
+		"spellType": 3,
+		"cooldown": 10
+	}
+}

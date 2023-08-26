@@ -1,0 +1,13 @@
+{
+	"BAD_GUY": {
+		"name": "Bad guy",
+		"introduction": "You must fight a bad guy",
+		"maxHealth": 50,
+		"maxMana": 50,
+		"turnManaRegen": 5,
+		"projectiles": 0,
+		"weapons": ["SWORD_ENEMY"],
+		"spells": ["COUNTERSPELL"],
+		"flatArmour": 5
+	}
+}

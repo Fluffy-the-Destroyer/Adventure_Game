@@ -1,0 +1,42 @@
+{
+	"HEAVY_MELEE_WEAPON_START_LIST": ["LONGSWORD_1"],
+	"LONGSWORD_1": {
+		"name": "Longsword",
+		"description": "A sturdy longsword, it is slow to swing but devastating when it hits.",
+		"flatDamageMin": "rng(15,25)",
+		"flatDamageMax": "rng(25,35)",
+		"noCounterAttack": true
+	},
+	"SWORD_ENEMY": {
+		"name": "Sword",
+		"flatDamageMin": 5,
+		"flatDamageMax": 20,
+		"hitCount": 2,
+		"counterHits": 1
+	},
+	"DUAL_DAGGER": {
+		"name": "Dagger",
+		"description": "A small dagger, it is quick to attack with and can be used with one hand.",
+		"flatDamageMin": 10,
+		"flatDamageMax": 15,
+		"hitCount": 2,
+		"counterHits": 2,
+		"dualWield": true
+	},
+	"DUAL_CROSSBOW": {
+		"name": "Small Crossbow",
+		"description": "A small crossbow which can be fired with one hand, its bolts are designed to penetrate armour.",
+		"flatArmourPiercingDamageMin": 15,
+		"flatArmourPiercingDamageMax": 25,
+		"projectileChange": -1,
+		"dualWield": true,
+		"canCounter": true
+	},
+	"STAFF_1": {
+		"name": "Wooden Staff",
+		"description": "A magical staff, doubles as a walking stick.",
+		"flatDamageMin": 5,
+		"flatDamageMax": 10,
+		"flatMagicDamageModifier": 5
+	}
+}

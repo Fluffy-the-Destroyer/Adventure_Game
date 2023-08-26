@@ -1,0 +1,82 @@
+{
+	"HEAD": {
+		"IRON_HELMET_1": {
+			"name": "Iron Helmet",
+			"description": "A strong iron helmet providing good physical protection, its weight can slow down the wearer.",
+			"maxHealthModifier": 5,
+			"flatArmourModifier": 2,
+			"evadeChanceModifier": -0.1,
+			"counterAttackChanceModifier": -0.1,
+			"initiativeModifier": -1
+		},
+		"LEATHER_HELMET_1": {
+			"name": "Leather Cap",
+			"description": "A leather cap, providing moderate physical protection without restricting movement.",
+			"flatArmourModifier": 1,
+			"evadeChanceModifier": 0.1,
+			"counterAttackChanceModifier": 0.1
+		}
+	},
+	"TORSO": {
+		"IRON_CHESTPLATE_1": {
+			"name": "Iron Chestplate",
+			"description": "A strong iron chestplate providing good physical protection, its weight can slow down the wearer.",
+			"maxHealthModifier": 10,
+			"flatArmourModifier": 4,
+			"evadeChanceModifier": -0.2,
+			"counterAttackChanceModifier": -0.2,
+			"initiativeModifier": -2
+		},
+		"LEATHER_CHESTPLATE_1": {
+			"name": "Leather Cuirass",
+			"description": "A leather cuirass, providing moderate physical protection without restricting movement.",
+			"flatArmourModifier": 2,
+			"evadeChanceModifier": 0.2,
+			"counterAttackChanceModifier": 0.2
+		},
+		"ROBES_1": {
+			"name": "Robes",
+			"description": "Basic wizard robes, they offer little physical protection, but improve mana regeneration capabilities.",
+			"maxManaModifier": 10,
+			"turnManaRegenModifier": 5,
+			"battleManaRegenModifier": 10,
+			"flatArmourModifier": 2
+		}
+	},
+	"LEGS": {
+		"IRON_GREAVES_1": {
+			"name": "Iron Greaves",
+			"description": "Strong iron greaves providing good physical protection, their weight can slow down the wearer.",
+			"maxHealthModifier": 5,
+			"flatArmourModifier": 2,
+			"evadeChanceModifier": -0.1,
+			"counterAttackChanceModifier": -0.1,
+			"initiativeModifier": -1
+		},
+		"LEATHER_GREAVES_1": {
+			"name": "Leather Leggings",
+			"description": "Leather leggings, providing moderate physical protection without restricting movement.",
+			"flatArmourModifier": 1,
+			"evadeChanceModifier": 0.1,
+			"counterAttackChanceModifier": 0.1
+		}
+	},
+	"FEET": {
+		"IRON_BOOTS_1": {
+			"name": "Iron boots",
+			"description": "Strong iron boots providing good physical protection, their weight can slow down the wearer.",
+			"maxHealthModifier": 5,
+			"flatArmourModifier": 2,
+			"evadeChanceModifier": -0.1,
+			"counterAttackChanceModifier": -0.1,
+			"initiativeModifier": -1
+		},
+		"LEATHER_BOOTS_1": {
+			"name": "Leather Boots",
+			"description": "Leather boots, providing moderate physical protection without restricting movement.",
+			"flatArmourModifier": 1,
+			"evadeChanceModifier": 0.1,
+			"counterAttackChanceModifier": 0.1
+		}
+	}
+}
