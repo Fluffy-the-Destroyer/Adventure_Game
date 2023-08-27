@@ -115,7 +115,7 @@ export class spell {
 	private selfOverHeal: boolean | undefined;
 	private targetOverHeal: boolean | undefined;
 	/**0 is no effect, 1 is only affects caster, 2 is also target, 3 is only target. 10s digit is for flat damage, units for everything else */
-	private effectType: number | undefined;
+	private effectType: Uint8Array = new Uint8Array(2);
 	private upgrade: string | undefined;
 	private initiativeModifier: number | undefined;
 	constructor(blueprint: string | spell = "EMPTY") {
@@ -324,10 +324,10 @@ export class spell {
 			this.healthChange =
 			this.selfOverHeal =
 			this.targetOverHeal =
-			this.effectType =
 			this.upgrade =
 			this.initiativeModifier =
 				undefined;
+		this.effectType[0] = this.effectType[1] = 0;
 		this.hitCount = this.cooldown = 1;
 		this.spellType = 0;
 		if (blueprint == "EMPTY") {
@@ -1820,8 +1820,8 @@ export class spell {
 	getHealthChange(): number {
 		return this.healthChange ?? 0;
 	}
-	getEffectType(): number {
-		return this.effectType ?? 0;
+	getEffectType(): Uint8Array {
+		return this.effectType;
 	}
 	getSelfOverHeal(): boolean {
 		return this.selfOverHeal ?? false;
@@ -2033,26 +2033,28 @@ export class spell {
 	setEffectType(): void {
 		if (this.checkSelfEffect()) {
 			if (this.checkTargetEffect()) {
-				this.effectType = 2;
+				this.effectType[0] = 2;
 			} else {
-				this.effectType = 1;
+				this.effectType[0] = 1;
 			}
 		} else {
 			if (this.checkTargetEffect()) {
-				this.effectType = 3;
+				this.effectType[0] = 3;
 			} else {
-				this.effectType = 0;
+				this.effectType[0] = 0;
 			}
 		}
 		if (this.checkSelfDamage()) {
 			if (this.checkTargetDamage()) {
-				this.effectType += 20;
+				this.effectType[1] = 2;
 			} else {
-				this.effectType += 10;
+				this.effectType[1] = 1;
 			}
 		} else {
 			if (this.checkTargetDamage()) {
-				this.effectType += 30;
+				this.effectType[1] = 3;
+			} else {
+				this.effectType[1] = 0;
 			}
 		}
 	}

@@ -54,7 +54,7 @@ export class weapon {
 	private selfBleed: number | undefined;
 	private lifeLink: boolean | undefined;
 	private dualWield: boolean | undefined;
-	private effectType: number | undefined;
+	private effectType: Uint8Array = new Uint8Array(2);
 	private selfOverHeal: boolean | undefined;
 	private targetOverHeal: boolean | undefined;
 	private upgrade: string | undefined;
@@ -141,12 +141,12 @@ export class weapon {
 			this.selfBleed =
 			this.lifeLink =
 			this.dualWield =
-			this.effectType =
 			this.selfOverHeal =
 			this.targetOverHeal =
 			this.upgrade =
 			this.flatMagicDamageModifier =
 				undefined;
+		this.effectType[0] = this.effectType[1] = 0;
 		this.hitCount = 1;
 		if (blueprint == "EMPTY") {
 			return;
@@ -768,8 +768,8 @@ export class weapon {
 	getDualWield(): boolean {
 		return this.dualWield ?? false;
 	}
-	getEffectType(): number {
-		return this.effectType ?? 0;
+	getEffectType(): Uint8Array {
+		return this.effectType;
 	}
 	getSelfOverHeal(): boolean {
 		return this.selfOverHeal ?? false;
@@ -798,26 +798,28 @@ export class weapon {
 	setEffectType(): void {
 		if (this.checkSelfEffect()) {
 			if (this.checkTargetEffect()) {
-				this.effectType = 2;
+				this.effectType[0] = 2;
 			} else {
-				this.effectType = 1;
+				this.effectType[0] = 1;
 			}
 		} else {
 			if (this.checkTargetEffect()) {
-				this.effectType = 3;
+				this.effectType[0] = 3;
 			} else {
-				this.effectType = 0;
+				this.effectType[0] = 0;
 			}
 		}
 		if (this.checkSelfDamage()) {
 			if (this.checkTargetDamage()) {
-				this.effectType += 20;
+				this.effectType[1] = 2;
 			} else {
-				this.effectType += 10;
+				this.effectType[1] = 1;
 			}
 		} else {
 			if (this.checkTargetDamage()) {
-				this.effectType += 30;
+				this.effectType[1] = 3;
+			} else {
+				this.effectType[1] = 0;
 			}
 		}
 	}

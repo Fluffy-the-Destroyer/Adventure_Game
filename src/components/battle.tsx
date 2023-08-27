@@ -17,7 +17,7 @@ import {
 } from "../functionality/player";
 import {Fragment, useState} from "react";
 import {actionChoice} from "../functionality/data";
-import {close} from "ionicons/icons";
+import {chevronUpCircle, close} from "ionicons/icons";
 import {spell} from "../functionality/spells";
 import {weapon} from "../functionality/weapons";
 
@@ -149,13 +149,13 @@ export function BattleHandler(props: {
 		| 0
 		| 0.5
 		| 1
-		| 1.5
+		//| 1.5
 		| 2
 		| 2.5
 		| 3
 		| 3.5
 		| 4
-		| 4.5
+		//| 4.5
 		| 5
 		| 5.5
 		| 6
@@ -170,6 +170,8 @@ export function BattleHandler(props: {
 	const [enemySelection, setEnemySelection] = useState<actionChoice>({
 		actionType: 0
 	});
+	/**Stores health of active fighter before declaring main action, to test whether to run a death check after a response */
+	const [preDeclarationHealth, setPreDeclarationHealth] = useState<number>(0);
 	/**Checks if player or enemy is dead
 	 * @returns true if one of them is dead
 	 */
@@ -192,8 +194,12 @@ export function BattleHandler(props: {
 		}
 		return false;
 	}
+	/**Runs start of battle set up */
 	phaseSwitch: switch (phaseCounter) {
+		//Battle initialisation
 		case -1:
+			props.playerCharacter.resetBonusActions();
+			props.opponent.resetBonusActions();
 			props.battleLog.push(props.opponent.getIntroduction());
 			props.battleLog.push(
 				playerTurn
@@ -223,30 +229,34 @@ export function BattleHandler(props: {
 					</IonButton>
 				</IonContent>
 			);
+		//Main action selection
 		case 0:
 			if (playerTurn) {
 				props.playerCharacter.turnStart();
-				deathCheck();
+				if (deathCheck()) {
+					break phaseSwitch;
+				}
 				return (
-					<Fragment>
-						<ChoosePlayerAction
-							playerCharacter={props.playerCharacter}
-							enemyName={props.opponent.getName()}
-							timing={0}
-							submitChoice={(choice: actionChoice) => {
-								setPlayerSelection(choice);
-								setPhaseCounter(0.5);
-							}}
-						/>
-					</Fragment>
+					<ChoosePlayerAction
+						playerCharacter={props.playerCharacter}
+						enemyName={props.opponent.getName()}
+						timing={0}
+						submitChoice={(choice: actionChoice) => {
+							setPlayerSelection(choice);
+							setPhaseCounter(0.5);
+						}}
+					/>
 				);
 			} else {
 				props.opponent.turnStart();
-				deathCheck();
+				if (deathCheck()) {
+					break phaseSwitch;
+				}
 				setEnemySelection(props.opponent.chooseAction(0, firstTurn));
 				setPhaseCounter(0.5);
 			}
-			break;
+			break phaseSwitch;
+		//Main action declaration
 		case 0.5:
 			if (playerTurn) {
 				switch (playerSelection.actionType) {
@@ -255,6 +265,11 @@ export function BattleHandler(props: {
 						setPlayerTurn(false);
 						break phaseSwitch;
 					case 1:
+						props.battleLog.push(
+							`You attack with ${props.playerCharacter
+								.getWeapon(playerSelection.slot1)
+								.getName()}`
+						);
 						weaponDeclare(
 							props.playerCharacter,
 							props.playerCharacter.getWeapon(
@@ -263,6 +278,13 @@ export function BattleHandler(props: {
 						);
 						break;
 					case 3:
+						props.battleLog.push(
+							`You attack with ${props.playerCharacter
+								.getWeapon(playerSelection.slot1)
+								.getName()} and ${props.playerCharacter
+								.getWeapon(playerSelection.slot2)
+								.getName()}`
+						);
 						weaponDeclare(
 							props.playerCharacter,
 							props.playerCharacter.getWeapon(
@@ -274,6 +296,11 @@ export function BattleHandler(props: {
 						);
 						break;
 					case 2:
+						props.battleLog.push(
+							`You cast ${props.playerCharacter
+								.getSpell(playerSelection.slot1)
+								.getName()}`
+						);
 						spellDeclare(
 							props.playerCharacter.getSpell(
 								playerSelection.slot1
@@ -281,8 +308,9 @@ export function BattleHandler(props: {
 							props.playerCharacter
 						);
 				}
+				setPreDeclarationHealth(props.playerCharacter.getHealth());
 				setPhaseCounter(1);
-				break;
+				break phaseSwitch;
 			} else {
 				switch (enemySelection.actionType) {
 					case 0:
@@ -306,23 +334,209 @@ export function BattleHandler(props: {
 							</IonContent>
 						);
 					case 1:
+						props.battleLog.push(
+							`${props.opponent.getName()} attacks with ${props.opponent
+								.getWeapon(enemySelection.slot1)
+								.getName()}`
+						);
+						weaponDeclare(
+							props.opponent,
+							props.opponent.getWeapon(enemySelection.slot1)
+						);
+						break;
 					case 3:
+						props.battleLog.push(
+							`${props.opponent.getName()} attacks with ${props.opponent
+								.getWeapon(enemySelection.slot1)
+								.getName()} and ${props.opponent
+								.getWeapon(enemySelection.slot2)
+								.getName()}`
+						);
+						weaponDeclare(
+							props.opponent,
+							props.opponent.getWeapon(enemySelection.slot1),
+							props.opponent.getWeapon(enemySelection.slot2)
+						);
+						break;
 					case 2:
+						props.battleLog.push(
+							`${props.opponent.getName()} casts ${props.opponent
+								.getSpell(enemySelection.slot1)
+								.getName()}`
+						);
+						spellDeclare(
+							props.opponent.getSpell(enemySelection.slot1),
+							props.opponent
+						);
+				}
+				setPreDeclarationHealth(props.opponent.getHealth());
+				setPhaseCounter(1);
+				break phaseSwitch;
+			}
+		//Response action selection
+		case 1:
+			if (playerTurn) {
+				switch (playerSelection.actionType) {
+					case 1:
+						setEnemySelection(
+							props.opponent.chooseAction(
+								1,
+								firstTurn,
+								props.playerCharacter
+									.getWeapon(playerSelection.slot1)
+									.getName()
+							)
+						);
+						break;
+					case 3:
+						setEnemySelection(
+							props.opponent.chooseAction(
+								4,
+								firstTurn,
+								props.playerCharacter
+									.getWeapon(playerSelection.slot1)
+									.getName(),
+								props.playerCharacter
+									.getWeapon(playerSelection.slot2)
+									.getName()
+							)
+						);
+						break;
+					case 2:
+						setEnemySelection(
+							props.opponent.chooseAction(
+								2,
+								firstTurn,
+								props.playerCharacter
+									.getSpell(playerSelection.slot1)
+									.getName()
+							)
+						);
+						break;
+				}
+				setPhaseCounter(2);
+				break phaseSwitch;
+			} else {
+				switch (enemySelection.actionType) {
+					case 1:
+						return (
+							<ChoosePlayerAction
+								playerCharacter={props.playerCharacter}
+								enemyName={props.opponent.getName()}
+								timing={1}
+								submitChoice={(choice) => {
+									setPhaseCounter(2);
+									setPlayerSelection(choice);
+								}}
+								itemName1={props.opponent
+									.getWeapon(enemySelection.slot1)
+									.getName()}
+							/>
+						);
+					case 3:
+						return (
+							<ChoosePlayerAction
+								playerCharacter={props.playerCharacter}
+								enemyName={props.opponent.getName()}
+								timing={3}
+								submitChoice={(choice) => {
+									setPhaseCounter(2);
+									setPlayerSelection(choice);
+								}}
+								itemName1={props.opponent
+									.getWeapon(enemySelection.slot1)
+									.getName()}
+								itemName2={props.opponent
+									.getWeapon(enemySelection.slot2)
+									.getName()}
+							/>
+						);
+					case 2:
+						return (
+							<ChoosePlayerAction
+								playerCharacter={props.playerCharacter}
+								enemyName={props.opponent.getName()}
+								timing={2}
+								submitChoice={(choice) => {
+									setPhaseCounter(2);
+									setPlayerSelection(choice);
+								}}
+								itemName1={props.opponent
+									.getSpell(enemySelection.slot1)
+									.getName()}
+							/>
+						);
 				}
 			}
-		case 1:
-		case 1.5:
+			break phaseSwitch;
+		//Response action resolution
 		case 2:
+			if (playerTurn) {
+				if (enemySelection.actionType == 0) {
+					setPhaseCounter(3);
+					break phaseSwitch;
+				} else {
+					props.battleLog.push(
+						`${props.opponent.getName()} casts ${props.opponent
+							.getSpell(enemySelection.slot1)
+							.getName()} in response`
+					);
+					spellDeclare(
+						props.opponent.getSpell(enemySelection.slot1),
+						props.opponent
+					);
+					return (
+						<IonContent>
+							<div className="ion-text-center">
+								{props.opponent.getName()} casts{" "}
+								{props.opponent
+									.getSpell(enemySelection.slot1)
+									.getName()}{" "}
+								in response
+							</div>
+							<SpellCast
+								magic={props.opponent.getSpell(
+									enemySelection.slot1
+								)}
+								caster={props.opponent}
+								target={props.playerCharacter}
+							/>
+							<IonButton
+								mode="ios"
+								onClick={() => {
+									if (!deathCheck()) {
+										setPhaseCounter(2.5);
+									}
+								}}
+							>
+								Continue
+							</IonButton>
+						</IonContent>
+					);
+				}
+			}
+		//Response action resolution effects
 		case 2.5:
+		//Main action resolution
 		case 3:
+		//Main action resolution effexts
 		case 3.5:
+		//Counter attack selection
 		case 4:
-		case 4.5:
+		//Counter attack resolution
+		//case 4.5:
+		//Counter attack resolution
 		case 5:
+		//Counter attack resolution effects
 		case 5.5:
+		//Enemy dead
 		case 6:
+		//Enemy casting death spell
 		case 6.5:
+		//Player dead
 		case 7:
+		//Failsafe
+		default:
 			return (
 				<Fragment>
 					<IonContent>{phaseCounter}</IonContent>
@@ -385,6 +599,80 @@ function WeaponAttack(props: {
 	/**Is it a counter attack */
 	counter?: boolean;
 }): JSX.Element {
+	if (props.weapon2 != undefined) {
+		if (props.counter) {
+			if (
+				props.weapon2.getCounterHits() > props.weapon1.getCounterHits()
+			) {
+				return (
+					//@ts-expect-error
+					<WeaponAttack
+						weapon1={props.weapon2}
+						weapon2={props.weapon1}
+						attacker={props.attacker}
+						target={props.target}
+						counter
+					/>
+				);
+			}
+		} else {
+			if (props.weapon2.getHitCount() > props.weapon1.getHitCount()) {
+				return (
+					//@ts-expect-error
+					<WeaponAttack
+						weapon1={props.weapon2}
+						weapon2={props.weapon1}
+						attacker={props.attacker}
+						target={props.target}
+					/>
+				);
+			}
+		}
+	}
+	const attackerEffects: string[] = [];
+	let damageBuffer: number;
+	if (
+		props.weapon1.getEffectType()[1] == 1 ||
+		props.weapon1.getEffectType()[1] == 2 ||
+		props.weapon1.getEffectType()[0] == 1 ||
+		props.weapon1.getEffectType()[0] == 2 ||
+		props.weapon2?.getEffectType()[1] == 1 ||
+		props.weapon2?.getEffectType()[1] == 2 ||
+		props.weapon2?.getEffectType()[0] == 1 ||
+		props.weapon2?.getEffectType()[0] == 2
+	) {
+		attackerEffects.push("Attacker effects");
+		if (props.weapon1.getPropSelfDamage() > 0) {
+			//@ts-expect-error
+			if (props.weapon2?.getPropSelfDamage() > 0) {
+				damageBuffer =
+					props.weapon1.getPropSelfDamage() +
+					props.weapon2!.getPropSelfDamage() -
+					props.weapon1.getPropSelfDamage() *
+						props.weapon2!.getPropSelfDamage();
+				props.attacker.propDamage(damageBuffer);
+				attackerEffects.push(
+					`-${Math.round(100 * damageBuffer)}% health`
+				);
+				//@ts-expect-error
+			} else if (props.weapon2?.getPropSelfDamage() < 0) {
+				props.attacker.propDamage(props.weapon1.getPropSelfDamage());
+				props.attacker.propDamage(props.weapon2!.getPropSelfDamage());
+				attackerEffects.push(
+					`-${Math.round(
+						100 * props.weapon1.getPropSelfDamage()
+					)}% health, then -${Math.round(
+						100 * props.weapon2!.getPropSelfDamage()
+					)}% of health recovered`
+				);
+			} else {
+				props.attacker.propDamage(props.weapon1.getPropSelfDamage());
+				attackerEffects.push(
+					`-${100 * props.weapon1.getPropSelfDamage()}% health`
+				);
+			}
+		}
+	}
 	return <Fragment></Fragment>;
 }
 

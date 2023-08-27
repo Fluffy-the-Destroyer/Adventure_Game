@@ -2126,6 +2126,18 @@ export function ChoosePlayerAction(props: {
 	}
 	return (
 		<IonContent>
+			<div className="ion-text-center">
+				{props.timing == 0
+					? "Choose an action"
+					: (props.timing == 1
+							? `${props.enemyName} attacks with ${props.itemName1}`
+							: props.timing == 2
+							? `${props.enemyName} casts ${props.itemName1}`
+							: props.timing == 3
+							? "Counter attack opportunity"
+							: `${props.enemyName} attacks with ${props.itemName1} and ${props.itemName2}`) +
+					  ", choose an action"}
+			</div>
 			<IonGrid>
 				<IonRow>
 					<IonCol>
@@ -2176,7 +2188,17 @@ export function ChoosePlayerAction(props: {
 			</IonGrid>
 			<IonButton
 				mode="ios"
-				onClick={() => props.submitChoice(currentChoice)}
+				onClick={() => {
+					if (currentChoice.actionType != 0) {
+						if (currentChoice.actionType == 3) {
+							props.playerCharacter.decBonusActions();
+						}
+						if (props.timing != 0) {
+							props.playerCharacter.decBonusActions();
+						}
+					}
+					props.submitChoice(currentChoice);
+				}}
 			>
 				Submit
 			</IonButton>
