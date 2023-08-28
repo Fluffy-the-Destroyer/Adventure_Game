@@ -2581,32 +2581,40 @@ export class enemy {
 		return true;
 	}
 	/**Applies modifiers to damage
-	 * @param damage - damage to be modified, p is physical, m is magic, a is ap
+	 * @param p - physical damage
+	 * @param m - magic damage
+	 * @param a - ap damage
+	 * @returns an object containing the modified damage
 	 */
-	applyDamageModifiers(damage: {p: number; m: number; a: number}): void {
-		if (damage.p > 0) {
-			damage.p += this.flatDamageModifier;
-			if (damage.p < 0) {
-				damage.p = 0;
+	applyDamageModifiers(
+		p: number,
+		m: number,
+		a: number
+	): {p: number; m: number; a: number} {
+		if (p > 0) {
+			p += this.flatDamageModifier;
+			if (p < 0) {
+				p = 0;
 			} else {
-				damage.p *= 1 + this.propDamageModifier;
+				p *= 1 + this.propDamageModifier;
 			}
 		}
-		if (damage.m > 0) {
-			damage.m += this.flatMagicDamageModifier;
-			if (damage.m < 0) {
-				damage.m = 0;
+		if (m > 0) {
+			m += this.flatMagicDamageModifier;
+			if (m < 0) {
+				m = 0;
 			} else {
-				damage.m *= 1 + this.propMagicDamageModifier;
+				m *= 1 + this.propMagicDamageModifier;
 			}
 		}
-		if (damage.a > 0) {
-			damage.a += this.flatArmourPiercingDamageModifier;
-			if (damage.a < 0) {
-				damage.a = 0;
+		if (a > 0) {
+			a += this.flatArmourPiercingDamageModifier;
+			if (a < 0) {
+				a = 0;
 			} else {
-				damage.a *= 1 + this.propArmourPiercingDamageModifier;
+				a *= 1 + this.propArmourPiercingDamageModifier;
 			}
 		}
+		return {p: p, m: m, a: a};
 	}
 }

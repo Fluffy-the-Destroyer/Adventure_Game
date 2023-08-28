@@ -2054,6 +2054,52 @@ export function ChoosePlayerAction(props: {
 	const [currentChoice, setCurrentChoice] = useState<actionChoice>({
 		actionType: 0
 	});
+	//noActionCheck: {
+	//	let spellCount: number = props.playerCharacter.getSpellSlots();
+	//	let weaponCount: number = props.playerCharacter.getWeaponSlots();
+	//	switch (props.timing) {
+	//		case 0:
+	//			break noActionCheck;
+	//		case 1:
+	//		case 2:
+	//		case 4:
+	//			if (props.playerCharacter.getCurrentBonusActions() <= 0) {
+	//				break;
+	//			}
+	//			for (let i: number = 0; i < spellCount; i++) {
+	//				if (
+	//					props.playerCharacter.getSpell(i).getReal() &&
+	//					props.playerCharacter.getSpell(i).getTiming() != 0
+	//				) {
+	//					break noActionCheck;
+	//				}
+	//			}
+	//			break;
+	//		case 3:
+	//			if (props.playerCharacter.getCurrentBonusActions() <= 0) {
+	//				break;
+	//			}
+	//			for (let i: number = 0; i < weaponCount; i++) {
+	//				if (
+	//					props.playerCharacter.getWeapon(i).getReal() &&
+	//					props.playerCharacter.getWeapon(i).getCounterHits() > 0
+	//				) {
+	//					break noActionCheck;
+	//				}
+	//			}
+	//			for (let i: number = 0; i < spellCount; i++) {
+	//				if (
+	//					props.playerCharacter.getSpell(i).getReal() &&
+	//					props.playerCharacter.getSpell(i).getCounterHits() > 0
+	//				) {
+	//					break noActionCheck;
+	//				}
+	//			}
+	//			break;
+	//	}
+	//	props.submitChoice({actionType: 0});
+	//	return <IonContent>This should never appear</IonContent>;
+	//}
 	/**Handles the toggling of a weapon/spell
 	 * @param action - false is a weapon, true is a spell
 	 * @param slot - the weapon or spell slot toggled
