@@ -2617,4 +2617,11 @@ export class enemy {
 		}
 		return {p: p, m: m, a: a};
 	}
+	/**Resets cooldowns, only for debugging */
+	reset(): void {
+		let length: number = this.spells.length;
+		for (let i: number = 0; i < length; i++) {
+			this.spells[i].resetCooldown();
+		}
+	}
 }

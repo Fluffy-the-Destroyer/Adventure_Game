@@ -1588,6 +1588,25 @@ export class player {
 		}
 		return true;
 	}
+	/**Checks if the player has any available actions
+	 * @param timing - The action timing
+	 * @returns whether the player has any actions
+	 */
+	checkPlayerActions(timing: 0 | 1 | 2 | 3 | 4): boolean {
+		switch (timing) {
+			case 0:
+				return true;
+			case 1:
+			case 2:
+			case 4:
+				return this.spells.some((v, i) => this.check(true, timing, i));
+			case 3:
+				return (
+					this.spells.some((v, i) => this.check(true, timing, i)) ||
+					this.weapons.some((v, i) => this.check(false, timing, i))
+				);
+		}
+	}
 }
 /**Equips a weapon */
 export function EquipWeapon(props: {

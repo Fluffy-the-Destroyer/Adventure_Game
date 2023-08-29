@@ -171,8 +171,9 @@ export function BattleHandler(props: {
 	const [enemySelection, setEnemySelection] = useState<actionChoice>({
 		actionType: 0
 	});
-	/**Stores health of active fighter before declaring main action, to test whether to run a death check after a response */
-	const [preDeclarationHealth, setPreDeclarationHealth] = useState<number>(0);
+	/**Stores health of active fighter after declaring main action, to test whether to run a death check after a response */
+	const [postDeclarationHealth, setPostDeclarationHealth] =
+		useState<number>(0);
 	/**Checks if player or enemy is dead
 	 * @returns true if one of them is dead
 	 */
@@ -309,7 +310,7 @@ export function BattleHandler(props: {
 							props.playerCharacter
 						);
 				}
-				setPreDeclarationHealth(props.playerCharacter.getHealth());
+				setPostDeclarationHealth(props.playerCharacter.getHealth());
 				setPhaseCounter(1);
 				break phaseSwitch;
 			} else {
@@ -327,7 +328,8 @@ export function BattleHandler(props: {
 									mode="ios"
 									onClick={() => {
 										setPhaseCounter(0);
-										setPlayerTurn(false);
+										setPlayerTurn(true);
+										setFirstTurn(false);
 									}}
 								>
 									Continue
@@ -370,7 +372,7 @@ export function BattleHandler(props: {
 							props.opponent
 						);
 				}
-				setPreDeclarationHealth(props.opponent.getHealth());
+				setPostDeclarationHealth(props.opponent.getHealth());
 				setPhaseCounter(1);
 				break phaseSwitch;
 			}
@@ -420,6 +422,11 @@ export function BattleHandler(props: {
 			} else {
 				switch (enemySelection.actionType) {
 					case 1:
+						if (!props.playerCharacter.checkPlayerActions(1)) {
+							setPhaseCounter(2);
+							setPlayerSelection({actionType: 0});
+							break phaseSwitch;
+						}
 						return (
 							<ChoosePlayerAction
 								playerCharacter={props.playerCharacter}
@@ -435,6 +442,11 @@ export function BattleHandler(props: {
 							/>
 						);
 					case 3:
+						if (!props.playerCharacter.checkPlayerActions(4)) {
+							setPhaseCounter(2);
+							setPlayerSelection({actionType: 0});
+							break phaseSwitch;
+						}
 						return (
 							<ChoosePlayerAction
 								playerCharacter={props.playerCharacter}
@@ -453,6 +465,11 @@ export function BattleHandler(props: {
 							/>
 						);
 					case 2:
+						if (!props.playerCharacter.checkPlayerActions(2)) {
+							setPhaseCounter(2);
+							setPlayerSelection({actionType: 0});
+							break phaseSwitch;
+						}
 						return (
 							<ChoosePlayerAction
 								playerCharacter={props.playerCharacter}
@@ -489,11 +506,7 @@ export function BattleHandler(props: {
 					return (
 						<IonContent>
 							<div className="ion-text-center">
-								{props.opponent.getName()} casts{" "}
-								{props.opponent
-									.getSpell(enemySelection.slot1)
-									.getName()}{" "}
-								in response
+								{props.battleLog.at(-1)}
 							</div>
 							<SpellCast
 								magic={props.opponent.getSpell(
@@ -502,11 +515,73 @@ export function BattleHandler(props: {
 								caster={props.opponent}
 								target={props.playerCharacter}
 								battleLog={props.battleLog}
+								timing={1}
 							/>
 							<IonButton
 								mode="ios"
 								onClick={() => {
-									if (!deathCheck()) {
+									if (
+										props.opponent
+											.getSpell(enemySelection.slot1)
+											.getPropDamage() > 0 ||
+										props.playerCharacter.getHealth() <
+											postDeclarationHealth
+									) {
+										if (!deathCheck()) {
+											setPhaseCounter(2.5);
+										}
+									} else {
+										setPhaseCounter(2.5);
+									}
+								}}
+							>
+								Continue
+							</IonButton>
+						</IonContent>
+					);
+				}
+			} else {
+				if (playerSelection.actionType == 0) {
+					setPhaseCounter(3);
+					break phaseSwitch;
+				} else {
+					props.battleLog.push(
+						`You cast ${props.playerCharacter
+							.getSpell(playerSelection.slot1)
+							.getName()} in response`
+					);
+					spellDeclare(
+						props.playerCharacter.getSpell(playerSelection.slot1),
+						props.playerCharacter
+					);
+					return (
+						<IonContent>
+							<div className="ion-text-center">
+								{props.battleLog.at(-1)}
+							</div>
+							<SpellCast
+								magic={props.playerCharacter.getSpell(
+									playerSelection.slot1
+								)}
+								caster={props.playerCharacter}
+								target={props.opponent}
+								timing={1}
+								battleLog={props.battleLog}
+							/>
+							<IonButton
+								mode="ios"
+								onClick={() => {
+									if (
+										props.playerCharacter
+											.getSpell(playerSelection.slot1)
+											.getPropDamage() > 0 ||
+										props.opponent.getHealth() <
+											postDeclarationHealth
+									) {
+										if (!deathCheck()) {
+											setPhaseCounter(2.5);
+										}
+									} else {
 										setPhaseCounter(2.5);
 									}
 								}}
@@ -519,6 +594,376 @@ export function BattleHandler(props: {
 			}
 		//Response action resolution effects
 		case 2.5:
+			if (playerTurn) {
+				switch (playerSelection.actionType) {
+					case 1:
+						if (
+							props.opponent
+								//@ts-expect-error
+								.getSpell(enemySelection.slot1)
+								.getCounterSpell() > 1
+						) {
+							if (
+								props.playerCharacter
+									.getWeapon(playerSelection.slot1)
+									.getCanCounter()
+							) {
+								props.battleLog.push(
+									`The effects of ${props.playerCharacter
+										.getWeapon(playerSelection.slot1)
+										.getName()} are countered`
+								);
+								return (
+									<IonContent>
+										<div className="ion-text-center">
+											{props.battleLog.at(-1)}
+										</div>
+										<IonButton
+											mode="ios"
+											onClick={() => {
+												if (!deathCheck()) {
+													setPhaseCounter(0);
+													setPlayerTurn(false);
+												}
+											}}
+										>
+											Continue
+										</IonButton>
+									</IonContent>
+								);
+							} else {
+								props.opponent.addNoCounter(
+									false,
+									props.playerCharacter
+										.getWeapon(playerSelection.slot1)
+										.getName()
+								);
+								props.battleLog.push(
+									`${props.playerCharacter
+										.getWeapon(playerSelection.slot1)
+										.getName()} cannot be countered`
+								);
+								return (
+									<IonContent>
+										<div className="ion-text-center">
+											{props.battleLog.at(-1)}
+										</div>
+										<IonButton
+											mode="ios"
+											onClick={() => {
+												setPhaseCounter(3);
+											}}
+										>
+											Continue
+										</IonButton>
+									</IonContent>
+								);
+							}
+						} else {
+							setPhaseCounter(3);
+							break phaseSwitch;
+						}
+					case 2:
+						if (
+							props.opponent
+								//@ts-expect-error
+								.getSpell(enemySelection.slot1)
+								.getCounterSpell() == 1 ||
+							props.opponent
+								//@ts-expect-error
+								.getSpell(enemySelection.slot1)
+								.getCounterSpell() == 3
+						) {
+							if (
+								props.playerCharacter
+									.getSpell(playerSelection.slot1)
+									.getNoCounter()
+							) {
+								props.battleLog.push(
+									`${props.playerCharacter
+										.getSpell(playerSelection.slot1)
+										.getName()} cannot be countered`
+								);
+								props.opponent.addNoCounter(
+									true,
+									props.playerCharacter
+										.getSpell(playerSelection.slot1)
+										.getName()
+								);
+								return (
+									<IonContent>
+										<div className="ion-text-center">
+											{props.battleLog.at(-1)}
+										</div>
+										<IonButton
+											mode="ios"
+											onClick={() => {
+												setPhaseCounter(3);
+											}}
+										>
+											Continue
+										</IonButton>
+									</IonContent>
+								);
+							} else {
+								props.battleLog.push(
+									`The effects of ${props.playerCharacter
+										.getSpell(playerSelection.slot1)
+										.getName()} are countered`
+								);
+								return (
+									<IonContent>
+										<div className="ion-text-center">
+											{props.battleLog.at(-1)}
+										</div>
+										<IonButton
+											mode="ios"
+											onClick={() => {
+												if (!deathCheck()) {
+													setPhaseCounter(0);
+													setPlayerTurn(false);
+												}
+											}}
+										>
+											Continue
+										</IonButton>
+									</IonContent>
+								);
+							}
+						} else {
+							setPhaseCounter(3);
+							break phaseSwitch;
+						}
+					case 3:
+						if (
+							props.opponent
+								//@ts-expect-error
+								.getSpell(enemySelection.slot1)
+								.getCounterSpell() > 1
+						) {
+							if (
+								props.playerCharacter
+									.getWeapon(playerSelection.slot1)
+									.getCanCounter()
+							) {
+								if (
+									props.playerCharacter
+										.getWeapon(playerSelection.slot2)
+										.getCanCounter()
+								) {
+									props.battleLog.push(
+										`The effects of ${props.playerCharacter
+											.getWeapon(playerSelection.slot1)
+											.getName()} and ${props.playerCharacter
+											.getWeapon(playerSelection.slot2)
+											.getName()} are countered`
+									);
+									return (
+										<IonContent>
+											<div className="ion-text-center">
+												{props.battleLog.at(-1)}
+											</div>
+											<IonButton
+												mode="ios"
+												onClick={() => {
+													if (!deathCheck()) {
+														setPhaseCounter(0);
+														setPlayerTurn(false);
+													}
+												}}
+											>
+												Continue
+											</IonButton>
+										</IonContent>
+									);
+								} else {
+									props.battleLog.push(
+										`The effects of ${props.playerCharacter
+											.getWeapon(playerSelection.slot1)
+											.getName()} are countered, but ${props.playerCharacter
+											.getWeapon(playerSelection.slot2)
+											.getName()} cannot be countered`
+									);
+									props.opponent.addNoCounter(
+										false,
+										props.playerCharacter
+											.getWeapon(playerSelection.slot2)
+											.getName()
+									);
+									return (
+										<IonContent>
+											<div className="ion-text-center">
+												{props.battleLog.at(-1)}
+											</div>
+											<IonButton
+												mode="ios"
+												onClick={() => {
+													setPhaseCounter(3);
+													setPlayerSelection({
+														actionType: 1,
+														slot1: playerSelection.slot2
+													});
+												}}
+											>
+												Continue
+											</IonButton>
+										</IonContent>
+									);
+								}
+							} else {
+								if (
+									props.playerCharacter
+										.getWeapon(playerSelection.slot2)
+										.getCanCounter()
+								) {
+									props.battleLog.push(
+										`The effects of ${props.playerCharacter
+											.getWeapon(playerSelection.slot2)
+											.getName()} are countered, but ${props.playerCharacter
+											.getWeapon(playerSelection.slot1)
+											.getName()} cannot be countered`
+									);
+									props.opponent.addNoCounter(
+										false,
+										props.playerCharacter
+											.getWeapon(playerSelection.slot1)
+											.getName()
+									);
+									return (
+										<IonContent>
+											<div className="ion-text-center">
+												{props.battleLog.at(-1)}
+											</div>
+											<IonButton
+												mode="ios"
+												onClick={() => {
+													setPhaseCounter(3);
+													setPlayerSelection({
+														actionType: 1,
+														slot1: playerSelection.slot1
+													});
+												}}
+											>
+												Continue
+											</IonButton>
+										</IonContent>
+									);
+								} else {
+									props.battleLog.push(
+										`${props.playerCharacter
+											.getWeapon(playerSelection.slot1)
+											.getName()} and ${props.playerCharacter
+											.getWeapon(playerSelection.slot2)
+											.getName()} cannot be countered`
+									);
+									props.opponent.addNoCounter(
+										false,
+										props.playerCharacter
+											.getWeapon(playerSelection.slot1)
+											.getName()
+									);
+									props.opponent.addNoCounter(
+										false,
+										props.playerCharacter
+											.getWeapon(playerSelection.slot2)
+											.getName()
+									);
+									return (
+										<IonContent>
+											<div className="ion-text-center">
+												{props.battleLog.at(-1)}
+											</div>
+											<IonButton
+												mode="ios"
+												onClick={() => {
+													setPhaseCounter(3);
+												}}
+											>
+												Continue
+											</IonButton>
+										</IonContent>
+									);
+								}
+							}
+						} else {
+							setPhaseCounter(3);
+							break phaseSwitch;
+						}
+					default:
+						setPhaseCounter(3);
+						break phaseSwitch;
+				}
+			} else {
+				switch (enemySelection.actionType) {
+					case 1:
+						if (
+							props.playerCharacter
+								//@ts-expect-error
+								.getSpell(playerSelection.slot1)
+								.getCounterSpell() > 1
+						) {
+							if (
+								props.opponent
+									.getWeapon(enemySelection.slot1)
+									.getCanCounter()
+							) {
+								props.battleLog.push(
+									`The effects of ${props.opponent
+										.getWeapon(enemySelection.slot1)
+										.getName()} are countered`
+								);
+								return (
+									<IonContent>
+										<div className="ion-text-center">
+											{props.battleLog.at(-1)}
+										</div>
+										<IonButton
+											mode="ios"
+											onClick={() => {
+												if (!deathCheck()) {
+													setPhaseCounter(0);
+													setPlayerTurn(true);
+													setFirstTurn(false);
+												}
+											}}
+										>
+											Continue
+										</IonButton>
+									</IonContent>
+								);
+							} else {
+								props.battleLog.push(
+									`${props.opponent
+										.getWeapon(enemySelection.slot1)
+										.getName()} cannot be countered`
+								);
+								return (
+									<IonContent>
+										<div className="ion-text-center">
+											{props.battleLog.at(-1)}
+										</div>
+										<IonButton
+											mode="ios"
+											onClick={() => {
+												setPhaseCounter(3);
+											}}
+										>
+											Continue
+										</IonButton>
+									</IonContent>
+								);
+							}
+						} else {
+							setPhaseCounter(3);
+							break phaseSwitch;
+						}
+					case 2:
+					case 3:
+					default:
+						setPhaseCounter(3);
+						break phaseSwitch;
+				}
+			}
 		//Main action resolution
 		case 3:
 		//Main action resolution effects

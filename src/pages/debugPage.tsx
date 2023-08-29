@@ -86,7 +86,11 @@ export function DebugPage(): JSX.Element {
 			<BattlePage
 				playerCharacter={playerCharacter}
 				opponent={opponent}
-				endBattle={() => setBattle(false)}
+				endBattle={() => {
+					playerCharacter.reset();
+					opponent.reset();
+					setBattle(false);
+				}}
 			/>
 		);
 	}
