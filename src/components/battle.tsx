@@ -17,7 +17,7 @@ import {
 } from "../functionality/player";
 import {Fragment, useState} from "react";
 import {actionChoice} from "../functionality/data";
-import {chevronUpCircle, close} from "ionicons/icons";
+import {close} from "ionicons/icons";
 import {spell} from "../functionality/spells";
 import {weapon} from "../functionality/weapons";
 import {randomFloat} from "../functionality/rng";
@@ -200,6 +200,9 @@ export function BattleHandler(props: {
 	phaseSwitch: switch (phaseCounter) {
 		//Battle initialisation
 		case -1:
+			if (deathCheck()) {
+				break phaseSwitch;
+			}
 			props.playerCharacter.resetBonusActions();
 			props.opponent.resetBonusActions();
 			props.battleLog.push(props.opponent.getIntroduction());
@@ -260,6 +263,7 @@ export function BattleHandler(props: {
 			break phaseSwitch;
 		//Main action declaration
 		case 0.5:
+			console.log("test");
 			if (playerTurn) {
 				switch (playerSelection.actionType) {
 					case 0:
@@ -310,9 +314,24 @@ export function BattleHandler(props: {
 							props.playerCharacter
 						);
 				}
-				setPostDeclarationHealth(props.playerCharacter.getHealth());
-				setPhaseCounter(1);
-				break phaseSwitch;
+				return (
+					<IonContent>
+						<div className="ion-text-center">
+							{props.battleLog.at(-1)}
+						</div>
+						<IonButton
+							mode="ios"
+							onClick={() => {
+								setPhaseCounter(1);
+								setPostDeclarationHealth(
+									props.playerCharacter.getHealth()
+								);
+							}}
+						>
+							Continue
+						</IonButton>
+					</IonContent>
+				);
 			} else {
 				switch (enemySelection.actionType) {
 					case 0:
@@ -372,9 +391,24 @@ export function BattleHandler(props: {
 							props.opponent
 						);
 				}
-				setPostDeclarationHealth(props.opponent.getHealth());
-				setPhaseCounter(1);
-				break phaseSwitch;
+				return (
+					<IonContent>
+						<div className="ion-text-center">
+							{props.battleLog.at(-1)}
+						</div>
+						<IonButton
+							mode="ios"
+							onClick={() => {
+								setPhaseCounter(1);
+								setPostDeclarationHealth(
+									props.opponent.getHealth()
+								);
+							}}
+						>
+							Continue
+						</IonButton>
+					</IonContent>
+				);
 			}
 		//Response action selection
 		case 1:
@@ -650,9 +684,7 @@ export function BattleHandler(props: {
 										</div>
 										<IonButton
 											mode="ios"
-											onClick={() => {
-												setPhaseCounter(3);
-											}}
+											onClick={() => setPhaseCounter(3)}
 										>
 											Continue
 										</IonButton>
@@ -697,9 +729,7 @@ export function BattleHandler(props: {
 										</div>
 										<IonButton
 											mode="ios"
-											onClick={() => {
-												setPhaseCounter(3);
-											}}
+											onClick={() => setPhaseCounter(3)}
 										>
 											Continue
 										</IonButton>
@@ -875,9 +905,9 @@ export function BattleHandler(props: {
 											</div>
 											<IonButton
 												mode="ios"
-												onClick={() => {
-													setPhaseCounter(3);
-												}}
+												onClick={() =>
+													setPhaseCounter(3)
+												}
 											>
 												Continue
 											</IonButton>
@@ -944,9 +974,7 @@ export function BattleHandler(props: {
 										</div>
 										<IonButton
 											mode="ios"
-											onClick={() => {
-												setPhaseCounter(3);
-											}}
+											onClick={() => setPhaseCounter(3)}
 										>
 											Continue
 										</IonButton>
@@ -958,7 +986,198 @@ export function BattleHandler(props: {
 							break phaseSwitch;
 						}
 					case 2:
+						if (
+							props.playerCharacter
+								//@ts-expect-error
+								.getSpell(playerSelection.slot1)
+								.getCounterSpell() == 1 ||
+							props.playerCharacter
+								//@ts-expect-error
+								.getSpell(playerSelection.slot1)
+								.getCounterSpell() == 3
+						) {
+							if (
+								props.opponent
+									.getSpell(enemySelection.slot1)
+									.getNoCounter()
+							) {
+								props.battleLog.push(
+									`${props.opponent
+										.getSpell(enemySelection.slot1)
+										.getName()} cannot be countered`
+								);
+								return (
+									<IonContent>
+										<div className="ion-text-center">
+											{props.battleLog.at(-1)}
+										</div>
+										<IonButton
+											mode="ios"
+											onClick={() => setPhaseCounter(3)}
+										>
+											Continue
+										</IonButton>
+									</IonContent>
+								);
+							} else {
+								props.battleLog.push(
+									`The effects of ${props.opponent
+										.getSpell(enemySelection.slot1)
+										.getName()} are countered`
+								);
+								return (
+									<IonContent>
+										<div className="ion-text-center">
+											{props.battleLog.at(-1)}
+										</div>
+										<IonButton
+											mode="ios"
+											onClick={() => {
+												if (!deathCheck()) {
+													setPhaseCounter(0);
+													setPlayerTurn(true);
+													setFirstTurn(false);
+												}
+											}}
+										>
+											Continue
+										</IonButton>
+									</IonContent>
+								);
+							}
+						} else {
+							setPhaseCounter(3);
+							break phaseSwitch;
+						}
 					case 3:
+						if (
+							props.playerCharacter
+								//@ts-expect-error
+								.getSpell(playerSelection.slot1)
+								.getCounterSpell() > 1
+						) {
+							if (
+								props.opponent
+									.getWeapon(enemySelection.slot1)
+									.getCanCounter()
+							) {
+								if (
+									props.opponent
+										.getWeapon(enemySelection.slot2)
+										.getCanCounter()
+								) {
+									props.battleLog.push(
+										`The effects of ${props.opponent
+											.getWeapon(enemySelection.slot1)
+											.getName()} and ${props.opponent
+											.getWeapon(enemySelection.slot2)
+											.getName()} are countered`
+									);
+									return (
+										<IonContent>
+											<div className="ion-text-center">
+												{props.battleLog.at(-1)}
+											</div>
+											<IonButton
+												mode="ios"
+												onClick={() => {
+													if (!deathCheck()) {
+														setPhaseCounter(0);
+														setPlayerTurn(true);
+														setFirstTurn(false);
+													}
+												}}
+											>
+												Continue
+											</IonButton>
+										</IonContent>
+									);
+								} else {
+									props.battleLog.push(
+										`The effects of ${props.opponent
+											.getWeapon(enemySelection.slot1)
+											.getName()} are countered, but ${props.opponent
+											.getWeapon(enemySelection.slot2)
+											.getName()} cannot be countered`
+									);
+									return (
+										<IonContent>
+											<div className="ion-text-center">
+												{props.battleLog.at(-1)}
+											</div>
+											<IonButton
+												mode="ios"
+												onClick={() => {
+													setEnemySelection({
+														actionType: 1,
+														slot1: enemySelection.slot2
+													});
+													setPhaseCounter(3);
+												}}
+											>
+												Continue
+											</IonButton>
+										</IonContent>
+									);
+								}
+							} else {
+								if (
+									props.opponent
+										.getWeapon(enemySelection.slot2)
+										.getCanCounter()
+								) {
+									props.battleLog.push(
+										`The effects of ${props.opponent
+											.getWeapon(enemySelection.slot2)
+											.getName()} are countered, but ${props.opponent
+											.getWeapon(enemySelection.slot1)
+											.getName()} cannot be countered`
+									);
+									return (
+										<IonContent>
+											<div className="ion-text-center">
+												{props.battleLog.at(-1)}
+											</div>
+											<IonButton
+												mode="ios"
+												onClick={() => {
+													setEnemySelection({
+														actionType: 1,
+														slot1: enemySelection.slot1
+													});
+													setPhaseCounter(3);
+												}}
+											>
+												Continue
+											</IonButton>
+										</IonContent>
+									);
+								} else {
+									props.battleLog.push(
+										`${props.opponent
+											.getWeapon(enemySelection.slot1)
+											.getName()} and ${props.opponent
+											.getWeapon(enemySelection.slot2)
+											.getName()} cannot be countered`
+									);
+									return (
+										<IonContent>
+											<div className="ion-text-center">
+												{props.battleLog.at(-1)}
+											</div>
+											<IonButton
+												mode="ios"
+												onClick={() =>
+													setPhaseCounter(3)
+												}
+											>
+												Continue
+											</IonButton>
+										</IonContent>
+									);
+								}
+							}
+						}
 					default:
 						setPhaseCounter(3);
 						break phaseSwitch;
@@ -966,14 +1185,544 @@ export function BattleHandler(props: {
 			}
 		//Main action resolution
 		case 3:
+			if (playerTurn) {
+				switch (playerSelection.actionType) {
+					case 1:
+						return (
+							<IonContent>
+								<WeaponAttack
+									weapon1={props.playerCharacter.getWeapon(
+										playerSelection.slot1
+									)}
+									attacker={props.playerCharacter}
+									target={props.opponent}
+									battleLog={props.battleLog}
+								/>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										if (!deathCheck()) {
+											if (
+												props.playerCharacter
+													.getWeapon(
+														playerSelection.slot1
+													)
+													.getNoCounterAttack() ||
+												randomFloat(0, 1) >=
+													props.opponent.getEvadeChance()
+											) {
+												setPhaseCounter(0);
+												setPlayerTurn(false);
+											} else {
+												setPhaseCounter(4);
+											}
+										}
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					case 3:
+						return (
+							<IonContent>
+								<WeaponAttack
+									weapon1={props.playerCharacter.getWeapon(
+										playerSelection.slot1
+									)}
+									weapon2={props.playerCharacter.getWeapon(
+										playerSelection.slot2
+									)}
+									attacker={props.playerCharacter}
+									target={props.opponent}
+									battleLog={props.battleLog}
+								/>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										if (!deathCheck()) {
+											if (
+												(props.playerCharacter
+													.getWeapon(
+														playerSelection.slot1
+													)
+													.getNoCounterAttack() &&
+													props.playerCharacter
+														.getWeapon(
+															playerSelection.slot2
+														)
+														.getNoCounterAttack()) ||
+												randomFloat(0, 1) >=
+													props.opponent.getEvadeChance()
+											) {
+												setPhaseCounter(0);
+												setPlayerTurn(false);
+											} else {
+												setPhaseCounter(4);
+											}
+										}
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					case 2:
+						return (
+							<IonContent>
+								<SpellCast
+									magic={props.playerCharacter.getSpell(
+										playerSelection.slot1
+									)}
+									caster={props.playerCharacter}
+									target={props.opponent}
+									battleLog={props.battleLog}
+								/>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										if (!deathCheck()) {
+											if (
+												props.playerCharacter
+													.getSpell(
+														playerSelection.slot1
+													)
+													.getCanCounterAttack() &&
+												randomFloat(0, 1) <
+													props.opponent.getEvadeChance()
+											) {
+												setPhaseCounter(4);
+											} else {
+												setPhaseCounter(0);
+												setPlayerTurn(false);
+											}
+										}
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					default:
+						setPhaseCounter(0);
+						setPlayerTurn(false);
+						break phaseSwitch;
+				}
+			} else {
+				switch (enemySelection.actionType) {
+					case 1:
+						return (
+							<IonContent>
+								<WeaponAttack
+									weapon1={props.opponent.getWeapon(
+										enemySelection.slot1
+									)}
+									attacker={props.opponent}
+									target={props.playerCharacter}
+									battleLog={props.battleLog}
+								/>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										if (!deathCheck()) {
+											if (
+												props.opponent
+													.getWeapon(
+														enemySelection.slot1
+													)
+													.getNoCounterAttack() ||
+												randomFloat(0, 1) >=
+													props.playerCharacter.getEvadeChance()
+											) {
+												setPhaseCounter(0);
+												setPlayerTurn(true);
+												setFirstTurn(false);
+											} else {
+												setPhaseCounter(4);
+											}
+										}
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					case 3:
+						return (
+							<IonContent>
+								<WeaponAttack
+									weapon1={props.opponent.getWeapon(
+										enemySelection.slot1
+									)}
+									weapon2={props.opponent.getWeapon(
+										enemySelection.slot2
+									)}
+									attacker={props.opponent}
+									target={props.playerCharacter}
+									battleLog={props.battleLog}
+								/>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										if (!deathCheck()) {
+											if (
+												(props.opponent
+													.getWeapon(
+														enemySelection.slot1
+													)
+													.getNoCounterAttack() &&
+													props.opponent
+														.getWeapon(
+															enemySelection.slot2
+														)
+														.getNoCounterAttack()) ||
+												randomFloat(0, 1) >=
+													props.playerCharacter.getEvadeChance()
+											) {
+												setPhaseCounter(0);
+												setPlayerTurn(true);
+												setFirstTurn(false);
+											} else {
+												setPhaseCounter(4);
+											}
+										}
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					case 2:
+						return (
+							<IonContent>
+								<SpellCast
+									magic={props.opponent.getSpell(
+										enemySelection.slot1
+									)}
+									caster={props.opponent}
+									target={props.playerCharacter}
+									battleLog={props.battleLog}
+								/>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										if (!deathCheck()) {
+											if (
+												props.opponent
+													.getSpell(
+														enemySelection.slot1
+													)
+													.getCanCounterAttack() &&
+												randomFloat(0, 1) <
+													props.playerCharacter.getEvadeChance()
+											) {
+												setPhaseCounter(4);
+											} else {
+												setPhaseCounter(0);
+												setPlayerTurn(true);
+												setFirstTurn(false);
+											}
+										}
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					default:
+						setPhaseCounter(0);
+						break phaseSwitch;
+				}
+			}
 		//Main action resolution effects
-		case 3.5:
+		//case 3.5:
 		//Counter attack selection
 		case 4:
+			if (playerTurn) {
+				setEnemySelection(props.opponent.chooseAction(3, firstTurn));
+				if (enemySelection.actionType == 0) {
+					setPhaseCounter(0);
+					setPlayerTurn(false);
+				} else {
+					setPhaseCounter(5);
+				}
+				break phaseSwitch;
+			} else {
+				if (props.playerCharacter.checkPlayerActions(3)) {
+					return (
+						<ChoosePlayerAction
+							playerCharacter={props.playerCharacter}
+							enemyName={props.opponent.getName()}
+							timing={3}
+							submitChoice={(choice) => {
+								if (choice.actionType == 0) {
+									setPhaseCounter(0);
+									setPlayerTurn(true);
+									setFirstTurn(false);
+								} else {
+									setPhaseCounter(5);
+								}
+							}}
+						/>
+					);
+				} else {
+					setPhaseCounter(0);
+					setPlayerTurn(true);
+					setFirstTurn(false);
+					break phaseSwitch;
+				}
+			}
 		//Counter attack resolution
 		//case 4.5:
 		//Counter attack resolution
 		case 5:
+			if (playerTurn) {
+				switch (enemySelection.actionType) {
+					case 1:
+						props.battleLog.push(
+							`${props.opponent.getName()} counter attacks with ${props.opponent.getWeapon(
+								enemySelection.slot1
+							)}`
+						);
+						weaponDeclare(
+							props.opponent,
+							props.opponent.getWeapon(enemySelection.slot1)
+						);
+						return (
+							<IonContent>
+								<div className="ion-text-center">
+									{props.battleLog.at(-1)}
+								</div>
+								<WeaponAttack
+									weapon1={props.opponent.getWeapon(
+										enemySelection.slot1
+									)}
+									attacker={props.opponent}
+									target={props.playerCharacter}
+									counter
+									battleLog={props.battleLog}
+								/>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										if (!deathCheck()) {
+											setPhaseCounter(0);
+											setPlayerTurn(false);
+										}
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					case 3:
+						props.battleLog.push(
+							`${props.opponent.getName()} counter attacks with ${props.opponent
+								.getWeapon(enemySelection.slot1)
+								.getName()} and ${props.opponent
+								.getWeapon(enemySelection.slot2)
+								.getName()}`
+						);
+						weaponDeclare(
+							props.opponent,
+							props.opponent.getWeapon(enemySelection.slot1),
+							props.opponent.getWeapon(enemySelection.slot2)
+						);
+						return (
+							<IonContent>
+								<div className="ion-text-center">
+									{props.battleLog.at(-1)}
+								</div>
+								<WeaponAttack
+									weapon1={props.opponent.getWeapon(
+										enemySelection.slot1
+									)}
+									weapon2={props.opponent.getWeapon(
+										enemySelection.slot2
+									)}
+									attacker={props.opponent}
+									target={props.playerCharacter}
+									counter
+									battleLog={props.battleLog}
+								/>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										if (!deathCheck()) {
+											setPhaseCounter(0);
+											setPlayerTurn(false);
+										}
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					case 2:
+						props.battleLog.push(
+							`${props.opponent.getName()} counter attacks by casting ${props.opponent
+								.getSpell(enemySelection.slot1)
+								.getName()}`
+						);
+						spellDeclare(
+							props.opponent.getSpell(enemySelection.slot1),
+							props.opponent
+						);
+						return (
+							<IonContent>
+								<div className="ion-text-center">
+									{props.battleLog.at(-1)}
+								</div>
+								<SpellCast
+									magic={props.opponent.getSpell(
+										enemySelection.slot1
+									)}
+									caster={props.opponent}
+									target={props.playerCharacter}
+									timing={3}
+									battleLog={props.battleLog}
+								/>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										if (!deathCheck()) {
+											setPhaseCounter(0);
+											setPlayerTurn(false);
+										}
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					default:
+						setPhaseCounter(0);
+						setPlayerTurn(false);
+						break phaseSwitch;
+				}
+			} else {
+				switch (playerSelection.actionType) {
+					case 1:
+						props.battleLog.push(
+							`You counter attack with ${props.playerCharacter
+								.getWeapon(playerSelection.slot1)
+								.getName()}`
+						);
+						weaponDeclare(
+							props.playerCharacter,
+							props.playerCharacter.getWeapon(
+								playerSelection.slot1
+							)
+						);
+						return (
+							<IonContent>
+								<div className="ion-text-center">
+									{props.battleLog.at(-1)}
+								</div>
+								<WeaponAttack
+									weapon1={props.playerCharacter.getWeapon(
+										playerSelection.slot1
+									)}
+									attacker={props.playerCharacter}
+									target={props.opponent}
+									counter
+									battleLog={props.battleLog}
+								/>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										if (!deathCheck()) {
+											setPhaseCounter(0);
+											setPlayerTurn(false);
+											setFirstTurn(false);
+										}
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					case 3:
+						props.battleLog.push(
+							`You counter attack with ${props.playerCharacter
+								.getWeapon(playerSelection.slot1)
+								.getName()} and ${props.playerCharacter
+								.getWeapon(playerSelection.slot2)
+								.getName()}`
+						);
+						weaponDeclare(
+							props.playerCharacter,
+							props.playerCharacter.getWeapon(
+								playerSelection.slot1
+							),
+							props.playerCharacter.getWeapon(
+								playerSelection.slot2
+							)
+						);
+						return (
+							<IonContent>
+								<div className="ion-text-center">
+									{props.battleLog.at(-1)}
+								</div>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										if (!deathCheck()) {
+											setPhaseCounter(0);
+											setPlayerTurn(true);
+											setFirstTurn(false);
+										}
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					case 2:
+						props.battleLog.push(
+							`You counter attack by casting ${props.playerCharacter
+								.getSpell(playerSelection.slot1)
+								.getName()}`
+						);
+						spellDeclare(
+							props.playerCharacter.getSpell(
+								playerSelection.slot1
+							),
+							props.playerCharacter
+						);
+						return (
+							<IonContent>
+								<div className="ion-text-center">
+									{props.battleLog.at(-1)}
+								</div>
+								<SpellCast
+									magic={props.playerCharacter.getSpell(
+										playerSelection.slot1
+									)}
+									caster={props.playerCharacter}
+									target={props.opponent}
+									timing={3}
+									battleLog={props.battleLog}
+								/>
+								<IonButton
+									mode="ios"
+									onClick={() => {
+										if (!deathCheck()) {
+											setPhaseCounter(0);
+											setPlayerTurn(true);
+											setFirstTurn(false);
+										}
+									}}
+								>
+									Continue
+								</IonButton>
+							</IonContent>
+						);
+					default:
+						setPhaseCounter(0);
+						break phaseSwitch;
+				}
+			}
 		//Counter attack resolution effects
 		case 5.5:
 		//Enemy dead
@@ -1100,7 +1849,11 @@ function WeaponAttack(props: {
 	) {
 		outputText = "Attacker effects:";
 		props.battleLog.push(outputText);
-		attackerEffects.push(<div>{outputText}</div>);
+		attackerEffects.push(
+			<div className="ion-text-center" key="attacker-effects">
+				{outputText}
+			</div>
+		);
 	}
 	//Positive and negative prop damage do not commute, so take care over the ordering
 	if (props.weapon1.getPropSelfDamage() > 0) {
@@ -1114,7 +1867,11 @@ function WeaponAttack(props: {
 			props.attacker.propDamage(damageBuffer);
 			outputText = `${-Math.round(100 * damageBuffer)}% health`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="propSelfDamage">
+					{outputText}
+				</div>
+			);
 			//@ts-expect-error
 		} else if (props.weapon2?.getPropSelfDamage() < 0) {
 			props.attacker.propDamage(props.weapon1.getPropSelfDamage());
@@ -1125,14 +1882,22 @@ function WeaponAttack(props: {
 				100 * props.weapon2!.getPropSelfDamage()
 			)}% of health recovered`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="propSelfDamage">
+					{outputText}
+				</div>
+			);
 		} else {
 			props.attacker.propDamage(props.weapon1.getPropSelfDamage());
 			outputText = `${-Math.round(
 				100 * props.weapon1.getPropSelfDamage()
 			)}% health`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="propSelfDamage">
+					{outputText}
+				</div>
+			);
 		}
 	} else if (props.weapon1.getPropSelfDamage() < 0) {
 		//@ts-expect-error
@@ -1145,7 +1910,11 @@ function WeaponAttack(props: {
 				100 * props.weapon1.getPropSelfDamage()
 			)}% of health recovered`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="propSelfDamage">
+					{outputText}
+				</div>
+			);
 			//@ts-expect-error
 		} else if (props.weapon2?.getPropSelfDamage() < 0) {
 			damageBuffer = Math.max(
@@ -1158,14 +1927,22 @@ function WeaponAttack(props: {
 				100 * damageBuffer
 			)}% of health recovered`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="propSelfDamage">
+					{outputText}
+				</div>
+			);
 		} else {
 			props.attacker.propDamage(props.weapon1.getPropSelfDamage());
 			outputText = `${-Math.round(
 				100 * props.weapon1.getPropSelfDamage()
 			)}% of health recovered`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="propSelfDamage">
+					{outputText}
+				</div>
+			);
 		}
 	} else {
 		//@ts-expect-error
@@ -1175,7 +1952,11 @@ function WeaponAttack(props: {
 				100 * props.weapon2!.getPropSelfDamage()
 			)}% health`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="propSelfDamage">
+					{outputText}
+				</div>
+			);
 			//@ts-expect-error
 		} else if (props.weapon2?.getPropSelfDamage() < 0) {
 			props.attacker.propDamage(props.weapon2!.getPropSelfDamage());
@@ -1183,7 +1964,11 @@ function WeaponAttack(props: {
 				100 * props.weapon2!.getPropSelfDamage()
 			)}% of health recovered`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="propSelfDamage">
+					{outputText}
+				</div>
+			);
 		}
 	}
 	selfDamage: {
@@ -1252,7 +2037,11 @@ function WeaponAttack(props: {
 			outputText = "No damage";
 		}
 		props.battleLog.push(outputText);
-		attackerEffects.push(<div>{outputText}</div>);
+		attackerEffects.push(
+			<div className="ion-text-center" key="flatSelfDamage">
+				{outputText}
+			</div>
+		);
 	}
 	{
 		const selfPoison =
@@ -1279,7 +2068,11 @@ function WeaponAttack(props: {
 			}
 			outputText = dotEffects.slice(0, -2);
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="dotSelf">
+					{outputText}
+				</div>
+			);
 		}
 	}
 	if (
@@ -1291,7 +2084,11 @@ function WeaponAttack(props: {
 	) {
 		return <Fragment>{attackerEffects}</Fragment>;
 	}
-	const targetEffects: JSX.Element[] = [<div>Target effects:</div>];
+	const targetEffects: JSX.Element[] = [
+		<div className="ion-text-center" key="target-effects">
+			Target effects:
+		</div>
+	];
 	let hits1: number, hits2: number | undefined;
 	if (props.counter) {
 		hits1 = props.weapon1.getCounterHits();
@@ -1304,6 +2101,7 @@ function WeaponAttack(props: {
 		targetEffects.push(
 			//@ts-expect-error
 			<WeaponHit
+				key={`${props.weapon1.getKey()}-${i}`}
 				weaponry={props.weapon1}
 				attacker={props.attacker}
 				target={props.target}
@@ -1315,6 +2113,7 @@ function WeaponAttack(props: {
 			targetEffects.push(
 				//@ts-expect-error
 				<WeaponHit
+					key={`${props.weapon2?.getKey()}-${i}`}
 					weaponry={props.weapon2}
 					attacker={props.attacker}
 					target={props.target}
@@ -1359,10 +2158,18 @@ function WeaponHit(props: {
 		randomFloat(0, 1) < props.target.getEvadeChance()
 	) {
 		props.battleLog.push("Evade!");
-		return <div>Evade!</div>;
+		return (
+			<div className="ion-text-center" key="hit">
+				Evade!
+			</div>
+		);
 	}
 	props.battleLog.push("Hit!");
-	const hitEffects: JSX.Element[] = [<div>Hit!</div>];
+	const hitEffects: JSX.Element[] = [
+		<div className="ion-text-center" key="hit">
+			Hit!
+		</div>
+	];
 	let outputText: string;
 	props.target.propDamage(props.weaponry.getPropDamage());
 	if (props.weaponry.getPropDamage() > 0) {
@@ -1370,13 +2177,21 @@ function WeaponHit(props: {
 			100 * props.weaponry.getPropDamage()
 		)}% health`;
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="propDamage">
+				{outputText}
+			</div>
+		);
 	} else if (props.weaponry.getPropDamage() < 0) {
 		outputText = `${-Math.round(
 			100 * props.weaponry.getPropDamage()
 		)} % of health recovered`;
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="propDamage">
+				{outputText}
+			</div>
+		);
 	}
 	if (props.weaponry.getEffectType()[1] > 1) {
 		let healthSteal: number = Math.max(0, props.target.getHealth());
@@ -1410,7 +2225,11 @@ function WeaponHit(props: {
 			outputText = "No damage";
 		}
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="flatDamage">
+				{outputText}
+			</div>
+		);
 	}
 	if (props.weaponry.getPoison() > 0 || props.weaponry.getBleed() > 0) {
 		outputText = "";
@@ -1430,7 +2249,11 @@ function WeaponHit(props: {
 		}
 		outputText = outputText.slice(0, -2);
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="dot">
+				{outputText}
+			</div>
+		);
 	}
 	return <Fragment>{hitEffects}</Fragment>;
 }
@@ -1484,7 +2307,11 @@ function SpellCast(props: {
 		) {
 			outputText = "Caster effects:";
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="caster-effects">
+					{outputText}
+				</div>
+			);
 		}
 		props.caster.propDamage(props.magic.getPropSelfDamage());
 		if (props.magic.getPropSelfDamage() > 0) {
@@ -1492,13 +2319,21 @@ function SpellCast(props: {
 				100 * props.magic.getPropSelfDamage()
 			)}% health`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="propSelfDamage">
+					{outputText}
+				</div>
+			);
 		} else if (props.magic.getPropSelfDamage() < 0) {
 			outputText = `${-Math.round(
 				100 * props.magic.getPropSelfDamage()
 			)}% of health recovered`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="propSelfDamage">
+					{outputText}
+				</div>
+			);
 		}
 		if (
 			props.magic.getEffectType()[1] == 1 ||
@@ -1518,7 +2353,11 @@ function SpellCast(props: {
 				outputText = "No damage";
 			}
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="flatSelfDamage">
+					{outputText}
+				</div>
+			);
 		}
 		if (
 			props.magic.getEffectType()[0] == 1 ||
@@ -1534,18 +2373,28 @@ function SpellCast(props: {
 					if (
 						props.caster.modifyPoison(props.magic.getSelfPoison())
 					) {
-						outputText += `${
-							props.magic.getSelfPoison() > 0 ? "+" : ""
-						}${props.magic.getSelfPoison()} poison, `;
+						outputText +=
+							props.magic.getSelfPoison() == -255
+								? "Poison cured, "
+								: `${
+										props.magic.getSelfPoison() > 0
+											? "+"
+											: ""
+								  }${props.magic.getSelfPoison()} poison, `;
 					} else {
 						outputText += "Poison resisted, ";
 					}
 				}
 				if (props.magic.getSelfBleed() != 0) {
 					if (props.caster.modifyBleed(props.magic.getSelfBleed())) {
-						outputText += `${
-							props.magic.getSelfBleed() > 0 ? "+" : ""
-						}${props.magic.getSelfBleed()} bleed, `;
+						outputText +=
+							props.magic.getSelfBleed() == -255
+								? "Bleed cured, "
+								: `${
+										props.magic.getSelfBleed() > 0
+											? "+"
+											: ""
+								  }${props.magic.getSelfBleed()} bleed, `;
 					} else {
 						outputText += "Bleed resisted, ";
 					}
@@ -1556,11 +2405,15 @@ function SpellCast(props: {
 					);
 					outputText += `${
 						props.magic.getTempRegenSelf() > 0 ? "+" : ""
-					}${props.magic.getTempRegenSelf()} regeneration`;
+					}${props.magic.getTempRegenSelf()} regeneration, `;
 				}
 				outputText = outputText.slice(0, -2);
 				props.battleLog.push(outputText);
-				attackerEffects.push(<div>{outputText}</div>);
+				attackerEffects.push(
+					<div className="ion-text-center" key="dotSelf">
+						{outputText}
+					</div>
+				);
 			}
 			if (
 				props.magic.getPoisonResistModifier() != 0 ||
@@ -1568,12 +2421,16 @@ function SpellCast(props: {
 			) {
 				outputText = "";
 				if (props.magic.getPoisonResistModifier() != 0) {
+					console.log(props.caster);
 					props.caster.modifyPoisonResist(
 						props.magic.getPoisonResistModifier()
 					);
+					console.log(props.caster);
 					outputText += `${
 						props.magic.getPoisonResistModifier() > 0 ? "+" : ""
-					}${props.magic.getPoisonResistModifier()} poison resist, `;
+					}${Math.round(
+						100 * props.magic.getPoisonResistModifier()
+					)}% poison resist, `;
 				}
 				if (props.magic.getBleedResistModifier() != 0) {
 					props.caster.modifyBleedResist(
@@ -1581,11 +2438,17 @@ function SpellCast(props: {
 					);
 					outputText += `${
 						props.magic.getBleedResistModifier() > 0 ? "+" : ""
-					}${props.magic.getBleedResistModifier()} bleed resist, `;
+					}${Math.round(
+						100 * props.magic.getBleedResistModifier()
+					)}% bleed resist, `;
 				}
 				outputText = outputText.slice(0, -2);
 				props.battleLog.push(outputText);
-				attackerEffects.push(<div>{outputText}</div>);
+				attackerEffects.push(
+					<div className="ion-text-center" key="selfResistModifiers">
+						{outputText}
+					</div>
+				);
 			}
 			if (
 				props.magic.getMaxHealthModifier() != 0 ||
@@ -1623,7 +2486,11 @@ function SpellCast(props: {
 				}
 				outputText = outputText.slice(0, -2);
 				props.battleLog.push(outputText);
-				attackerEffects.push(<div>{outputText}</div>);
+				attackerEffects.push(
+					<div className="ion-text-center" key="selfHealthModifiers">
+						{outputText}
+					</div>
+				);
 			}
 			if (
 				props.magic.getMaxManaModifier() != 0 ||
@@ -1661,7 +2528,11 @@ function SpellCast(props: {
 				}
 				outputText = outputText.slice(0, -2);
 				props.battleLog.push(outputText);
-				attackerEffects.push(<div>{outputText}</div>);
+				attackerEffects.push(
+					<div className="ion-text-center" key="selfManaModifiers">
+						{outputText}
+					</div>
+				);
 			}
 			if (
 				props.magic.getFlatArmourModifier() != 0 ||
@@ -1686,7 +2557,14 @@ function SpellCast(props: {
 				}
 				outputText = outputText.slice(0, -2);
 				props.battleLog.push(outputText);
-				attackerEffects.push(<div>{outputText}</div>);
+				attackerEffects.push(
+					<div
+						className="ion-text-center"
+						key="flatSelfArmourModifiers"
+					>
+						{outputText}
+					</div>
+				);
 			}
 			if (
 				props.magic.getPropArmourModifier() != 0 ||
@@ -1715,7 +2593,14 @@ function SpellCast(props: {
 				}
 				outputText = outputText.slice(0, -2);
 				props.battleLog.push(outputText);
-				attackerEffects.push(<div>{outputText}</div>);
+				attackerEffects.push(
+					<div
+						className="ion-text-center"
+						key="propSelfArmourModifiers"
+					>
+						{outputText}
+					</div>
+				);
 			}
 			if (
 				props.magic.getFlatDamageModifier() != 0 ||
@@ -1751,7 +2636,14 @@ function SpellCast(props: {
 				}
 				outputText = outputText.slice(0, -2);
 				props.battleLog.push(outputText);
-				attackerEffects.push(<div>{outputText}</div>);
+				attackerEffects.push(
+					<div
+						className="ion-text-center"
+						key="flatSelfDamageModifiers"
+					>
+						{outputText}
+					</div>
+				);
 			}
 			if (
 				props.magic.getPropDamageModifier() != 0 ||
@@ -1793,7 +2685,14 @@ function SpellCast(props: {
 				}
 				outputText = outputText.slice(0, -2);
 				props.battleLog.push(outputText);
-				attackerEffects.push(<div>{outputText}</div>);
+				attackerEffects.push(
+					<div
+						className="ion-text-center"
+						key="propSelfDamageModifiers"
+					>
+						{outputText}
+					</div>
+				);
 			}
 		}
 		if (props.magic.getEvadeChanceModifier() != 0) {
@@ -1806,7 +2705,11 @@ function SpellCast(props: {
 				100 * props.magic.getEvadeChanceModifier()
 			)}% evade chance`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="selfEvadeChanceModifier">
+					{outputText}
+				</div>
+			);
 		}
 		if (props.magic.getCounterAttackChanceModifier() != 0) {
 			props.caster.modifyCounterAttackChance(
@@ -1818,7 +2721,14 @@ function SpellCast(props: {
 				100 * props.magic.getCounterAttackChanceModifier()
 			)}% counter attack chance`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div
+					className="ion-text-center"
+					key="selfCounterAttackChanceModifier"
+				>
+					{outputText}
+				</div>
+			);
 		}
 		if (props.magic.getBonusActionsModifier() != 0) {
 			props.caster.modifyBonusActions(
@@ -1828,7 +2738,11 @@ function SpellCast(props: {
 				props.magic.getBonusActionsModifier() > 0 ? "+" : ""
 			}${props.magic.getBonusActionsModifier()} bonus actions`;
 			props.battleLog.push(outputText);
-			attackerEffects.push(<div>{outputText}</div>);
+			attackerEffects.push(
+				<div className="ion-text-center" key="selfBonusActionModifier">
+					{outputText}
+				</div>
+			);
 		}
 	}
 	if (
@@ -1837,7 +2751,11 @@ function SpellCast(props: {
 	) {
 		return <Fragment>{attackerEffects}</Fragment>;
 	}
-	const targetEffects: JSX.Element[] = [];
+	const targetEffects: JSX.Element[] = [
+		<div className="ion-text-center" key="target-effects">
+			Target effects:
+		</div>
+	];
 	let hits: number;
 	switch (props.timing) {
 		case undefined:
@@ -1854,6 +2772,7 @@ function SpellCast(props: {
 		targetEffects.push(
 			//@ts-expect-error
 			<SpellHit
+				key={`${props.magic.getKey()}-${i}`}
 				magic={props.magic}
 				caster={props.caster}
 				target={props.target}
@@ -1900,24 +2819,40 @@ function SpellHit(props: {
 	) {
 		outputText = "Evade!";
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="hit">
+				{outputText}
+			</div>
+		);
 	}
 	outputText = "Hit!";
 	props.battleLog.push(outputText);
-	hitEffects.push(<div>{outputText}</div>);
+	hitEffects.push(
+		<div className="ion-text-center" key="hit">
+			{outputText}
+		</div>
+	);
 	props.target.propDamage(props.magic.getPropDamage());
 	if (props.magic.getPropDamage() > 0) {
 		outputText = `${-Math.round(
 			100 * props.magic.getPropDamage()
 		)}% health`;
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="propDamage">
+				{outputText}
+			</div>
+		);
 	} else if (props.magic.getPropDamage() < 0) {
 		outputText = `${-Math.round(
 			100 * props.magic.getPropDamage()
 		)}% of health recovered`;
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="propDamage">
+				{outputText}
+			</div>
+		);
 	}
 	if (props.magic.getEffectType()[1] > 1) {
 		let healthSteal: number = Math.max(0, props.target.getHealth());
@@ -1948,7 +2883,11 @@ function SpellHit(props: {
 			outputText = "No damage";
 		}
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="flatDamage">
+				{outputText}
+			</div>
+		);
 	}
 	if (props.magic.getEffectType()[0] < 2) {
 		return <Fragment>{hitEffects}</Fragment>;
@@ -1985,7 +2924,11 @@ function SpellHit(props: {
 		}
 		outputText = outputText.slice(0, -2);
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="dot">
+				{outputText}
+			</div>
+		);
 	}
 	if (
 		props.magic.getMaxHealthModifierEnemy() != 0 ||
@@ -2023,7 +2966,11 @@ function SpellHit(props: {
 		}
 		outputText = outputText.slice(0, -2);
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="healthModifiers">
+				{outputText}
+			</div>
+		);
 	}
 	if (
 		props.magic.getMaxManaModifierEnemy() != 0 ||
@@ -2066,7 +3013,11 @@ function SpellHit(props: {
 		}
 		outputText = outputText.slice(0, -2);
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="manaModifiers">
+				{outputText}
+			</div>
+		);
 	}
 	if (
 		props.magic.getPoisonResistModifierEnemy() != 0 ||
@@ -2095,7 +3046,11 @@ function SpellHit(props: {
 		}
 		outputText = outputText.slice(0, -2);
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="resistModifiers">
+				{outputText}
+			</div>
+		);
 	}
 	if (
 		props.magic.getFlatArmourModifierEnemy() != 0 ||
@@ -2120,7 +3075,11 @@ function SpellHit(props: {
 		}
 		outputText = outputText.slice(0, -2);
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="flatArmourModifiers">
+				{outputText}
+			</div>
+		);
 	}
 	if (
 		props.magic.getPropArmourModifierEnemy() != 0 ||
@@ -2149,7 +3108,11 @@ function SpellHit(props: {
 		}
 		outputText = outputText.slice(0, -2);
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="propArmourModifiers">
+				{outputText}
+			</div>
+		);
 	}
 	if (
 		props.magic.getFlatDamageModifierEnemy() != 0 ||
@@ -2185,7 +3148,11 @@ function SpellHit(props: {
 		}
 		outputText = outputText.slice(0, -2);
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="flatDamageModifiers">
+				{outputText}
+			</div>
+		);
 	}
 	if (
 		props.magic.getPropDamageModifierEnemy() != 0 ||
@@ -2227,7 +3194,11 @@ function SpellHit(props: {
 		}
 		outputText = outputText.slice(0, -2);
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="propDamageModifiers">
+				{outputText}
+			</div>
+		);
 	}
 
 	if (props.magic.getEvadeChanceModifierEnemy() != 0) {
@@ -2240,7 +3211,11 @@ function SpellHit(props: {
 			100 * props.magic.getEvadeChanceModifierEnemy()
 		)}% evade chance`;
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="evadeChanceModifier">
+				{outputText}
+			</div>
+		);
 	}
 	if (props.magic.getCounterAttackChanceModifierEnemy() != 0) {
 		props.target.modifyCounterAttackChance(
@@ -2252,7 +3227,11 @@ function SpellHit(props: {
 			100 * props.magic.getCounterAttackChanceModifierEnemy()
 		)}% counter attack chance`;
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="counterAttackChanceModifier">
+				{outputText}
+			</div>
+		);
 	}
 	if (props.magic.getBonusActionsModifierEnemy() != 0) {
 		props.target.modifyBonusActions(
@@ -2262,7 +3241,11 @@ function SpellHit(props: {
 			props.magic.getBonusActionsModifierEnemy() > 0 ? "+" : ""
 		}${props.magic.getBonusActionsModifierEnemy()} bonus actions`;
 		props.battleLog.push(outputText);
-		hitEffects.push(<div>{outputText}</div>);
+		hitEffects.push(
+			<div className="ion-text-center" key="bonusActionModifier">
+				{outputText}
+			</div>
+		);
 	}
 	return <Fragment>{hitEffects}</Fragment>;
 }
