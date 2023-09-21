@@ -615,7 +615,7 @@ export class armour {
 export function DisplayArmourName(props: {
 	/**The piece of armour */
 	armourPiece: armour;
-}): JSX.Element {
+}): React.JSX.Element {
 	const [isOpen, setIsOpen] = useState<boolean>(false);
 	let type: string;
 	switch (props.armourPiece.armourType()) {
@@ -688,7 +688,7 @@ export function DisplayArmourName(props: {
 export function DisplayArmourStats(props: {
 	/**The armour piece */
 	armourPiece: armour;
-}): JSX.Element {
+}): React.JSX.Element {
 	const type: string = props.armourPiece.armourType();
 	return (
 		<IonList className="ion-text-center">

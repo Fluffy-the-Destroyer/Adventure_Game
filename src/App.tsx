@@ -37,7 +37,7 @@ import {DebugPage} from "./pages/debugPage";
 */
 
 setupIonicReact();
-function App(): JSX.Element {
+function App(): React.JSX.Element {
 	return (
 		<IonApp>
 			<IonReactRouter>

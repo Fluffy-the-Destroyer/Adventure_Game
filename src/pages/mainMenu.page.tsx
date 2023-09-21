@@ -7,7 +7,7 @@ import {
 	IonTitle
 } from "@ionic/react";
 
-function MainMenuPage(): JSX.Element {
+function MainMenuPage(): React.JSX.Element {
 	return (
 		<IonPage>
 			<IonHeader className="main-menu-header ion-text-center">

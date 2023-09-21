@@ -17,7 +17,7 @@ import {enemy} from "../functionality/enemies";
 import {BattlePage} from "../components/battle";
 
 /**Debugging page */
-export function DebugPage(): JSX.Element {
+export function DebugPage(): React.JSX.Element {
 	const [playerCharacter, setPlayerCharacter] = useState<player>(
 		new player()
 	);

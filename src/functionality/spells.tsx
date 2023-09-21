@@ -2097,7 +2097,7 @@ export function DisplaySpellName(props: {
 	canUse?: boolean;
 	/**A function to be run on selection being toggled */
 	onToggle?: () => void;
-}): JSX.Element {
+}): React.JSX.Element {
 	if (!props.magic.getReal()) {
 		return (
 			<IonItem>
@@ -2204,7 +2204,7 @@ export function DisplaySpellName(props: {
 export function DisplaySpellStats(props: {
 	/**The spell */
 	magic: spell;
-}): JSX.Element {
+}): React.JSX.Element {
 	let healingMin: number = 0,
 		healingMax: number = 0,
 		healingSelfMin: number = 0,

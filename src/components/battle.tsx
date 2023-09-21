@@ -15,7 +15,7 @@ import {
 	ShowPlayerInventory,
 	player
 } from "../functionality/player";
-import {Fragment, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
 import {actionChoice} from "../functionality/data";
 import {close} from "ionicons/icons";
 import {spell} from "../functionality/spells";
@@ -48,13 +48,44 @@ export function BattlePage(props: {
 	opponent: enemy;
 	/**Ends the battle (will cause parent component to stop displaying battle) */
 	endBattle: () => void;
-}): JSX.Element {
+}): React.JSX.Element {
 	/**Holds the battle log */
-	const [battleLog, setBattleLog] = useState<string[]>([]);
+	const [battleLog] = useState<string[]>([]);
 	/**Tracks whether the battle log is open */
 	const [isBattleLogOpen, setIsBattleLogOpen] = useState<boolean>(false);
 	/**Tracks whether the inventory is open */
 	const [isInventoryOpen, setIsInventoryOpen] = useState<boolean>(false);
+	/**Holds the battle handler iterator */
+	const [battleHandlerIterator] = useState<
+		Generator<
+			React.JSX.Element | null,
+			React.JSX.Element | null,
+			() => void
+		>
+	>(
+		battleHandler(
+			props.playerCharacter,
+			props.opponent,
+			props.endBattle,
+			battleLog
+		)
+	);
+	/**Holds the JSX returned from the battle handler */
+	const [displayBuffer, setDisplayBuffer] =
+		useState<React.JSX.Element | null>(null);
+	useEffect(() => {
+		battleHandlerIterator.next();
+		setDisplayBuffer(
+			battleHandlerIterator.next(() => {
+				var newDisplay: React.JSX.Element | null =
+					battleHandlerIterator.next().value;
+				while (newDisplay == null) {
+					newDisplay = battleHandlerIterator.next().value;
+				}
+				setDisplayBuffer(newDisplay);
+			}).value
+		);
+	}, [battleHandlerIterator, setDisplayBuffer]);
 	return (
 		<IonPage>
 			<IonHeader>
@@ -83,12 +114,7 @@ export function BattlePage(props: {
 					</IonButtons>
 				</IonToolbar>
 			</IonHeader>
-			<BattleHandler
-				playerCharacter={props.playerCharacter}
-				opponent={props.opponent}
-				endBattle={props.endBattle}
-				battleLog={battleLog}
-			/>
+			{displayBuffer}
 			<IonFooter>
 				<IonToolbar>
 					<IonButtons slot="end">
@@ -138,7 +164,7 @@ export function BattleHandler(props: {
 	endBattle: () => void;
 	/**Array containing the battle log */
 	battleLog: string[];
-}): JSX.Element {
+}): React.JSX.Element | null {
 	/**Tracks whose turn it is, true is player turn */
 	const [playerTurn, setPlayerTurn] = useState<boolean>(
 		props.playerCharacter.rollInitiative() > props.opponent.rollInitiative()
@@ -1776,7 +1802,7 @@ function WeaponAttack(props: {
 	target: enemy;
 	counter?: boolean;
 	battleLog: string[];
-}): JSX.Element;
+}): React.JSX.Element;
 function WeaponAttack(props: {
 	weapon1: weapon;
 	weapon2?: weapon;
@@ -1784,7 +1810,7 @@ function WeaponAttack(props: {
 	target: player;
 	counter?: boolean;
 	battleLog: string[];
-}): JSX.Element;
+}): React.JSX.Element;
 function WeaponAttack(props: {
 	/**First weapon */
 	weapon1: weapon;
@@ -1798,7 +1824,7 @@ function WeaponAttack(props: {
 	counter?: boolean;
 	/**The battle log */
 	battleLog: string[];
-}): JSX.Element {
+}): React.JSX.Element {
 	//If dual wielding, ensure weapon1 hits at least as many times as weapon2
 	if (props.weapon2 != undefined) {
 		if (props.counter) {
@@ -1833,7 +1859,7 @@ function WeaponAttack(props: {
 		}
 	}
 	/**An array of divs displaying effects on the attacker */
-	const attackerEffects: JSX.Element[] = [];
+	const attackerEffects: React.JSX.Element[] = [];
 	let outputText: string;
 	/**For holding damage values */
 	let damageBuffer: number;
@@ -2084,7 +2110,7 @@ function WeaponAttack(props: {
 	) {
 		return <Fragment>{attackerEffects}</Fragment>;
 	}
-	const targetEffects: JSX.Element[] = [
+	const targetEffects: React.JSX.Element[] = [
 		<div className="ion-text-center" key="target-effects">
 			Target effects:
 		</div>
@@ -2136,13 +2162,13 @@ function WeaponHit(props: {
 	attacker: player;
 	target: enemy;
 	battleLog: string[];
-}): JSX.Element;
+}): React.JSX.Element;
 function WeaponHit(props: {
 	weaponry: weapon;
 	attacker: enemy;
 	target: player;
 	battleLog: string[];
-}): JSX.Element;
+}): React.JSX.Element;
 function WeaponHit(props: {
 	/**The weapon */
 	weaponry: weapon;
@@ -2152,7 +2178,7 @@ function WeaponHit(props: {
 	target: player | enemy;
 	/**The battle log */
 	battleLog: string[];
-}): JSX.Element {
+}): React.JSX.Element {
 	if (
 		!props.weaponry.getNoEvade() &&
 		randomFloat(0, 1) < props.target.getEvadeChance()
@@ -2165,7 +2191,7 @@ function WeaponHit(props: {
 		);
 	}
 	props.battleLog.push("Hit!");
-	const hitEffects: JSX.Element[] = [
+	const hitEffects: React.JSX.Element[] = [
 		<div className="ion-text-center" key="hit">
 			Hit!
 		</div>
@@ -2276,14 +2302,14 @@ function SpellCast(props: {
 	target: enemy;
 	timing?: 0 | 1 | 2 | 3 | 4;
 	battleLog: string[];
-}): JSX.Element;
+}): React.JSX.Element;
 function SpellCast(props: {
 	magic: spell;
 	caster?: enemy;
 	target: player;
 	timing?: 0 | 1 | 2 | 3 | 4;
 	battleLog: string[];
-}): JSX.Element;
+}): React.JSX.Element;
 function SpellCast(props: {
 	/**The spell */
 	magic: spell;
@@ -2295,8 +2321,8 @@ function SpellCast(props: {
 	timing?: 0 | 1 | 2 | 3 | 4;
 	/**The battle log */
 	battleLog: string[];
-}): JSX.Element {
-	const attackerEffects: JSX.Element[] = [];
+}): React.JSX.Element {
+	const attackerEffects: React.JSX.Element[] = [];
 	let outputText: string;
 	if (props.caster != undefined) {
 		if (
@@ -2751,7 +2777,7 @@ function SpellCast(props: {
 	) {
 		return <Fragment>{attackerEffects}</Fragment>;
 	}
-	const targetEffects: JSX.Element[] = [
+	const targetEffects: React.JSX.Element[] = [
 		<div className="ion-text-center" key="target-effects">
 			Target effects:
 		</div>
@@ -2794,13 +2820,13 @@ function SpellHit(props: {
 	caster: player;
 	target: enemy;
 	battleLog: string[];
-}): JSX.Element;
+}): React.JSX.Element;
 function SpellHit(props: {
 	magic: spell;
 	caster?: enemy;
 	target: player;
 	battleLog: string[];
-}): JSX.Element;
+}): React.JSX.Element;
 function SpellHit(props: {
 	/**The spell */
 	magic: spell;
@@ -2810,9 +2836,9 @@ function SpellHit(props: {
 	target: player | enemy;
 	/**The battle log */
 	battleLog: string[];
-}): JSX.Element {
+}): React.JSX.Element {
 	let outputText: string = "";
-	const hitEffects: JSX.Element[] = [];
+	const hitEffects: React.JSX.Element[] = [];
 	if (
 		!props.magic.getNoEvade() &&
 		randomFloat(0, 1) < props.target.getEvadeChance()
@@ -3248,4 +3274,177 @@ function SpellHit(props: {
 		);
 	}
 	return <Fragment>{hitEffects}</Fragment>;
+}
+
+/**Handles a battle
+ * @param playerCharacter - The player
+ * @param opponent - The enemy
+ * @param endBattle - A function to end the battle
+ * @param battleLog - The battle log
+ * @yields Anything that should be displayed
+ * @returns Display for end of battle
+ */
+function* battleHandler(
+	playerCharacter: player,
+	opponent: enemy,
+	endBattle: () => void,
+	battleLog: string[]
+): Generator<
+	React.JSX.Element | null,
+	React.JSX.Element | null,
+	void | (() => void)
+> {
+	let playerTurn: boolean =
+		playerCharacter.rollInitiative() > opponent.rollInitiative();
+	let firstTurn: boolean = true;
+	const advanceCombat: () => void =
+		(yield <Fragment></Fragment>) ??
+		(() => {
+			console.log(
+				"No function to advance combat provided, ending battle"
+			);
+			endBattle();
+		});
+	//Display enemy introduction and who goes first
+	battleLog.push(opponent.getIntroduction());
+	battleLog.push(
+		`${playerTurn ? "You go first" : `${opponent.getName()} goes first`}`
+	);
+	yield (
+		<IonContent>
+			<div className="ion-text-center">{battleLog.at(-2)}</div>
+			<div className="ion-text-center">{battleLog.at(-1)}</div>
+			<ContinueButton />
+		</IonContent>
+	);
+	//Check if enemy dies immediately
+	if (deathCheck()) {
+		return endOfCombat();
+	}
+	//Reset bonus actions
+	playerCharacter.resetBonusActions();
+	opponent.resetBonusActions();
+	//Turn cycle loop
+	while (true) {
+		if (playerTurn) {
+			playerCharacter.turnStart();
+			if (deathCheck()) {
+				return endOfCombat();
+			}
+			var playerSelection: actionChoice = {actionType: 0} as actionChoice;
+			yield (
+				<ChoosePlayerAction
+					playerCharacter={playerCharacter}
+					enemyName={opponent.getName()}
+					timing={0}
+					submitChoice={(choice) => {
+						playerSelection = choice;
+						advanceCombat();
+					}}
+				/>
+			);
+			switch (playerSelection.actionType) {
+				case 0:
+					battleLog.push("You do nothing");
+					yield (
+						<IonContent>
+							<div>You do nothing</div>
+							<ContinueButton />
+						</IonContent>
+					);
+					break;
+				case 1:
+					var health: number = playerCharacter.getHealth();
+					battleLog.push(
+						`You attack with ${playerCharacter
+							.getWeapon(playerSelection.slot1)
+							.getName()}`
+					);
+					weaponDeclare(
+						playerCharacter,
+						playerCharacter.getWeapon(playerSelection.slot1)
+					);
+					yield (
+						<IonContent>
+							<div>{battleLog.at(-1)}</div>
+							<ContinueButton />
+						</IonContent>
+					);
+					var enemySelection: actionChoice = opponent.chooseAction(
+						1,
+						firstTurn,
+						playerCharacter
+							.getWeapon(playerSelection.slot1)
+							.getName()
+					);
+				case 3:
+				case 2:
+			}
+		} else {
+		}
+		break;
+	}
+	return <Fragment></Fragment>;
+	/**Checks if either fighter is dead */
+	function deathCheck(): boolean {
+		return playerCharacter.getHealth() <= 0 || opponent.getHealth() <= 0;
+	}
+	/**Handles end of battle, UNFINISHED */
+	function endOfCombat(): React.JSX.Element {
+		if (opponent.getHealth() <= 0) {
+			if (opponent.getDeathSpell()?.getReal()) {
+				return (
+					<IonContent>
+						<div>
+							{opponent.getName()} is dead. On death, it casts{" "}
+							{opponent.getDeathSpell()!.getName()}
+						</div>
+						<SpellCast
+							magic={opponent.getDeathSpell()!}
+							target={playerCharacter}
+							battleLog={battleLog}
+						/>
+						{playerCharacter.getHealth() <= 0 ? (
+							<div>You are dead</div>
+						) : null}
+						<EndBattleButton />
+					</IonContent>
+				);
+			}
+			if (playerCharacter.getHealth() <= 0) {
+				return (
+					<IonContent>
+						<div>You are dead</div>
+						<EndBattleButton />
+					</IonContent>
+				);
+			}
+			return (
+				<IonContent>
+					<div>{opponent.getName()} is dead</div>
+					<EndBattleButton />
+				</IonContent>
+			);
+		}
+		return (
+			<IonContent>
+				<div>You are dead</div>
+				<EndBattleButton />
+			</IonContent>
+		);
+	}
+	function ContinueButton(): React.JSX.Element {
+		return (
+			<IonButton mode="ios" onClick={advanceCombat}>
+				Continue
+			</IonButton>
+		);
+	}
+	function EndBattleButton(): React.JSX.Element {
+		return (
+			<IonButton mode="ios" onClick={endBattle}>
+				End battle
+			</IonButton>
+		);
+	}
 }

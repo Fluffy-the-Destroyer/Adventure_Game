@@ -854,7 +854,7 @@ export class weapon {
 export function DisplayWeaponStats(props: {
 	/**The weapon */
 	weaponry: weapon;
-}): JSX.Element {
+}): React.JSX.Element {
 	let healingMin: number = 0,
 		healingMax: number = 0,
 		healingSelfMin: number = 0,
@@ -1171,7 +1171,7 @@ export function DisplayWeaponName(props: {
 	canUse?: boolean;
 	/**A function to call on the weapon being toggled */
 	onToggle?: () => void;
-}): JSX.Element {
+}): React.JSX.Element {
 	if (!props.weaponry.getReal()) {
 		return (
 			<IonItem>

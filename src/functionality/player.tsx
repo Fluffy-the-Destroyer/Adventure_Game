@@ -1614,7 +1614,7 @@ export function EquipWeapon(props: {
 	playerCharacter: player;
 	/**The weapon to equip */
 	weaponry: weapon;
-}): JSX.Element {
+}): React.JSX.Element {
 	return <Fragment></Fragment>;
 }
 /**Equips a spell */
@@ -1623,7 +1623,7 @@ export function EquipSpell(props: {
 	playerCharacter: player;
 	/**The spell to equip */
 	magic: spell;
-}): JSX.Element {
+}): React.JSX.Element {
 	return <Fragment></Fragment>;
 }
 /**Equips a helmet */
@@ -1632,7 +1632,7 @@ export function EquipHelmet(props: {
 	playerCharacter: player;
 	/**The helmet to equip */
 	helmet: armourHead;
-}): JSX.Element {
+}): React.JSX.Element {
 	return <Fragment></Fragment>;
 }
 /**Equips a chestplate */
@@ -1641,7 +1641,7 @@ export function EquipChestPlate(props: {
 	playerCharacter: player;
 	/**The chestplate to equip */
 	chestPlate: armourTorso;
-}): JSX.Element {
+}): React.JSX.Element {
 	return <Fragment></Fragment>;
 }
 /**Equips greaves */
@@ -1650,7 +1650,7 @@ export function EquipGreaves(props: {
 	playerCharacter: player;
 	/**The greaves to equip */
 	greaves: armourLegs;
-}): JSX.Element {
+}): React.JSX.Element {
 	return <Fragment></Fragment>;
 }
 /**Equips boots */
@@ -1659,14 +1659,14 @@ export function EquipBoots(props: {
 	playerCharacter: player;
 	/**The boots to equip */
 	boots: armourFeet;
-}): JSX.Element {
+}): React.JSX.Element {
 	return <Fragment></Fragment>;
 }
 /**Displays the player's equipment */
 export function ShowPlayerEquipment(props: {
 	/**The player */
 	playerCharacter: player;
-}): JSX.Element {
+}): React.JSX.Element {
 	const playerWeapons: weapon[] = [];
 	const playerSpells: spell[] = [];
 	let weaponCount: number = props.playerCharacter.getWeaponSlots();
@@ -1736,7 +1736,7 @@ export function ShowPlayerEquipment(props: {
 export function DisplayPlayerStats(props: {
 	/**The player */
 	playerCharacter: player;
-}): JSX.Element {
+}): React.JSX.Element {
 	return (
 		<IonGrid className="ion-text-center ion-no-padding">
 			<IonRow className="player-stats-row">
@@ -1960,7 +1960,7 @@ export function ShowPlayerInventory(props: {
 	playerCharacter: player;
 	/**A function which closes the inventory */
 	closeInventory: () => void;
-}): JSX.Element {
+}): React.JSX.Element {
 	/**True is inventory, false is stats */
 	const [segment, setSegment] = useState<boolean>(true);
 	return (
@@ -2068,57 +2068,18 @@ export function ChoosePlayerAction(props: {
 	itemName1?: string;
 	/**Name of second item enemy is using */
 	itemName2?: string;
-}): JSX.Element {
+}): React.JSX.Element | null {
+	//If no actions, immediately return null
+	if (
+		props.timing != 0 &&
+		!props.playerCharacter.checkPlayerActions(props.timing)
+	) {
+		return null;
+	}
 	/**Tracks currently selected weapons/spells */
 	const [currentChoice, setCurrentChoice] = useState<actionChoice>({
 		actionType: 0
 	});
-	//noActionCheck: {
-	//	let spellCount: number = props.playerCharacter.getSpellSlots();
-	//	let weaponCount: number = props.playerCharacter.getWeaponSlots();
-	//	switch (props.timing) {
-	//		case 0:
-	//			break noActionCheck;
-	//		case 1:
-	//		case 2:
-	//		case 4:
-	//			if (props.playerCharacter.getCurrentBonusActions() <= 0) {
-	//				break;
-	//			}
-	//			for (let i: number = 0; i < spellCount; i++) {
-	//				if (
-	//					props.playerCharacter.getSpell(i).getReal() &&
-	//					props.playerCharacter.getSpell(i).getTiming() != 0
-	//				) {
-	//					break noActionCheck;
-	//				}
-	//			}
-	//			break;
-	//		case 3:
-	//			if (props.playerCharacter.getCurrentBonusActions() <= 0) {
-	//				break;
-	//			}
-	//			for (let i: number = 0; i < weaponCount; i++) {
-	//				if (
-	//					props.playerCharacter.getWeapon(i).getReal() &&
-	//					props.playerCharacter.getWeapon(i).getCounterHits() > 0
-	//				) {
-	//					break noActionCheck;
-	//				}
-	//			}
-	//			for (let i: number = 0; i < spellCount; i++) {
-	//				if (
-	//					props.playerCharacter.getSpell(i).getReal() &&
-	//					props.playerCharacter.getSpell(i).getCounterHits() > 0
-	//				) {
-	//					break noActionCheck;
-	//				}
-	//			}
-	//			break;
-	//	}
-	//	props.submitChoice({actionType: 0});
-	//	return <IonContent>This should never appear</IonContent>;
-	//}
 	/**Handles the toggling of a weapon/spell
 	 * @param action - false is a weapon, true is a spell
 	 * @param slot - the weapon or spell slot toggled
