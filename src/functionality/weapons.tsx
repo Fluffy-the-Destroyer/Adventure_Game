@@ -109,6 +109,9 @@ export class weapon {
 			}
 		}
 	}
+	toString(): string {
+		return this.name ?? "None";
+	}
 	loadFromFile(blueprint: string = "EMPTY"): void {
 		this.real = false;
 		this.key =

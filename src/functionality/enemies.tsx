@@ -2624,4 +2624,7 @@ export class enemy {
 			this.spells[i].resetCooldown();
 		}
 	}
+	toString(): string {
+		return this.name ?? "None";
+	}
 }

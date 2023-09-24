@@ -610,6 +610,9 @@ export class armour {
 			return;
 		}
 	}
+	toString(): string {
+		return this.name ?? "None";
+	}
 }
 /**Displays the armour's inventory panel */
 export function DisplayArmourName(props: {

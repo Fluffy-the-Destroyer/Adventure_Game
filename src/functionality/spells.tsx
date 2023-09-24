@@ -2084,6 +2084,9 @@ export class spell {
 		}
 		return false;
 	}
+	toString(): string {
+		return this.name ?? "None";
+	}
 }
 /**Displays a spell panel in the inventory or in battle */
 export function DisplaySpellName(props: {
