@@ -80,6 +80,7 @@ export function DebugPage(): React.JSX.Element {
 			duration: 3000 * errorMessages.length,
 			cssClass: "error-message ion-text-center"
 		});
+		errorMessages.length = 0;
 	}
 	if (battle) {
 		return (

@@ -1467,14 +1467,13 @@ export class spell {
 		}
 		this.setEffectType();
 		//Ensure max damage values are at least min values
-		let buffer: number | undefined;
 		if ((this.flatDamageMin ?? 0) > (this.flatDamageMax ?? 0)) {
-			buffer = this.flatDamageMin;
+			var buffer: number | undefined = this.flatDamageMin;
 			this.flatDamageMin = this.flatDamageMax;
 			this.flatDamageMax = buffer;
 		}
 		if ((this.flatMagicDamageMin ?? 0) > (this.flatMagicDamageMax ?? 0)) {
-			buffer = this.flatMagicDamageMin;
+			var buffer: number | undefined = this.flatMagicDamageMin;
 			this.flatMagicDamageMin = this.flatMagicDamageMax;
 			this.flatMagicDamageMax = buffer;
 		}
@@ -1482,12 +1481,12 @@ export class spell {
 			(this.flatArmourPiercingDamageMin ?? 0) >
 			(this.flatArmourPiercingDamageMax ?? 0)
 		) {
-			buffer = this.flatArmourPiercingDamageMin;
+			var buffer: number | undefined = this.flatArmourPiercingDamageMin;
 			this.flatArmourPiercingDamageMin = this.flatArmourPiercingDamageMax;
 			this.flatArmourPiercingDamageMax = buffer;
 		}
 		if ((this.flatSelfDamageMin ?? 0) > (this.flatSelfDamageMax ?? 0)) {
-			buffer = this.flatSelfDamageMin;
+			var buffer: number | undefined = this.flatSelfDamageMin;
 			this.flatSelfDamageMin = this.flatSelfDamageMax;
 			this.flatSelfDamageMax = buffer;
 		}
@@ -1495,7 +1494,7 @@ export class spell {
 			(this.flatSelfMagicDamageMin ?? 0) >
 			(this.flatSelfMagicDamageMax ?? 0)
 		) {
-			buffer = this.flatSelfMagicDamageMin;
+			var buffer: number | undefined = this.flatSelfMagicDamageMin;
 			this.flatSelfMagicDamageMin = this.flatSelfMagicDamageMax;
 			this.flatSelfMagicDamageMax = buffer;
 		}
@@ -1503,7 +1502,8 @@ export class spell {
 			(this.flatSelfArmourPiercingDamageMin ?? 0) >
 			(this.flatSelfArmourPiercingDamageMax ?? 0)
 		) {
-			buffer = this.flatSelfArmourPiercingDamageMin;
+			var buffer: number | undefined =
+				this.flatSelfArmourPiercingDamageMin;
 			this.flatSelfArmourPiercingDamageMin =
 				this.flatSelfArmourPiercingDamageMax;
 			this.flatSelfArmourPiercingDamageMax = buffer;
@@ -1843,11 +1843,10 @@ export class spell {
 	}
 	/**Sets the type of spell, used by enemy AI */
 	setSpellType(): void {
-		let workingTotal: number;
 		if (this.flatDamageMin == undefined) {
-			workingTotal = this.flatDamageMax ?? 0;
+			var workingTotal: number = this.flatDamageMax ?? 0;
 		} else {
-			workingTotal =
+			var workingTotal: number =
 				this.flatDamageMax == undefined
 					? this.flatDamageMin
 					: (this.flatDamageMin + this.flatDamageMax) / 2;
@@ -1964,70 +1963,64 @@ export class spell {
 	}
 	/**Checks if the spell has any effect on the caster */
 	checkSelfEffect(): boolean {
-		if (
+		return Boolean(
 			this.propSelfDamage ||
-			this.selfPoison ||
-			this.selfBleed ||
-			this.maxHealthModifier ||
-			this.maxManaModifier ||
-			this.turnManaRegenModifier ||
-			this.turnRegenModifier ||
-			this.battleManaRegenModifier ||
-			this.battleRegenModifier ||
-			this.poisonResistModifier ||
-			this.bleedResistModifier ||
-			this.tempRegenSelf ||
-			this.flatArmourModifier ||
-			this.propArmourModifier ||
-			this.flatMagicArmourModifier ||
-			this.propMagicArmourModifier ||
-			this.flatDamageModifier ||
-			this.propDamageModifier ||
-			this.flatMagicDamageModifier ||
-			this.propMagicDamageModifier ||
-			this.flatArmourPiercingDamageModifier ||
-			this.propArmourPiercingDamageModifier ||
-			this.evadeChanceModifier ||
-			this.counterAttackChanceModifier ||
-			this.bonusActionsModifier
-		) {
-			return true;
-		}
-		return false;
+				this.selfPoison ||
+				this.selfBleed ||
+				this.maxHealthModifier ||
+				this.maxManaModifier ||
+				this.turnManaRegenModifier ||
+				this.turnRegenModifier ||
+				this.battleManaRegenModifier ||
+				this.battleRegenModifier ||
+				this.poisonResistModifier ||
+				this.bleedResistModifier ||
+				this.tempRegenSelf ||
+				this.flatArmourModifier ||
+				this.propArmourModifier ||
+				this.flatMagicArmourModifier ||
+				this.propMagicArmourModifier ||
+				this.flatDamageModifier ||
+				this.propDamageModifier ||
+				this.flatMagicDamageModifier ||
+				this.propMagicDamageModifier ||
+				this.flatArmourPiercingDamageModifier ||
+				this.propArmourPiercingDamageModifier ||
+				this.evadeChanceModifier ||
+				this.counterAttackChanceModifier ||
+				this.bonusActionsModifier
+		);
 	}
 	/**Checks if the spell affects the target */
 	checkTargetEffect(): boolean {
-		if (
+		return Boolean(
 			this.propDamage ||
-			this.manaChangeEnemy ||
-			this.poison ||
-			this.bleed ||
-			this.maxHealthModifierEnemy ||
-			this.maxManaModifierEnemy ||
-			this.turnManaRegenModifierEnemy ||
-			this.battleManaRegenModifierEnemy ||
-			this.poisonResistModifierEnemy ||
-			this.bleedResistModifierEnemy ||
-			this.tempRegen ||
-			this.turnRegenModifierEnemy ||
-			this.battleRegenModifierEnemy ||
-			this.flatArmourModifierEnemy ||
-			this.propArmourModifierEnemy ||
-			this.flatMagicArmourModifierEnemy ||
-			this.propMagicArmourModifierEnemy ||
-			this.flatDamageModifierEnemy ||
-			this.propDamageModifierEnemy ||
-			this.flatMagicDamageModifierEnemy ||
-			this.propMagicDamageModifierEnemy ||
-			this.flatArmourPiercingDamageModifierEnemy ||
-			this.propArmourPiercingDamageModifierEnemy ||
-			this.evadeChanceModifierEnemy ||
-			this.counterAttackChanceModifierEnemy ||
-			this.bonusActionsModifierEnemy
-		) {
-			return true;
-		}
-		return false;
+				this.manaChangeEnemy ||
+				this.poison ||
+				this.bleed ||
+				this.maxHealthModifierEnemy ||
+				this.maxManaModifierEnemy ||
+				this.turnManaRegenModifierEnemy ||
+				this.battleManaRegenModifierEnemy ||
+				this.poisonResistModifierEnemy ||
+				this.bleedResistModifierEnemy ||
+				this.tempRegen ||
+				this.turnRegenModifierEnemy ||
+				this.battleRegenModifierEnemy ||
+				this.flatArmourModifierEnemy ||
+				this.propArmourModifierEnemy ||
+				this.flatMagicArmourModifierEnemy ||
+				this.propMagicArmourModifierEnemy ||
+				this.flatDamageModifierEnemy ||
+				this.propDamageModifierEnemy ||
+				this.flatMagicDamageModifierEnemy ||
+				this.propMagicDamageModifierEnemy ||
+				this.flatArmourPiercingDamageModifierEnemy ||
+				this.propArmourPiercingDamageModifierEnemy ||
+				this.evadeChanceModifierEnemy ||
+				this.counterAttackChanceModifierEnemy ||
+				this.bonusActionsModifierEnemy
+		);
 	}
 	/**Sets effectType */
 	setEffectType(): void {
@@ -2059,30 +2052,24 @@ export class spell {
 		}
 	}
 	checkSelfDamage(): boolean {
-		if (
+		return Boolean(
 			this.flatSelfDamageMin ||
-			this.flatSelfDamageMax ||
-			this.flatSelfMagicDamageMin ||
-			this.flatSelfMagicDamageMax ||
-			this.flatSelfArmourPiercingDamageMin ||
-			this.flatSelfArmourPiercingDamageMax
-		) {
-			return true;
-		}
-		return false;
+				this.flatSelfDamageMax ||
+				this.flatSelfMagicDamageMin ||
+				this.flatSelfMagicDamageMax ||
+				this.flatSelfArmourPiercingDamageMin ||
+				this.flatSelfArmourPiercingDamageMax
+		);
 	}
 	checkTargetDamage(): boolean {
-		if (
+		return Boolean(
 			this.flatDamageMin ||
-			this.flatDamageMax ||
-			this.flatMagicDamageMin ||
-			this.flatMagicDamageMax ||
-			this.flatArmourPiercingDamageMin ||
-			this.flatArmourPiercingDamageMax
-		) {
-			return true;
-		}
-		return false;
+				this.flatDamageMax ||
+				this.flatMagicDamageMin ||
+				this.flatMagicDamageMax ||
+				this.flatArmourPiercingDamageMin ||
+				this.flatArmourPiercingDamageMax
+		);
 	}
 	toString(): string {
 		return this.name ?? "None";
@@ -2208,7 +2195,7 @@ export function DisplaySpellStats(props: {
 	/**The spell */
 	magic: spell;
 }): React.JSX.Element {
-	let healingMin: number = 0,
+	var healingMin: number = 0,
 		healingMax: number = 0,
 		healingSelfMin: number = 0,
 		healingSelfMax: number = 0;

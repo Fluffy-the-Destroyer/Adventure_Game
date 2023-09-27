@@ -27,21 +27,35 @@ export function weaponDeclare(
 
 /**Weapon attack */
 export function WeaponAttack(props: {
+	/**First weapon */
 	weapon1: weapon;
+	/**Second weapon (if present) */
 	weapon2?: weapon;
+	/**Attacker */
 	attacker: player;
+	/**Target */
 	target: enemy;
+	/**Is it a counter attack */
 	counter?: boolean;
+	/**The battle log */
 	battleLog: string[];
 }): React.JSX.Element;
+/**Weapon attack */
 export function WeaponAttack(props: {
+	/**First weapon */
 	weapon1: weapon;
+	/**Second weapon (if present) */
 	weapon2?: weapon;
+	/**Attacker */
 	attacker: enemy;
+	/**Target */
 	target: player;
+	/**Is it a counter attack */
 	counter?: boolean;
+	/**The battle log */
 	battleLog: string[];
 }): React.JSX.Element;
+/**Weapon attack */
 export function WeaponAttack(props: {
 	/**First weapon */
 	weapon1: weapon;
@@ -91,9 +105,9 @@ export function WeaponAttack(props: {
 	}
 	/**An array of divs displaying effects on the attacker */
 	const attackerEffects: React.JSX.Element[] = [];
-	let outputText: string;
+	var outputText: string;
 	/**For holding damage values */
-	let damageBuffer: number;
+	var damageBuffer: number;
 	if (
 		props.weapon1.getEffectType()[1] == 1 ||
 		props.weapon1.getEffectType()[1] == 2 ||
@@ -346,7 +360,7 @@ export function WeaponAttack(props: {
 			Target effects:
 		</div>
 	];
-	let hits1: number, hits2: number | undefined;
+	var hits1: number, hits2: number | undefined;
 	if (props.counter) {
 		hits1 = props.weapon1.getCounterHits();
 		hits2 = props.weapon2?.getCounterHits();
@@ -370,8 +384,8 @@ export function WeaponAttack(props: {
 			targetEffects.push(
 				//@ts-expect-error
 				<WeaponHit
-					key={`${props.weapon2?.getKey()}-${i}`}
-					weaponry={props.weapon2}
+					key={`${props.weapon2!.getKey()}-${i}`}
+					weaponry={props.weapon2!}
 					attacker={props.attacker}
 					target={props.target}
 					battleLog={props.battleLog}
@@ -389,17 +403,27 @@ export function WeaponAttack(props: {
 
 /**Weapon hit */
 export function WeaponHit(props: {
+	/**The weapon */
 	weaponry: weapon;
+	/**The attacker */
 	attacker: player;
+	/**The target */
 	target: enemy;
+	/**The battle log */
 	battleLog: string[];
 }): React.JSX.Element;
+/**Weapon hit */
 export function WeaponHit(props: {
+	/**The weapon */
 	weaponry: weapon;
+	/**The attacker */
 	attacker: enemy;
+	/**The target */
 	target: player;
+	/**The battle log */
 	battleLog: string[];
 }): React.JSX.Element;
+/**Weapon hit */
 export function WeaponHit(props: {
 	/**The weapon */
 	weaponry: weapon;
@@ -427,7 +451,7 @@ export function WeaponHit(props: {
 			Hit!
 		</div>
 	];
-	let outputText: string;
+	var outputText: string;
 	props.target.propDamage(props.weaponry.getPropDamage());
 	if (props.weaponry.getPropDamage() > 0) {
 		outputText = `${-Math.round(
@@ -528,19 +552,31 @@ export function spellDeclare(magic: spell, caster: player | enemy): void {
 
 /**Spell cast */
 export function SpellCast(props: {
+	/**The spell */
 	magic: spell;
+	/**The caster */
 	caster: player;
+	/**The target */
 	target: enemy;
+	/**Spell timing, 0 is sorcery speed, 3 is counter attack, anything else is a response */
 	timing?: 0 | 1 | 2 | 3 | 4;
+	/**The battle log */
 	battleLog: string[];
 }): React.JSX.Element;
+/**Spell cast */
 export function SpellCast(props: {
+	/**The spell */
 	magic: spell;
+	/**The caster */
 	caster?: enemy;
+	/**The target */
 	target: player;
+	/**Spell timing, 0 is sorcery speed, 3 is counter attack, anything else is a response */
 	timing?: 0 | 1 | 2 | 3 | 4;
+	/**The battle log */
 	battleLog: string[];
 }): React.JSX.Element;
+/**Spell cast */
 export function SpellCast(props: {
 	/**The spell */
 	magic: spell;
@@ -554,7 +590,7 @@ export function SpellCast(props: {
 	battleLog: string[];
 }): React.JSX.Element {
 	const attackerEffects: React.JSX.Element[] = [];
-	let outputText: string;
+	var outputText: string;
 	if (props.caster != undefined) {
 		if (
 			props.magic.getEffectType()[1] == 1 ||
@@ -1013,7 +1049,7 @@ export function SpellCast(props: {
 			Target effects:
 		</div>
 	];
-	let hits: number;
+	var hits: number;
 	switch (props.timing) {
 		case undefined:
 		case 0:
@@ -1047,17 +1083,27 @@ export function SpellCast(props: {
 
 /**Spell hit */
 function SpellHit(props: {
+	/**The spell */
 	magic: spell;
+	/**The caster */
 	caster: player;
+	/**The target */
 	target: enemy;
+	/**The battle log */
 	battleLog: string[];
 }): React.JSX.Element;
+/**Spell hit */
 function SpellHit(props: {
+	/**The spell */
 	magic: spell;
+	/**The caster */
 	caster?: enemy;
+	/**The target */
 	target: player;
+	/**The battle log */
 	battleLog: string[];
 }): React.JSX.Element;
+/**Spell hit */
 function SpellHit(props: {
 	/**The spell */
 	magic: spell;
@@ -1068,7 +1114,7 @@ function SpellHit(props: {
 	/**The battle log */
 	battleLog: string[];
 }): React.JSX.Element {
-	let outputText: string = "";
+	var outputText: string = "";
 	const hitEffects: React.JSX.Element[] = [];
 	if (
 		!props.magic.getNoEvade() &&

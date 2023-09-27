@@ -206,7 +206,7 @@ export class enemy {
 			m = Math.max(0, m - this.flatMagicArmour);
 			m = Math.trunc(m * (1 + this.propMagicArmour));
 		}
-		let totDamage: number = p + m + a;
+		var totDamage: number = p + m + a;
 		if (totDamage > 0) {
 			this.health -= totDamage;
 			return totDamage;
@@ -517,11 +517,8 @@ export class enemy {
 		if (this.tempRegen > 0) {
 			this.tempRegen--;
 		}
-		{
-			let length: number = this.spells.length;
-			for (let i: number = 0; i < length; i++) {
-				this.spells[i].decCooldown();
-			}
+		for (let i: number = 0; i < this.spells.length; i++) {
+			this.spells[i].decCooldown();
 		}
 		if (this.bonusActions < 0) {
 			this.currentBonusActions = 0;
@@ -538,7 +535,6 @@ export class enemy {
 		} else {
 			this.real = blueprint.real;
 			if (this.real) {
-				let counter: number;
 				this.name = blueprint.name;
 				this.introduction = blueprint.introduction;
 				this.health = blueprint.health;
@@ -551,12 +547,10 @@ export class enemy {
 				this.poisonResist = blueprint.poisonResist;
 				this.bleed = blueprint.bleed;
 				this.bleedResist = blueprint.bleedResist;
-				counter = blueprint.weapons.length;
-				for (let i: number = 0; i < counter; i++) {
+				for (let i: number = 0; i < blueprint.weapons.length; i++) {
 					this.weapons.push(new weapon(blueprint.weapons[i]));
 				}
-				counter = blueprint.spells.length;
-				for (let i: number = 0; i < counter; i++) {
+				for (let i: number = 0; i < blueprint.spells.length; i++) {
 					this.spells.push(new spell(blueprint.spells[i]));
 				}
 				this.initialSpell = blueprint.initialSpell;
@@ -582,12 +576,18 @@ export class enemy {
 				this.bonusActions = blueprint.bonusActions;
 				this.currentBonusActions = blueprint.currentBonusActions;
 				this.AIType = blueprint.AIType;
-				counter = blueprint.noCounterWeapons.length;
-				for (let i: number = 0; i < counter; i++) {
+				for (
+					let i: number = 0;
+					i < blueprint.noCounterWeapons.length;
+					i++
+				) {
 					this.noCounterWeapons.push(blueprint.noCounterWeapons[i]);
 				}
-				counter = blueprint.noCounterSpells.length;
-				for (let i: number = 0; i < counter; i++) {
+				for (
+					let i: number = 0;
+					i < blueprint.noCounterSpells.length;
+					i++
+				) {
 					this.noCounterSpells.push(blueprint.noCounterSpells[i]);
 				}
 				this.initiative = blueprint.initiative;
@@ -1027,17 +1027,15 @@ export class enemy {
 		itemName1: string = "",
 		itemName2: string = ""
 	): actionChoice {
-		let selectedType: 0 | 1 | 2 | 3 = 0,
-			selection1: number | undefined = 0,
-			selection2: number | undefined = 0; //For holding slot selection
-		let selection: actionChoice;
+		var slot: number | undefined = 0; //For holding slot selection
+		var selection: actionChoice;
 		if (firstTurn && timing == 0) {
 			//If an initial spell is set, cast if possible
 			if (this.initialSpell >= 0) {
-				selection1 = this.initialSpell;
+				slot = this.initialSpell;
 				//Check if can cast initial spell
-				if (this.check(true, selection1, 0, true)) {
-					return {actionType: 2, slot1: selection1};
+				if (this.check(true, slot, 0, true)) {
+					return {actionType: 2, slot1: slot};
 				}
 			}
 		}
@@ -1050,9 +1048,9 @@ export class enemy {
 					case 0:
 						//Make healing check
 						if (this.healingCheck()) {
-							selection1 = this.chooseSpell(2);
-							if (selection1 >= 0) {
-								return {actionType: 2, slot1: selection1};
+							slot = this.chooseSpell(2);
+							if (slot >= 0) {
+								return {actionType: 2, slot1: slot};
 							}
 							//Make attack check
 							if (this.attackCheck()) {
@@ -1065,17 +1063,17 @@ export class enemy {
 										return selection;
 								}
 								//Cast utility spell
-								selection1 = this.chooseSpell(3);
-								if (selection1 >= 0) {
-									return {actionType: 2, slot1: selection1};
+								slot = this.chooseSpell(3);
+								if (slot >= 0) {
+									return {actionType: 2, slot1: slot};
 								}
 								//No survivable actions found, will have to suicide
 								return this.chooseSuicide();
 							}
 							//Cast utility spell
-							selection1 = this.chooseSpell(3);
-							if (selection1 >= 0) {
-								return {actionType: 2, slot1: selection1};
+							slot = this.chooseSpell(3);
+							if (slot >= 0) {
+								return {actionType: 2, slot1: slot};
 							}
 							//Try attack
 							selection = this.chooseAttack();
@@ -1101,40 +1099,40 @@ export class enemy {
 							//Couldn't find attack, make another healing check
 							if (this.healingCheck()) {
 								//Look for a healing spell
-								selection1 = this.chooseSpell(2);
-								if (selection1 >= 0) {
-									return {actionType: 2, slot1: selection1};
+								slot = this.chooseSpell(2);
+								if (slot >= 0) {
+									return {actionType: 2, slot1: slot};
 								}
 								//Look for a utility spell
-								selection1 = this.chooseSpell(3);
-								if (selection1 >= 0) {
-									return {actionType: 2, slot1: selection1};
+								slot = this.chooseSpell(3);
+								if (slot >= 0) {
+									return {actionType: 2, slot1: slot};
 								}
 								//Suicide
 								return this.chooseSuicide();
 							}
 							//Look for utility, then healing
-							selection1 = this.chooseSpell(3);
-							if (selection1 >= 0) {
-								return {actionType: 2, slot1: selection1};
+							slot = this.chooseSpell(3);
+							if (slot >= 0) {
+								return {actionType: 2, slot1: slot};
 							}
-							selection1 = this.chooseSpell(2);
-							if (selection1 >= 0) {
-								return {actionType: 2, slot1: selection1};
+							slot = this.chooseSpell(2);
+							if (slot >= 0) {
+								return {actionType: 2, slot1: slot};
 							}
 							//Suicide
 							return this.chooseSuicide();
 						}
 						//Cast utility spell
-						selection1 = this.chooseSpell(3);
-						if (selection1 >= 0) {
-							return {actionType: 2, slot1: selection1};
+						slot = this.chooseSpell(3);
+						if (slot >= 0) {
+							return {actionType: 2, slot1: slot};
 						}
 						//Healing check
 						if (this.healingCheck()) {
-							selection1 = this.chooseSpell(2);
-							if (selection1 >= 0) {
-								return {actionType: 2, slot1: selection1};
+							slot = this.chooseSpell(2);
+							if (slot >= 0) {
+								return {actionType: 2, slot1: slot};
 							}
 							selection = this.chooseAttack();
 							switch (selection.actionType) {
@@ -1157,9 +1155,9 @@ export class enemy {
 								return selection;
 						}
 						//Heal
-						selection1 = this.chooseSpell(2);
-						if (selection1 >= 0) {
-							return {actionType: 2, slot1: selection1};
+						slot = this.chooseSpell(2);
+						if (slot >= 0) {
+							return {actionType: 2, slot1: slot};
 						}
 						//Suicide
 						return this.chooseSuicide();
@@ -1174,88 +1172,57 @@ export class enemy {
 							(timing == 4 && this.checkCounter(false, itemName2))
 						) {
 							//Look for a counter spell
-							selection1 =
-								this.chooseWeaponCounterSpell(firstTurn);
-							if (selection1 >= 0) {
+							slot = this.chooseWeaponCounterSpell(firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 						}
 						//Healing check
 						if (this.healingCheck()) {
-							selection1 = this.chooseSpell(
-								2,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(2, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 							//Make attack check
 							if (this.attackCheck()) {
-								selection1 = this.chooseSpell(
-									1,
-									1,
-									false,
-									firstTurn
-								);
-								if (selection1 >= 0) {
+								slot = this.chooseSpell(1, 1, false, firstTurn);
+								if (slot >= 0) {
 									this.currentBonusActions--;
-									return {actionType: 2, slot1: selection1};
+									return {actionType: 2, slot1: slot};
 								}
-								selection1 = this.chooseSpell(
-									3,
-									1,
-									false,
-									firstTurn
-								);
-								if (selection1 >= 0) {
+								slot = this.chooseSpell(3, 1, false, firstTurn);
+								if (slot >= 0) {
 									this.currentBonusActions--;
-									return {actionType: 2, slot1: selection1};
+									return {actionType: 2, slot1: slot};
 								}
 								return {actionType: 0};
 							}
-							selection1 = this.chooseSpell(
-								3,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(3, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
-							selection1 = this.chooseSpell(
-								1,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(1, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 							return {actionType: 0};
 						}
 						//Attack check
 						if (this.attackCheck()) {
-							selection1 = this.chooseSpell(
-								1,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(1, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 						}
-						selection1 = this.chooseSpell(3, 1, false, firstTurn);
-						if (selection1 >= 0) {
+						slot = this.chooseSpell(3, 1, false, firstTurn);
+						if (slot >= 0) {
 							this.currentBonusActions--;
-							return {actionType: 2, slot1: selection1};
+							return {actionType: 2, slot1: slot};
 						}
 						return {actionType: 0};
 					case 2: //Responding to spell
@@ -1264,88 +1231,57 @@ export class enemy {
 						}
 						//Check if can be countered
 						if (this.checkCounter(true, itemName1)) {
-							selection1 =
-								this.chooseSpellCounterSpell(firstTurn);
-							if (selection1 >= 0) {
+							slot = this.chooseSpellCounterSpell(firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 						}
 						//Healing check
 						if (this.healingCheck()) {
-							selection1 = this.chooseSpell(
-								2,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(2, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 							//Make attack check
 							if (this.attackCheck()) {
-								selection1 = this.chooseSpell(
-									1,
-									1,
-									false,
-									firstTurn
-								);
-								if (selection1 >= 0) {
+								slot = this.chooseSpell(1, 1, false, firstTurn);
+								if (slot >= 0) {
 									this.currentBonusActions--;
-									return {actionType: 2, slot1: selection1};
+									return {actionType: 2, slot1: slot};
 								}
-								selection1 = this.chooseSpell(
-									3,
-									1,
-									false,
-									firstTurn
-								);
-								if (selection1 >= 0) {
+								slot = this.chooseSpell(3, 1, false, firstTurn);
+								if (slot >= 0) {
 									this.currentBonusActions--;
-									return {actionType: 2, slot1: selection1};
+									return {actionType: 2, slot1: slot};
 								}
 								return {actionType: 0};
 							}
-							selection1 = this.chooseSpell(
-								3,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(3, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
-							selection1 = this.chooseSpell(
-								1,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(1, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 							return {actionType: 0};
 						}
 						//Attack check
 						if (this.attackCheck()) {
-							selection1 = this.chooseSpell(
-								1,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(1, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 						}
-						selection1 = this.chooseSpell(3, 1, false, firstTurn);
-						if (selection1 >= 0) {
+						slot = this.chooseSpell(3, 1, false, firstTurn);
+						if (slot >= 0) {
 							this.currentBonusActions--;
-							return {actionType: 2, slot1: selection1};
+							return {actionType: 2, slot1: slot};
 						}
 						return {actionType: 0};
 					case 3: //Counter attack
@@ -1353,15 +1289,10 @@ export class enemy {
 							return {actionType: 0};
 						}
 						if (this.healingCheck()) {
-							selection1 = this.chooseSpell(
-								2,
-								3,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(2, 3, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 						}
 						if (this.attackCheck()) {
@@ -1374,22 +1305,17 @@ export class enemy {
 									this.currentBonusActions--;
 									return selection;
 							}
-							selection1 = this.chooseSpell(
-								3,
-								3,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(3, 3, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 							return {actionType: 0};
 						}
-						selection1 = this.chooseSpell(3, 3, false, firstTurn);
-						if (selection1 >= 0) {
+						slot = this.chooseSpell(3, 3, false, firstTurn);
+						if (slot >= 0) {
 							this.currentBonusActions--;
-							return {actionType: 2, slot1: selection1};
+							return {actionType: 2, slot1: slot};
 						}
 						selection = this.chooseAttack(3, false, firstTurn);
 						switch (selection.actionType) {
@@ -1408,27 +1334,27 @@ export class enemy {
 				switch (timing) {
 					case 0:
 						if (this.healingCheck()) {
-							selection1 = this.chooseSpell(2);
-							if (selection1 >= 0) {
-								return {actionType: 2, slot1: selection1};
+							slot = this.chooseSpell(2);
+							if (slot >= 0) {
+								return {actionType: 2, slot1: slot};
 							}
 							if (this.attackCheck()) {
-								selection1 = this.chooseSpell(1);
-								if (selection1 >= 0) {
-									return {actionType: 2, slot1: selection1};
+								slot = this.chooseSpell(1);
+								if (slot >= 0) {
+									return {actionType: 2, slot1: slot};
 								}
-								selection1 = this.chooseSpell(3);
-								if (selection1 >= 0) {
-									return {actionType: 2, slot1: selection1};
+								slot = this.chooseSpell(3);
+								if (slot >= 0) {
+									return {actionType: 2, slot1: slot};
 								}
 							} else {
-								selection1 = this.chooseSpell(3);
-								if (selection1 >= 0) {
-									return {actionType: 2, slot1: selection1};
+								slot = this.chooseSpell(3);
+								if (slot >= 0) {
+									return {actionType: 2, slot1: slot};
 								}
-								selection1 = this.chooseSpell(1);
-								if (selection1 >= 0) {
-									return {actionType: 2, slot1: selection1};
+								slot = this.chooseSpell(1);
+								if (slot >= 0) {
+									return {actionType: 2, slot1: slot};
 								}
 							}
 							selection = this.chooseWeapon();
@@ -1441,27 +1367,27 @@ export class enemy {
 							return this.chooseSuicide();
 						}
 						if (this.attackCheck()) {
-							selection1 = this.chooseSpell(1);
-							if (selection1 >= 0) {
-								return {actionType: 2, slot1: selection1};
+							slot = this.chooseSpell(1);
+							if (slot >= 0) {
+								return {actionType: 2, slot1: slot};
 							}
 							if (this.healingCheck()) {
-								selection1 = this.chooseSpell(2);
-								if (selection1 >= 0) {
-									return {actionType: 2, slot1: selection1};
+								slot = this.chooseSpell(2);
+								if (slot >= 0) {
+									return {actionType: 2, slot1: slot};
 								}
-								selection1 = this.chooseSpell(3);
-								if (selection1 >= 0) {
-									return {actionType: 2, slot1: selection1};
+								slot = this.chooseSpell(3);
+								if (slot >= 0) {
+									return {actionType: 2, slot1: slot};
 								}
 							} else {
-								selection1 = this.chooseSpell(3);
-								if (selection1 >= 0) {
-									return {actionType: 2, slot1: selection1};
+								slot = this.chooseSpell(3);
+								if (slot >= 0) {
+									return {actionType: 2, slot1: slot};
 								}
-								selection1 = this.chooseSpell(2);
-								if (selection1 >= 0) {
-									return {actionType: 2, slot1: selection1};
+								slot = this.chooseSpell(2);
+								if (slot >= 0) {
+									return {actionType: 2, slot1: slot};
 								}
 							}
 							selection = this.chooseWeapon();
@@ -1473,27 +1399,27 @@ export class enemy {
 							}
 							return this.chooseSuicide();
 						}
-						selection1 = this.chooseSpell(3);
-						if (selection1 >= 0) {
-							return {actionType: 2, slot1: selection1};
+						slot = this.chooseSpell(3);
+						if (slot >= 0) {
+							return {actionType: 2, slot1: slot};
 						}
 						if (this.healingCheck()) {
-							selection1 = this.chooseSpell(2);
-							if (selection1 >= 0) {
-								return {actionType: 2, slot1: selection1};
+							slot = this.chooseSpell(2);
+							if (slot >= 0) {
+								return {actionType: 2, slot1: slot};
 							}
-							selection1 = this.chooseSpell(1);
-							if (selection1 >= 0) {
-								return {actionType: 2, slot1: selection1};
+							slot = this.chooseSpell(1);
+							if (slot >= 0) {
+								return {actionType: 2, slot1: slot};
 							}
 						} else {
-							selection1 = this.chooseSpell(1);
-							if (selection1 >= 0) {
-								return {actionType: 2, slot1: selection1};
+							slot = this.chooseSpell(1);
+							if (slot >= 0) {
+								return {actionType: 2, slot1: slot};
 							}
-							selection1 = this.chooseSpell(2);
-							if (selection1 >= 0) {
-								return {actionType: 2, slot1: selection1};
+							slot = this.chooseSpell(2);
+							if (slot >= 0) {
+								return {actionType: 2, slot1: slot};
 							}
 						}
 						selection = this.chooseWeapon();
@@ -1513,88 +1439,57 @@ export class enemy {
 							this.checkCounter(false, itemName1) ||
 							(timing == 4 && this.checkCounter(false, itemName2))
 						) {
-							selection1 =
-								this.chooseWeaponCounterSpell(firstTurn);
-							if (selection1 >= 0) {
+							slot = this.chooseWeaponCounterSpell(firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 						}
 						//Healing check
 						if (this.healingCheck()) {
-							selection1 = this.chooseSpell(
-								2,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(2, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 							//Make attack check
 							if (this.attackCheck()) {
-								selection1 = this.chooseSpell(
-									1,
-									1,
-									false,
-									firstTurn
-								);
-								if (selection1 >= 0) {
+								slot = this.chooseSpell(1, 1, false, firstTurn);
+								if (slot >= 0) {
 									this.currentBonusActions--;
-									return {actionType: 2, slot1: selection1};
+									return {actionType: 2, slot1: slot};
 								}
-								selection1 = this.chooseSpell(
-									3,
-									1,
-									false,
-									firstTurn
-								);
-								if (selection1 >= 0) {
+								slot = this.chooseSpell(3, 1, false, firstTurn);
+								if (slot >= 0) {
 									this.currentBonusActions--;
-									return {actionType: 2, slot1: selection1};
+									return {actionType: 2, slot1: slot};
 								}
 								return {actionType: 0};
 							}
-							selection1 = this.chooseSpell(
-								3,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(3, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
-							selection1 = this.chooseSpell(
-								1,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(1, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 							return {actionType: 0};
 						}
 						//Attack check
 						if (this.attackCheck()) {
-							selection1 = this.chooseSpell(
-								1,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(1, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 						}
-						selection1 = this.chooseSpell(3, 1, false, firstTurn);
-						if (selection1 >= 0) {
+						slot = this.chooseSpell(3, 1, false, firstTurn);
+						if (slot >= 0) {
 							this.currentBonusActions--;
-							return {actionType: 2, slot1: selection1};
+							return {actionType: 2, slot1: slot};
 						}
 						return {actionType: 0};
 					case 2: //Responding to spell
@@ -1602,87 +1497,56 @@ export class enemy {
 							return {actionType: 0};
 						}
 						if (this.checkCounter(true, itemName1)) {
-							selection1 =
-								this.chooseSpellCounterSpell(firstTurn);
-							if (selection1 >= 0) {
+							slot = this.chooseSpellCounterSpell(firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 						}
 						//Healing check
 						if (this.healingCheck()) {
-							selection1 = this.chooseSpell(
-								2,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(2, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 							if (this.attackCheck()) {
-								selection1 = this.chooseSpell(
-									1,
-									1,
-									false,
-									firstTurn
-								);
-								if (selection1 >= 0) {
+								slot = this.chooseSpell(1, 1, false, firstTurn);
+								if (slot >= 0) {
 									this.currentBonusActions--;
-									return {actionType: 2, slot1: selection1};
+									return {actionType: 2, slot1: slot};
 								}
-								selection1 = this.chooseSpell(
-									3,
-									1,
-									false,
-									firstTurn
-								);
-								if (selection1 >= 0) {
+								slot = this.chooseSpell(3, 1, false, firstTurn);
+								if (slot >= 0) {
 									this.currentBonusActions--;
-									return {actionType: 2, slot1: selection1};
+									return {actionType: 2, slot1: slot};
 								}
 								return {actionType: 0};
 							}
-							selection1 = this.chooseSpell(
-								3,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(3, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
-							selection1 = this.chooseSpell(
-								1,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(1, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 							return {actionType: 0};
 						}
 						//Attack check
 						if (this.attackCheck()) {
-							selection1 = this.chooseSpell(
-								1,
-								1,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(1, 1, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 						}
-						selection1 = this.chooseSpell(3, 1, false, firstTurn);
-						if (selection1 >= 0) {
+						slot = this.chooseSpell(3, 1, false, firstTurn);
+						if (slot >= 0) {
 							this.currentBonusActions--;
-							return {actionType: 2, slot1: selection1};
+							return {actionType: 2, slot1: slot};
 						}
 						return {actionType: 0};
 					case 3: //Counter attack
@@ -1690,58 +1554,33 @@ export class enemy {
 							return {actionType: 0};
 						}
 						if (this.healingCheck()) {
-							selection1 = this.chooseSpell(
-								2,
-								3,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(2, 3, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 						}
 						if (this.attackCheck()) {
-							selection1 = this.chooseSpell(
-								1,
-								3,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(1, 3, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
-							selection1 = this.chooseSpell(
-								3,
-								3,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(3, 3, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 						} else {
-							selection1 = this.chooseSpell(
-								3,
-								3,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(3, 3, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
-							selection1 = this.chooseSpell(
-								1,
-								3,
-								false,
-								firstTurn
-							);
-							if (selection1 >= 0) {
+							slot = this.chooseSpell(1, 3, false, firstTurn);
+							if (slot >= 0) {
 								this.currentBonusActions--;
-								return {actionType: 2, slot1: selection1};
+								return {actionType: 2, slot1: slot};
 							}
 						}
 						selection = this.chooseWeapon(3, false, firstTurn);
@@ -1801,7 +1640,7 @@ export class enemy {
 		if (timing != 0 && this.currentBonusActions <= 0) {
 			return false;
 		}
-		let currentHealth = this.health,
+		const currentHealth = this.health,
 			currentMana = this.mana,
 			currentConstRegen = this.turnRegen,
 			currentTurnManaRegen = this.turnManaRegen,
@@ -2080,13 +1919,12 @@ export class enemy {
 		kamikaze: boolean = false,
 		firstTurn: boolean = false
 	): number {
-		let spellSlots: number = this.spells.length;
-		if (spellSlots == 0) {
+		if (this.spells.length == 0) {
 			return -1;
 		}
 		/**Holds slot numbers of spells which could be chosen */
-		let possibleSpells: number[] = [];
-		for (let i: number = 0; i < spellSlots; i++) {
+		const possibleSpells: number[] = [];
+		for (let i: number = 0; i < this.spells.length; i++) {
 			if (
 				this.spells[i].checkSpellType(type) &&
 				this.check(true, i, timing, kamikaze, firstTurn)
@@ -2110,12 +1948,11 @@ export class enemy {
 		kamikaze: boolean = false,
 		firstTurn: boolean = false
 	): actionChoice {
-		let weaponSlots: number = this.weapons.length;
-		if (weaponSlots == 0) {
+		if (this.weapons.length == 0) {
 			return {actionType: 0};
 		}
-		let possibleWeapons: number[] = [];
-		for (let i: number = 0; i < weaponSlots; i++) {
+		const possibleWeapons: number[] = [];
+		for (let i: number = 0; i < this.weapons.length; i++) {
 			if (this.check(false, i, timing, kamikaze, firstTurn)) {
 				possibleWeapons.push(i);
 				if (!this.weapons[i].getDualWield()) {
@@ -2126,14 +1963,14 @@ export class enemy {
 		if (possibleWeapons.length == 0) {
 			return {actionType: 0};
 		}
-		let selection1: number =
+		const selection: number =
 			possibleWeapons[randomInt(0, possibleWeapons.length)];
-		if (this.weapons[selection1].getDualWield()) {
+		if (this.weapons[selection].getDualWield()) {
 			possibleWeapons.length = 0;
-			for (let i: number = 0; i < weaponSlots; i++) {
+			for (let i: number = 0; i < this.weapons.length; i++) {
 				if (
 					this.checkDualWield(
-						selection1,
+						selection,
 						i,
 						timing,
 						kamikaze,
@@ -2144,27 +1981,26 @@ export class enemy {
 				}
 			}
 			if (possibleWeapons.length == 0) {
-				return {actionType: 1, slot1: selection1};
+				return {actionType: 1, slot1: selection};
 			}
 			return {
 				actionType: 3,
-				slot1: selection1,
+				slot1: selection,
 				slot2: possibleWeapons[randomInt(0, possibleWeapons.length)]
 			};
 		}
-		return {actionType: 1, slot1: selection1};
+		return {actionType: 1, slot1: selection};
 	}
 	/**Chooses a spell to counter a weapon
 	 * @param firstTurn - is it the enemy's first turn
 	 * @returns slot of the chosen spell, -1 if no spell chosen
 	 */
 	chooseWeaponCounterSpell(firstTurn: boolean = false): number {
-		let spellSlots: number = this.spells.length;
-		if (spellSlots == 0) {
+		if (this.spells.length == 0) {
 			return -1;
 		}
-		let possibleSpells: number[] = [];
-		for (let i: number = 0; i < spellSlots; i++) {
+		const possibleSpells: number[] = [];
+		for (let i: number = 0; i < this.spells.length; i++) {
 			if (
 				(this.spells[i].getCounterSpell() == 2 ||
 					this.spells[i].getCounterSpell() == 3) &&
@@ -2183,12 +2019,11 @@ export class enemy {
 	 * @returns slot of the chosen spell, -1 if none chosen
 	 */
 	chooseSpellCounterSpell(firstTurn: boolean = false): number {
-		let spellSlots: number = this.spells.length;
-		if (spellSlots == 0) {
+		if (this.spells.length == 0) {
 			return -1;
 		}
-		let possibleSpells: number[] = [];
-		for (let i: number = 0; i < spellSlots; i++) {
+		const possibleSpells: number[] = [];
+		for (let i: number = 0; i < this.spells.length; i++) {
 			if (
 				(this.spells[i].getCounterSpell() == 1 ||
 					this.spells[i].getCounterSpell() == 3) &&
@@ -2213,11 +2048,8 @@ export class enemy {
 		kamikaze: boolean = false,
 		firstTurn: boolean = false
 	): actionChoice {
-		let weaponSlots: number = this.weapons.length,
-			spellSlots: number = this.spells.length,
-			slot: number;
-		let possibleAttacks: number[] = [];
-		for (let i: number = 0; i < weaponSlots; i++) {
+		const possibleAttacks: number[] = [];
+		for (let i: number = 0; i < this.weapons.length; i++) {
 			if (this.check(false, i, timing, kamikaze, firstTurn)) {
 				possibleAttacks.push(i + 1);
 				if (!this.weapons[i].getDualWield()) {
@@ -2225,7 +2057,7 @@ export class enemy {
 				}
 			}
 		}
-		for (let i: number = 0; i < spellSlots; i++) {
+		for (let i: number = 0; i < this.spells.length; i++) {
 			if (
 				this.spells[i].checkSpellType(1) &&
 				this.check(true, i, timing, kamikaze, firstTurn)
@@ -2237,13 +2069,14 @@ export class enemy {
 		if (possibleAttacks.length == 0) {
 			return {actionType: 0};
 		}
-		slot = possibleAttacks[randomInt(0, possibleAttacks.length)];
+		var slot: number =
+			possibleAttacks[randomInt(0, possibleAttacks.length)];
 		//Weapon
 		if (slot > 0) {
 			slot--;
 			if (this.weapons[slot].getDualWield()) {
 				possibleAttacks.length = 0;
-				for (let i: number = 0; i < weaponSlots; i++) {
+				for (let i: number = 0; i < this.weapons.length; i++) {
 					if (
 						this.checkDualWield(
 							slot,
@@ -2274,10 +2107,8 @@ export class enemy {
 	 *@returns an object {actionType, slot1?, slot2?} actionType 0 is nothing, 1 is a weapon, 2 is a spell, 3 is two weapons
 	 */
 	chooseSuicide(): actionChoice {
-		let selectedType: 0 | 1 | 2 | 3,
-			selection1: number | undefined,
-			selection2: number | undefined;
-		let selection: actionChoice;
+		var slot: number | undefined;
+		var selection: actionChoice;
 		switch (this.AIType) {
 			case 1:
 			case 2:
@@ -2290,21 +2121,21 @@ export class enemy {
 					case 2:
 						return selection;
 				}
-				selection1 = this.chooseSpell(3, 0, true);
-				if (selection1 >= 0) {
-					return {actionType: 2, slot1: selection1};
+				slot = this.chooseSpell(3, 0, true);
+				if (slot >= 0) {
+					return {actionType: 2, slot1: slot};
 				}
-				selection1 = this.chooseSpell(2, 0, true);
-				if (selection1 >= 0) {
-					return {actionType: 2, slot1: selection1};
+				slot = this.chooseSpell(2, 0, true);
+				if (slot >= 0) {
+					return {actionType: 2, slot1: slot};
 				}
 				return {actionType: 0};
 			case 4:
 			case 5:
 			case 6:
-				selection1 = this.chooseSpell(1, 0, true);
-				if (selection1 >= 0) {
-					return {actionType: 2, slot1: selection1};
+				slot = this.chooseSpell(1, 0, true);
+				if (slot >= 0) {
+					return {actionType: 2, slot1: slot};
 				}
 				selection = this.chooseWeapon(0, true);
 				switch (selection.actionType) {
@@ -2314,13 +2145,13 @@ export class enemy {
 					case 2:
 						return selection;
 				}
-				selection1 = this.chooseSpell(3, 0, true);
-				if (selection1 >= 0) {
-					return {actionType: 2, slot1: selection1};
+				slot = this.chooseSpell(3, 0, true);
+				if (slot >= 0) {
+					return {actionType: 2, slot1: slot};
 				}
-				selection1 = this.chooseSpell(2, 0, true);
-				if (selection1 >= 0) {
-					return {actionType: 2, slot1: selection1};
+				slot = this.chooseSpell(2, 0, true);
+				if (slot >= 0) {
+					return {actionType: 2, slot1: slot};
 				}
 				return {actionType: 0};
 			case 7:
@@ -2339,7 +2170,7 @@ export class enemy {
 	 * @returns whether the check passed
 	 */
 	healingCheck(): boolean {
-		let healthProp: number = this.health / this.maxHealth;
+		var healthProp: number = this.health / this.maxHealth;
 		if (healthProp >= AI_HEALING_THRESHOLD) {
 			return false;
 		}
@@ -2394,7 +2225,7 @@ export class enemy {
 		) {
 			return false;
 		}
-		let currentHealth: number = this.health,
+		const currentHealth: number = this.health,
 			currentProjectiles: number = this.projectiles,
 			currentMana: number = this.mana,
 			currentPoison: number = this.poison,
@@ -2536,18 +2367,15 @@ export class enemy {
 	 * @param itemName - name of weapon/spell
 	 */
 	addNoCounter(type: boolean, itemName: string): void {
-		let noCounters: number;
 		if (type) {
-			noCounters = this.noCounterSpells.length;
-			for (let i: number = 0; i < noCounters; i++) {
+			for (let i: number = 0; i < this.noCounterSpells.length; i++) {
 				if (itemName == this.noCounterSpells[i]) {
 					return;
 				}
 			}
 			this.noCounterSpells.push(itemName);
 		} else {
-			noCounters = this.noCounterWeapons.length;
-			for (let i: number = 0; i < noCounters; i++) {
+			for (let i: number = 0; i < this.noCounterWeapons.length; i++) {
 				if (itemName == this.noCounterWeapons[i]) {
 					return;
 				}
@@ -2562,17 +2390,14 @@ export class enemy {
 	 * @returns false if uncounterable
 	 */
 	checkCounter(type: boolean, itemName: string): boolean {
-		let noCounters: number;
 		if (type) {
-			noCounters = this.noCounterSpells.length;
-			for (let i: number = 0; i < noCounters; i++) {
+			for (let i: number = 0; i < this.noCounterSpells.length; i++) {
 				if (itemName == this.noCounterSpells[i]) {
 					return false;
 				}
 			}
 		} else {
-			noCounters = this.noCounterWeapons.length;
-			for (let i: number = 0; i < noCounters; i++) {
+			for (let i: number = 0; i < this.noCounterWeapons.length; i++) {
 				if (itemName == this.noCounterWeapons[i]) {
 					return false;
 				}
@@ -2619,8 +2444,7 @@ export class enemy {
 	}
 	/**Resets cooldowns, only for debugging */
 	reset(): void {
-		let length: number = this.spells.length;
-		for (let i: number = 0; i < length; i++) {
+		for (let i: number = 0; i < this.spells.length; i++) {
 			this.spells[i].resetCooldown();
 		}
 	}

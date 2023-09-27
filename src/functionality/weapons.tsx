@@ -573,14 +573,13 @@ export class weapon {
 		}
 		this.setEffectType();
 		//Ensure max damage values are at least min values
-		let buffer: number | undefined;
 		if ((this.flatDamageMin ?? 0) > (this.flatDamageMax ?? 0)) {
-			buffer = this.flatDamageMin;
+			var buffer: number | undefined = this.flatDamageMin;
 			this.flatDamageMin = this.flatDamageMax;
 			this.flatDamageMax = buffer;
 		}
 		if ((this.flatMagicDamageMin ?? 0) > (this.flatMagicDamageMax ?? 0)) {
-			buffer = this.flatMagicDamageMin;
+			var buffer: number | undefined = this.flatMagicDamageMin;
 			this.flatMagicDamageMin = this.flatMagicDamageMax;
 			this.flatMagicDamageMax = buffer;
 		}
@@ -588,12 +587,12 @@ export class weapon {
 			(this.flatArmourPiercingDamageMin ?? 0) >
 			(this.flatArmourPiercingDamageMax ?? 0)
 		) {
-			buffer = this.flatArmourPiercingDamageMin;
+			var buffer: number | undefined = this.flatArmourPiercingDamageMin;
 			this.flatArmourPiercingDamageMin = this.flatArmourPiercingDamageMax;
 			this.flatArmourPiercingDamageMax = buffer;
 		}
 		if ((this.flatSelfDamageMin ?? 0) > (this.flatSelfDamageMax ?? 0)) {
-			buffer = this.flatSelfDamageMin;
+			var buffer: number | undefined = this.flatSelfDamageMin;
 			this.flatSelfDamageMin = this.flatSelfDamageMax;
 			this.flatSelfDamageMax = buffer;
 		}
@@ -601,7 +600,7 @@ export class weapon {
 			(this.flatSelfMagicDamageMin ?? 0) >
 			(this.flatSelfMagicDamageMax ?? 0)
 		) {
-			buffer = this.flatSelfMagicDamageMin;
+			var buffer: number | undefined = this.flatSelfMagicDamageMin;
 			this.flatSelfMagicDamageMin = this.flatSelfMagicDamageMax;
 			this.flatSelfMagicDamageMax = buffer;
 		}
@@ -609,7 +608,8 @@ export class weapon {
 			(this.flatSelfArmourPiercingDamageMin ?? 0) >
 			(this.flatSelfArmourPiercingDamageMax ?? 0)
 		) {
-			buffer = this.flatSelfArmourPiercingDamageMin;
+			var buffer: number | undefined =
+				this.flatSelfArmourPiercingDamageMin;
 			this.flatSelfArmourPiercingDamageMin =
 				this.flatSelfArmourPiercingDamageMax;
 			this.flatSelfArmourPiercingDamageMax = buffer;
@@ -827,30 +827,24 @@ export class weapon {
 		}
 	}
 	checkSelfDamage(): boolean {
-		if (
+		return Boolean(
 			this.flatSelfDamageMin ||
-			this.flatSelfDamageMax ||
-			this.flatSelfMagicDamageMin ||
-			this.flatSelfMagicDamageMax ||
-			this.flatSelfArmourPiercingDamageMin ||
-			this.flatSelfArmourPiercingDamageMax
-		) {
-			return true;
-		}
-		return false;
+				this.flatSelfDamageMax ||
+				this.flatSelfMagicDamageMin ||
+				this.flatSelfMagicDamageMax ||
+				this.flatSelfArmourPiercingDamageMin ||
+				this.flatSelfArmourPiercingDamageMax
+		);
 	}
 	checkTargetDamage(): boolean {
-		if (
+		return Boolean(
 			this.flatDamageMin ||
-			this.flatDamageMax ||
-			this.flatMagicDamageMin ||
-			this.flatMagicDamageMax ||
-			this.flatArmourPiercingDamageMin ||
-			this.flatArmourPiercingDamageMax
-		) {
-			return true;
-		}
-		return false;
+				this.flatDamageMax ||
+				this.flatMagicDamageMin ||
+				this.flatMagicDamageMax ||
+				this.flatArmourPiercingDamageMin ||
+				this.flatArmourPiercingDamageMax
+		);
 	}
 }
 /**Displays weapon stats */
@@ -858,7 +852,7 @@ export function DisplayWeaponStats(props: {
 	/**The weapon */
 	weaponry: weapon;
 }): React.JSX.Element {
-	let healingMin: number = 0,
+	var healingMin: number = 0,
 		healingMax: number = 0,
 		healingSelfMin: number = 0,
 		healingSelfMax: number = 0;

@@ -46,7 +46,7 @@ export function numFromString(input: string): {value: number; output: string} {
 	if (input.length == 0) {
 		return {value: 0, output: input};
 	}
-	let value: number = 0,
+	var value: number = 0,
 		minus: boolean = false;
 	if (input[0] == "-") {
 		minus = true;
@@ -90,7 +90,7 @@ export function floatFromString(input: string): {
 	if (input.length == 0) {
 		return {value: 0, output: input};
 	}
-	let value: number = 0,
+	var value: number = 0,
 		minus: boolean = false;
 	if (input[0] == "-") {
 		minus = true;
@@ -127,7 +127,7 @@ export function floatFromString(input: string): {
 		return {value: value, output: input};
 	}
 	input = input.slice(1);
-	let dp: number = 0;
+	var dp: number = 0;
 	while (!Number.isNaN(parseInt(input[0]))) {
 		value *= 10;
 		value += parseInt(input[0]);
@@ -143,13 +143,13 @@ export function floatFromString(input: string): {
 	return {value: value, output: input};
 }
 
-export function deepCopy<Type = number | boolean | string | bigint>(
-	arr: Type[]
-): Type[] {
-	let newArr: Type[] = [];
-	let count: number = arr.length;
-	for (let i: number = 0; i < count; i++) {
-		newArr.push(arr[i]);
-	}
-	return newArr;
-}
+//export function deepCopy<Type = number | boolean | string | bigint>(
+//	arr: Type[]
+//): Type[] {
+//	let newArr: Type[] = [];
+//	let count: number = arr.length;
+//	for (let i: number = 0; i < count; i++) {
+//		newArr.push(arr[i]);
+//	}
+//	return newArr;
+//}

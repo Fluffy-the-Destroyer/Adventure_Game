@@ -5,6 +5,7 @@ import armourData from "../data/armour.json";
 import {randomInt} from "./rng";
 import {
 	IonButton,
+	IonCardSubtitle,
 	IonCol,
 	IonContent,
 	IonGrid,
@@ -620,22 +621,21 @@ export function DisplayArmourName(props: {
 	armourPiece: armour;
 }): React.JSX.Element {
 	const [isOpen, setIsOpen] = useState<boolean>(false);
-	let type: string;
 	switch (props.armourPiece.armourType()) {
 		case "HEAD":
-			type = "Head";
+			var type: string = "Head";
 			break;
 		case "TORSO":
-			type = "Torso";
+			var type: string = "Torso";
 			break;
 		case "LEGS":
-			type = "Legs";
+			var type: string = "Legs";
 			break;
 		case "FEET":
-			type = "Feet";
+			var type: string = "Feet";
 			break;
 		default:
-			type = "";
+			var type: string = "";
 	}
 	return (
 		<Fragment>
@@ -675,6 +675,9 @@ export function DisplayArmourName(props: {
 									<IonTitle>
 										{props.armourPiece.getName()}
 									</IonTitle>
+									<IonCardSubtitle>
+										Equip location: {type}
+									</IonCardSubtitle>
 								</IonCol>
 							</IonRow>
 						</IonGrid>
@@ -692,7 +695,6 @@ export function DisplayArmourStats(props: {
 	/**The armour piece */
 	armourPiece: armour;
 }): React.JSX.Element {
-	const type: string = props.armourPiece.armourType();
 	return (
 		<IonList className="ion-text-center">
 			<IonListHeader>{props.armourPiece.getDescription()}</IonListHeader>

@@ -127,7 +127,7 @@ export class player {
 			m = Math.max(0, m - this.flatMagicArmour);
 			m = Math.trunc(m * (1 + this.propMagicArmour));
 		}
-		let totDamage: number = p + m + a;
+		var totDamage: number = p + m + a;
 		if (totDamage > 0) {
 			this.health -= totDamage;
 			return totDamage;
@@ -486,14 +486,11 @@ export class player {
 		this.modifyFlatMagicDamageModifier(
 			this.boots.getFlatMagicDamageModifier()
 		);
-		{
-			let length: number = this.weapons.length;
-			for (let i: number = 0; i < length; i++) {
-				if (this.weapons[i].getReal()) {
-					this.modifyFlatMagicDamageModifier(
-						this.weapons[i].getFlatMagicDamageModifier()
-					);
-				}
+		for (let i: number = 0; i < this.weapons.length; i++) {
+			if (this.weapons[i].getReal()) {
+				this.modifyFlatMagicDamageModifier(
+					this.weapons[i].getFlatMagicDamageModifier()
+				);
 			}
 		}
 		//Prop magic
@@ -702,11 +699,8 @@ export class player {
 		if (this.tempRegen > 0) {
 			this.tempRegen--;
 		}
-		{
-			let length: number = this.spells.length;
-			for (let i: number = 0; i < length; i++) {
-				this.spells[i].decCooldown();
-			}
+		for (let i: number = 0; i < this.spells.length; i++) {
+			this.spells[i].decCooldown();
 		}
 		if (this.bonusActions < 0) {
 			this.currentBonusActions = 0;
@@ -918,7 +912,6 @@ export class player {
 				this.loadClass(playerClass);
 			} else {
 				//console.log(playerClass.weapons);
-				let counter: number;
 				this.className = playerClass.className;
 				this.health = playerClass.health;
 				this.maxHealthBase = playerClass.maxHealthBase;
@@ -942,12 +935,10 @@ export class player {
 				this.turnRegen = playerClass.turnRegen;
 				this.battleRegenBase = playerClass.battleRegenBase;
 				this.battleRegen = playerClass.battleRegen;
-				counter = playerClass.weapons.length;
-				for (let i: number = 0; i < counter; i++) {
+				for (let i: number = 0; i < playerClass.weapons.length; i++) {
 					this.weapons.push(new weapon(playerClass.weapons[i]));
 				}
-				counter = playerClass.spells.length;
-				for (let i: number = 0; i < counter; i++) {
+				for (let i: number = 0; i < playerClass.spells.length; i++) {
 					this.spells.push(new spell(playerClass.spells[i]));
 				}
 				this.flatArmourBase = playerClass.flatArmourBase;
@@ -1037,7 +1028,7 @@ export class player {
 		this.greaves.loadFromFile();
 		this.boots.loadFromFile();
 		//@ts-expect-error
-		let selectedClass = classData[playerClass];
+		var selectedClass = classData[playerClass];
 		if (selectedClass == undefined) {
 			throw 2;
 		}
@@ -1369,8 +1360,7 @@ export class player {
 	reset(): void {
 		this.modifyHealth(this.battleRegen);
 		this.modifyMana(this.battleManaRegen);
-		let length: number = this.spells.length;
-		for (let i: number = 0; i < length; i++) {
+		for (let i: number = 0; i < this.spells.length; i++) {
 			this.spells[i].resetCooldown();
 		}
 		this.calculateModifiers();
@@ -1416,10 +1406,7 @@ export class player {
 		return {p: p, m: m, a: a};
 	}
 	getStatusEffect(): boolean {
-		if (this.poison || this.bleed || this.tempRegen) {
-			return true;
-		}
-		return false;
+		return Boolean(this.poison || this.bleed || this.tempRegen);
 	}
 	/**Checks if the player can use the specified item
 	 * @param type - false is a weapon, true is a spell
@@ -1669,8 +1656,8 @@ export function ShowPlayerEquipment(props: {
 }): React.JSX.Element {
 	const playerWeapons: weapon[] = [];
 	const playerSpells: spell[] = [];
-	let weaponCount: number = props.playerCharacter.getWeaponSlots();
-	let spellCount: number = props.playerCharacter.getSpellSlots();
+	var weaponCount: number = props.playerCharacter.getWeaponSlots();
+	var spellCount: number = props.playerCharacter.getSpellSlots();
 	for (let i: number = 0; i < weaponCount; i++) {
 		playerWeapons.push(props.playerCharacter.getWeapon(i));
 	}
