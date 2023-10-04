@@ -10,11 +10,11 @@ import {
 	IonToolbar,
 	useIonToast
 } from "@ionic/react";
-import {useState} from "react";
+import {Fragment, useState} from "react";
 import {ShowPlayerInventory, player} from "../functionality/player";
 import {errorMessages} from "../functionality/data";
 import {enemy} from "../functionality/enemies";
-import {BattlePage} from "../components/battle";
+import {BattlePage} from "./battlePage";
 
 /**Debugging page */
 export function DebugPage(): React.JSX.Element {
@@ -82,102 +82,88 @@ export function DebugPage(): React.JSX.Element {
 		});
 		errorMessages.length = 0;
 	}
-	if (battle) {
-		return (
-			<BattlePage
-				playerCharacter={playerCharacter}
-				opponent={opponent}
-				endBattle={() => {
-					playerCharacter.reset();
-					opponent.reset();
-					setBattle(false);
-				}}
-			/>
-		);
-	}
 	return (
-		<IonPage>
-			<IonHeader>
-				<IonToolbar>
-					<IonButtons slot="start">
-						<IonBackButton defaultHref="/main_menu"></IonBackButton>
-					</IonButtons>
-				</IonToolbar>
-			</IonHeader>
-			<IonContent>
-				<IonInput
-					label="Class Blueprint"
-					labelPlacement="stacked"
-					placeholder="EMPTY"
-					value={classInputValue}
-					//@ts-expect-error
-					onInput={(e) => setClassInputValue(e.target.value)}
-					onIonChange={playerClickHandler}
-				></IonInput>
-				<IonButton mode="ios" onClick={playerClickHandler}>
-					Load Class
-				</IonButton>
-				<IonButton mode="ios" onClick={() => setIsInventoryOpen(true)}>
-					Show inventory
-				</IonButton>
-				<IonModal
-					isOpen={isInventoryOpen}
-					onDidDismiss={() => setIsInventoryOpen(false)}
-				>
-					<ShowPlayerInventory
-						playerCharacter={playerCharacter}
-						closeInventory={() => setIsInventoryOpen(false)}
-					/>
-				</IonModal>
-				<div>
-					Currently loaded class:{" "}
-					{playerCharacter.getClassName() || "None"}
-				</div>
-				<IonInput
-					label="Enemy Blueprint"
-					labelPlacement="stacked"
-					placeholder="EMPTY"
-					value={enemyInputValue}
-					//@ts-expect-error
-					onInput={(e) => setEnemyInputValue(e.target.value)}
-					onIonChange={enemyClickHandler}
-				></IonInput>
-				<IonButton mode="ios" onClick={enemyClickHandler}>
-					Load Enemy
-				</IonButton>
-				<div>
-					Currently loaded enemy: {opponent.getName() || "None"}
-				</div>
-				<IonButton
-					mode="ios"
-					//onClick={() => setIsIntroductionOpen(true)}
-					onClick={() => {
-						if (opponent.getReal()) {
-							setBattle(true);
-						}
+		<Fragment>
+			{battle ? (
+				<BattlePage
+					playerCharacter={playerCharacter}
+					opponent={opponent}
+					endBattle={() => {
+						playerCharacter.reset();
+						opponent.reset();
+						setBattle(false);
 					}}
-				>
-					Start Battle
-				</IonButton>
-				{/*<IonModal
-                id="introduction-modal"
-                isOpen={isIntroductionOpen}
-                backdropDismiss={false}
-            >
-                <div className="ion-margin">
-                    {opponent.getIntroduction()}
-                </div>
-                <IonButton
-                    mode="ios"
-                    onClick={() => {
-                        setIsIntroductionOpen(false);
-                        setBattle(true);
-                    }}
-                >
-                    To Battle!
-                </IonButton>
-            </IonModal>*/}
-			</IonContent>
-		</IonPage>
+				/>
+			) : (
+				<IonPage>
+					<IonHeader>
+						<IonToolbar>
+							<IonButtons slot="start">
+								<IonBackButton defaultHref="/main_menu"></IonBackButton>
+							</IonButtons>
+						</IonToolbar>
+					</IonHeader>
+					<IonContent>
+						<IonInput
+							label="Class Blueprint"
+							labelPlacement="stacked"
+							placeholder="EMPTY"
+							value={classInputValue}
+							//@ts-expect-error
+							onInput={(e) => setClassInputValue(e.target.value)}
+							onIonChange={playerClickHandler}
+						></IonInput>
+						<IonButton mode="ios" onClick={playerClickHandler}>
+							Load Class
+						</IonButton>
+						<IonButton
+							mode="ios"
+							onClick={() => setIsInventoryOpen(true)}
+						>
+							Show inventory
+						</IonButton>
+						<IonModal
+							isOpen={isInventoryOpen}
+							onDidDismiss={() => setIsInventoryOpen(false)}
+						>
+							<ShowPlayerInventory
+								playerCharacter={playerCharacter}
+								closeInventory={() => setIsInventoryOpen(false)}
+							/>
+						</IonModal>
+						<div>
+							Currently loaded class:{" "}
+							{playerCharacter.getClassName() || "None"}
+						</div>
+						<IonInput
+							label="Enemy Blueprint"
+							labelPlacement="stacked"
+							placeholder="EMPTY"
+							value={enemyInputValue}
+							//@ts-expect-error
+							onInput={(e) => setEnemyInputValue(e.target.value)}
+							onIonChange={enemyClickHandler}
+						></IonInput>
+						<IonButton mode="ios" onClick={enemyClickHandler}>
+							Load Enemy
+						</IonButton>
+						<div>
+							Currently loaded enemy:{" "}
+							{opponent.getName() || "None"}
+						</div>
+						<IonButton
+							mode="ios"
+							onClick={() => {
+								if (opponent.getReal()) {
+									setBattle(true);
+								}
+							}}
+						>
+							Start Battle
+						</IonButton>
+					</IonContent>
+				</IonPage>
+			)}
+		</Fragment>
 	);
 }

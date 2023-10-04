@@ -2076,7 +2076,13 @@ export class spell {
 	}
 }
 /**Displays a spell panel in the inventory or in battle */
-export function DisplaySpellName(props: {
+export function DisplaySpellName({
+	magic,
+	inBattle,
+	selected,
+	canUse,
+	onToggle
+}: {
 	/**The spell */
 	magic: spell;
 	/**True if displaying for selection in battle */
@@ -2088,7 +2094,7 @@ export function DisplaySpellName(props: {
 	/**A function to be run on selection being toggled */
 	onToggle?: () => void;
 }): React.JSX.Element {
-	if (!props.magic.getReal()) {
+	if (!magic.getReal()) {
 		return (
 			<IonItem>
 				<IonLabel className="ion-text-center">None</IonLabel>
@@ -2099,54 +2105,50 @@ export function DisplaySpellName(props: {
 	return (
 		<IonItem>
 			<IonLabel className="ion-text-center">
-				{props.magic.getName()}
-				{props.magic.getHealthChange() != 0 ||
-				props.magic.getManaChange() != 0 ||
-				props.magic.getProjectileChange() != 0 ? (
+				{magic.getName()}
+				{magic.getHealthChange() != 0 ||
+				magic.getManaChange() != 0 ||
+				magic.getProjectileChange() != 0 ? (
 					<IonLabel className="equipment-costs">
-						{props.magic.getHealthChange() != 0
+						{magic.getHealthChange() != 0
 							? ` ${
-									props.magic.getHealthChange() > 0 ? "+" : ""
-							  }${props.magic.getHealthChange()} health `
+									magic.getHealthChange() > 0 ? "+" : ""
+							  }${magic.getHealthChange()} health `
 							: null}
-						{props.magic.getManaChange() != 0
+						{magic.getManaChange() != 0
 							? ` ${
-									props.magic.getManaChange() > 0 ? "+" : ""
-							  }${props.magic.getManaChange()} mana `
+									magic.getManaChange() > 0 ? "+" : ""
+							  }${magic.getManaChange()} mana `
 							: null}
-						{props.magic.getHealthChange() != 0 &&
-						props.magic.getManaChange() != 0 &&
-						props.magic.getProjectileChange() != 0
+						{magic.getHealthChange() != 0 &&
+						magic.getManaChange() != 0 &&
+						magic.getProjectileChange() != 0
 							? "\n"
 							: null}
-						{props.magic.getProjectileChange() != 0
+						{magic.getProjectileChange() != 0
 							? ` ${
-									props.magic.getProjectileChange() > 0
-										? "+"
-										: ""
-							  }${props.magic.getProjectileChange()} arrow${
-									Math.abs(
-										props.magic.getProjectileChange()
-									) != 1
+									magic.getProjectileChange() > 0 ? "+" : ""
+							  }${magic.getProjectileChange()} arrow${
+									Math.abs(magic.getProjectileChange()) != 1
 										? "s"
 										: ""
 							  } `
 							: null}
 					</IonLabel>
 				) : null}
-				{props.inBattle && props.magic.getCurrentCooldown() > 0 ? (
+				{inBattle && magic.getCurrentCooldown() > 0 ? (
 					<IonLabel className="cooldown">
-						On cooldown: {props.magic.getCurrentCooldown()}
+						On cooldown: {magic.getCurrentCooldown()}
 					</IonLabel>
 				) : null}
 			</IonLabel>
-			{props.inBattle ? (
+			{inBattle ? (
 				<IonToggle
 					aria-label="select spell"
 					slot="end"
-					checked={props.selected}
-					disabled={!props.canUse}
-					onIonChange={props.onToggle}
+					checked={selected}
+					disabled={!canUse}
+					onIonChange={onToggle}
 				></IonToggle>
 			) : (
 				<IonButton
@@ -2177,21 +2179,23 @@ export function DisplaySpellName(props: {
 									</IonButton>
 								</IonCol>
 								<IonCol size="10">
-									<IonTitle>{props.magic.getName()}</IonTitle>
+									<IonTitle>{magic.getName()}</IonTitle>
 								</IonCol>
 							</IonRow>
 						</IonGrid>
 					</IonToolbar>
 				</IonHeader>
 				<IonContent>
-					<DisplaySpellStats magic={props.magic} />
+					<DisplaySpellStats magic={magic} />
 				</IonContent>
 			</IonModal>
 		</IonItem>
 	);
 }
 /**Displays spell stats */
-export function DisplaySpellStats(props: {
+export function DisplaySpellStats({
+	magic
+}: {
 	/**The spell */
 	magic: spell;
 }): React.JSX.Element {
@@ -2199,90 +2203,88 @@ export function DisplaySpellStats(props: {
 		healingMax: number = 0,
 		healingSelfMin: number = 0,
 		healingSelfMax: number = 0;
-	if (props.magic.getFlatDamageMax() <= 0) {
-		healingMin -= props.magic.getFlatDamageMax();
-		healingMin -= props.magic.getFlatDamageMin();
+	if (magic.getFlatDamageMax() <= 0) {
+		healingMin -= magic.getFlatDamageMax();
+		healingMin -= magic.getFlatDamageMin();
 	}
-	if (props.magic.getFlatMagicDamageMax() <= 0) {
-		healingMin -= props.magic.getFlatMagicDamageMax();
-		healingMax -= props.magic.getFlatMagicDamageMin();
+	if (magic.getFlatMagicDamageMax() <= 0) {
+		healingMin -= magic.getFlatMagicDamageMax();
+		healingMax -= magic.getFlatMagicDamageMin();
 	}
-	if (props.magic.getFlatArmourPiercingDamageMax() <= 0) {
-		healingMin -= props.magic.getFlatArmourPiercingDamageMax();
-		healingMax -= props.magic.getFlatArmourPiercingDamageMin();
+	if (magic.getFlatArmourPiercingDamageMax() <= 0) {
+		healingMin -= magic.getFlatArmourPiercingDamageMax();
+		healingMax -= magic.getFlatArmourPiercingDamageMin();
 	}
-	if (props.magic.getFlatSelfDamageMax() <= 0) {
-		healingSelfMin -= props.magic.getFlatSelfDamageMax();
-		healingSelfMax -= props.magic.getFlatSelfDamageMin();
+	if (magic.getFlatSelfDamageMax() <= 0) {
+		healingSelfMin -= magic.getFlatSelfDamageMax();
+		healingSelfMax -= magic.getFlatSelfDamageMin();
 	}
-	if (props.magic.getFlatSelfMagicDamageMax() <= 0) {
-		healingSelfMin -= props.magic.getFlatSelfMagicDamageMax();
-		healingSelfMax -= props.magic.getFlatSelfMagicDamageMin();
+	if (magic.getFlatSelfMagicDamageMax() <= 0) {
+		healingSelfMin -= magic.getFlatSelfMagicDamageMax();
+		healingSelfMax -= magic.getFlatSelfMagicDamageMin();
 	}
-	if (props.magic.getFlatSelfArmourPiercingDamageMax() <= 0) {
-		healingSelfMin -= props.magic.getFlatSelfArmourPiercingDamageMax();
-		healingSelfMax -= props.magic.getFlatSelfArmourPiercingDamageMin();
+	if (magic.getFlatSelfArmourPiercingDamageMax() <= 0) {
+		healingSelfMin -= magic.getFlatSelfArmourPiercingDamageMax();
+		healingSelfMax -= magic.getFlatSelfArmourPiercingDamageMin();
 	}
 	return (
 		<IonList>
-			<IonListHeader>{props.magic.getDescription()}</IonListHeader>
-			{props.magic.getFlatDamageMin() ==
-			props.magic.getFlatDamageMax() ? (
-				props.magic.getFlatDamageMax() > 0 ? (
+			<IonListHeader>{magic.getDescription()}</IonListHeader>
+			{magic.getFlatDamageMin() == magic.getFlatDamageMax() ? (
+				magic.getFlatDamageMax() > 0 ? (
 					<IonItem>
-						Deals {props.magic.getFlatDamageMax()} physical damage
+						Deals {magic.getFlatDamageMax()} physical damage
 					</IonItem>
 				) : null
-			) : props.magic.getFlatDamageMin() >= 0 ? (
+			) : magic.getFlatDamageMin() >= 0 ? (
 				<IonItem>
-					Deals {props.magic.getFlatDamageMin()} to{" "}
-					{props.magic.getFlatDamageMax()} physical damage
+					Deals {magic.getFlatDamageMin()} to{" "}
+					{magic.getFlatDamageMax()} physical damage
 				</IonItem>
-			) : props.magic.getFlatDamageMax() >= 0 ? (
+			) : magic.getFlatDamageMax() >= 0 ? (
 				<IonItem>
-					Deals {props.magic.getFlatDamageMin()} to{" "}
-					{props.magic.getFlatDamageMax()} physical damage, negative
+					Deals {magic.getFlatDamageMin()} to{" "}
+					{magic.getFlatDamageMax()} physical damage, negative damage
+					will heal the target
+				</IonItem>
+			) : null}
+			{magic.getFlatMagicDamageMin() == magic.getFlatMagicDamageMax() ? (
+				magic.getFlatMagicDamageMax() > 0 ? (
+					<IonItem>
+						Deals {magic.getFlatMagicDamageMax()} magic damage
+					</IonItem>
+				) : null
+			) : magic.getFlatMagicDamageMin() >= 0 ? (
+				<IonItem>
+					Deals {magic.getFlatMagicDamageMin()} to{" "}
+					{magic.getFlatMagicDamageMax()} magic damage
+				</IonItem>
+			) : magic.getFlatMagicDamageMax() >= 0 ? (
+				<IonItem>
+					Deals {magic.getFlatMagicDamageMin()} to{" "}
+					{magic.getFlatMagicDamageMax()} magic damage, negative
 					damage will heal the target
 				</IonItem>
 			) : null}
-			{props.magic.getFlatMagicDamageMin() ==
-			props.magic.getFlatMagicDamageMax() ? (
-				props.magic.getFlatMagicDamageMax() > 0 ? (
+			{magic.getFlatArmourPiercingDamageMin() ==
+			magic.getFlatArmourPiercingDamageMax() ? (
+				magic.getFlatArmourPiercingDamageMax() > 0 ? (
 					<IonItem>
-						Deals {props.magic.getFlatMagicDamageMax()} magic damage
+						Deals {magic.getFlatArmourPiercingDamageMax()} armour
+						piercing damage
 					</IonItem>
 				) : null
-			) : props.magic.getFlatMagicDamageMin() >= 0 ? (
+			) : magic.getFlatArmourPiercingDamageMin() >= 0 ? (
 				<IonItem>
-					Deals {props.magic.getFlatMagicDamageMin()} to{" "}
-					{props.magic.getFlatMagicDamageMax()} magic damage
+					Deals {magic.getFlatArmourPiercingDamageMin()} to{" "}
+					{magic.getFlatArmourPiercingDamageMax()} armour piercing
+					damage
 				</IonItem>
-			) : props.magic.getFlatMagicDamageMax() >= 0 ? (
+			) : magic.getFlatArmourPiercingDamageMax() >= 0 ? (
 				<IonItem>
-					Deals {props.magic.getFlatMagicDamageMin()} to{" "}
-					{props.magic.getFlatMagicDamageMax()} magic damage, negative
-					damage will heal the target
-				</IonItem>
-			) : null}
-			{props.magic.getFlatArmourPiercingDamageMin() ==
-			props.magic.getFlatArmourPiercingDamageMax() ? (
-				props.magic.getFlatArmourPiercingDamageMax() > 0 ? (
-					<IonItem>
-						Deals {props.magic.getFlatArmourPiercingDamageMax()}{" "}
-						armour piercing damage
-					</IonItem>
-				) : null
-			) : props.magic.getFlatArmourPiercingDamageMin() >= 0 ? (
-				<IonItem>
-					Deals {props.magic.getFlatArmourPiercingDamageMin()} to{" "}
-					{props.magic.getFlatArmourPiercingDamageMax()} armour
-					piercing damage
-				</IonItem>
-			) : props.magic.getFlatArmourPiercingDamageMax() >= 0 ? (
-				<IonItem>
-					Deals {props.magic.getFlatArmourPiercingDamageMin()} to{" "}
-					{props.magic.getFlatArmourPiercingDamageMax()} armour
-					piercing damage, negative damage will heal the target
+					Deals {magic.getFlatArmourPiercingDamageMin()} to{" "}
+					{magic.getFlatArmourPiercingDamageMax()} armour piercing
+					damage, negative damage will heal the target
 				</IonItem>
 			) : null}
 			{healingMax > 0 ? (
@@ -2291,82 +2293,81 @@ export function DisplaySpellStats(props: {
 					{healingMin != healingMax ? ` to ${healingMax}` : ""}
 				</IonItem>
 			) : null}
-			{props.magic.getTargetOverHeal() ? (
+			{magic.getTargetOverHeal() ? (
 				<IonItem>Attacks may over heal the target</IonItem>
 			) : null}
-			{props.magic.getPropDamage() > 0 ? (
+			{magic.getPropDamage() > 0 ? (
 				<IonItem>
 					Reduces target's health by{" "}
-					{Math.round(100 * props.magic.getPropDamage())}% per hit
+					{Math.round(100 * magic.getPropDamage())}% per hit
 				</IonItem>
-			) : props.magic.getPropDamage() < 0 ? (
+			) : magic.getPropDamage() < 0 ? (
 				<IonItem>
 					Heals the target for{" "}
-					{Math.round(-100 * props.magic.getPropDamage())}% of their
-					maximum health per hit
+					{Math.round(-100 * magic.getPropDamage())}% of their maximum
+					health per hit
 				</IonItem>
 			) : null}
-			{props.magic.getFlatSelfDamageMin() ==
-			props.magic.getFlatSelfDamageMax() ? (
-				props.magic.getFlatSelfDamageMax() > 0 ? (
+			{magic.getFlatSelfDamageMin() == magic.getFlatSelfDamageMax() ? (
+				magic.getFlatSelfDamageMax() > 0 ? (
 					<IonItem>
-						Deals {props.magic.getFlatSelfDamageMax()} physical
-						damage to user on cast
+						Deals {magic.getFlatSelfDamageMax()} physical damage to
+						user on cast
 					</IonItem>
 				) : null
-			) : props.magic.getFlatSelfDamageMin() >= 0 ? (
+			) : magic.getFlatSelfDamageMin() >= 0 ? (
 				<IonItem>
-					Deals {props.magic.getFlatSelfDamageMin()} to{" "}
-					{props.magic.getFlatSelfDamageMax()} physical damage to user
-					on cast
+					Deals {magic.getFlatSelfDamageMin()} to{" "}
+					{magic.getFlatSelfDamageMax()} physical damage to user on
+					cast
 				</IonItem>
-			) : props.magic.getFlatSelfDamageMax() >= 0 ? (
+			) : magic.getFlatSelfDamageMax() >= 0 ? (
 				<IonItem>
-					Deals {props.magic.getFlatSelfDamageMin()} to{" "}
-					{props.magic.getFlatSelfDamageMax()} physical damage to user
-					on cast, negative damage will heal
+					Deals {magic.getFlatSelfDamageMin()} to{" "}
+					{magic.getFlatSelfDamageMax()} physical damage to user on
+					cast, negative damage will heal
 				</IonItem>
 			) : null}
-			{props.magic.getFlatSelfMagicDamageMin() ==
-			props.magic.getFlatSelfMagicDamageMax() ? (
-				props.magic.getFlatSelfMagicDamageMax() > 0 ? (
+			{magic.getFlatSelfMagicDamageMin() ==
+			magic.getFlatSelfMagicDamageMax() ? (
+				magic.getFlatSelfMagicDamageMax() > 0 ? (
 					<IonItem>
-						Deals {props.magic.getFlatSelfMagicDamageMax()} magic
-						damage to user on cast
+						Deals {magic.getFlatSelfMagicDamageMax()} magic damage
+						to user on cast
 					</IonItem>
 				) : null
-			) : props.magic.getFlatSelfMagicDamageMin() >= 0 ? (
+			) : magic.getFlatSelfMagicDamageMin() >= 0 ? (
 				<IonItem>
-					Deals {props.magic.getFlatSelfMagicDamageMin()} to{" "}
-					{props.magic.getFlatSelfMagicDamageMax()} magic damage to
-					user on cast
+					Deals {magic.getFlatSelfMagicDamageMin()} to{" "}
+					{magic.getFlatSelfMagicDamageMax()} magic damage to user on
+					cast
 				</IonItem>
-			) : props.magic.getFlatSelfMagicDamageMax() >= 0 ? (
+			) : magic.getFlatSelfMagicDamageMax() >= 0 ? (
 				<IonItem>
-					Deals {props.magic.getFlatSelfMagicDamageMin()} to{" "}
-					{props.magic.getFlatSelfMagicDamageMax()} magic damage to
-					user on cast, negative damage will heal
+					Deals {magic.getFlatSelfMagicDamageMin()} to{" "}
+					{magic.getFlatSelfMagicDamageMax()} magic damage to user on
+					cast, negative damage will heal
 				</IonItem>
 			) : null}
-			{props.magic.getFlatSelfArmourPiercingDamageMin() ==
-			props.magic.getFlatSelfArmourPiercingDamageMax() ? (
-				props.magic.getFlatSelfArmourPiercingDamageMax() > 0 ? (
+			{magic.getFlatSelfArmourPiercingDamageMin() ==
+			magic.getFlatSelfArmourPiercingDamageMax() ? (
+				magic.getFlatSelfArmourPiercingDamageMax() > 0 ? (
 					<IonItem>
-						Deals {props.magic.getFlatSelfArmourPiercingDamageMax()}{" "}
+						Deals {magic.getFlatSelfArmourPiercingDamageMax()}{" "}
 						armour piercing damage to user on cast
 					</IonItem>
 				) : null
-			) : props.magic.getFlatSelfArmourPiercingDamageMin() >= 0 ? (
+			) : magic.getFlatSelfArmourPiercingDamageMin() >= 0 ? (
 				<IonItem>
-					Deals {props.magic.getFlatSelfArmourPiercingDamageMin()} to{" "}
-					{props.magic.getFlatSelfArmourPiercingDamageMax()} armour
-					piercing damage to user on cast
+					Deals {magic.getFlatSelfArmourPiercingDamageMin()} to{" "}
+					{magic.getFlatSelfArmourPiercingDamageMax()} armour piercing
+					damage to user on cast
 				</IonItem>
-			) : props.magic.getFlatSelfArmourPiercingDamageMax() >= 0 ? (
+			) : magic.getFlatSelfArmourPiercingDamageMax() >= 0 ? (
 				<IonItem>
-					Deals {props.magic.getFlatSelfArmourPiercingDamageMin()} to{" "}
-					{props.magic.getFlatSelfArmourPiercingDamageMax()} armour
-					piercing damage to user on cast, negative damage will heal
+					Deals {magic.getFlatSelfArmourPiercingDamageMin()} to{" "}
+					{magic.getFlatSelfArmourPiercingDamageMax()} armour piercing
+					damage to user on cast, negative damage will heal
 				</IonItem>
 			) : null}
 			{healingSelfMax > 0 ? (
@@ -2377,741 +2378,668 @@ export function DisplaySpellStats(props: {
 						: ""}
 				</IonItem>
 			) : null}
-			{props.magic.getSelfOverHeal() ? (
+			{magic.getSelfOverHeal() ? (
 				<IonItem>May over heal the caster</IonItem>
 			) : null}
-			{props.magic.getPropSelfDamage() > 0 ? (
+			{magic.getPropSelfDamage() > 0 ? (
 				<IonItem>
 					Reduces users's health by{" "}
-					{Math.round(100 * props.magic.getPropSelfDamage())}% on cast
+					{Math.round(100 * magic.getPropSelfDamage())}% on cast
 				</IonItem>
-			) : props.magic.getPropSelfDamage() < 0 ? (
+			) : magic.getPropSelfDamage() < 0 ? (
 				<IonItem>
 					Heals the user for{" "}
-					{Math.round(-100 * props.magic.getPropSelfDamage())}% of
-					their maximum health on cast
+					{Math.round(-100 * magic.getPropSelfDamage())}% of their
+					maximum health on cast
 				</IonItem>
 			) : null}
-			{props.magic.getHealthChange() > 0 ? (
+			{magic.getHealthChange() > 0 ? (
 				<IonItem>
-					User is healed for {props.magic.getHealthChange()}, even if
-					spell is countered
+					User is healed for {magic.getHealthChange()}, even if spell
+					is countered
 				</IonItem>
-			) : props.magic.getHealthChange() < 0 ? (
+			) : magic.getHealthChange() < 0 ? (
 				<IonItem>
-					Costs {-props.magic.getHealthChange()} health to cast (even
-					if countered)
+					Costs {-magic.getHealthChange()} health to cast (even if
+					countered)
 				</IonItem>
 			) : null}
-			{props.magic.getLifeLink() ? (
+			{magic.getLifeLink() ? (
 				<IonItem>
 					On dealing damage to target, heals the caster by that much
 				</IonItem>
 			) : null}
-			{props.magic.getHitCount() <= 0 ? (
+			{magic.getHitCount() <= 0 ? (
 				<IonItem>Cannot attack</IonItem>
-			) : props.magic.getHitCount() == 2 ? (
+			) : magic.getHitCount() == 2 ? (
 				<IonItem>Hits twice per cast</IonItem>
-			) : props.magic.getHitCount() > 2 ? (
-				<IonItem>
-					Hits {props.magic.getHitCount()} times per cast
-				</IonItem>
+			) : magic.getHitCount() > 2 ? (
+				<IonItem>Hits {magic.getHitCount()} times per cast</IonItem>
 			) : null}
-			{props.magic.getResponseHits() != props.magic.getHitCount() &&
-			props.magic.getTiming() != 0 ? (
+			{magic.getResponseHits() != magic.getHitCount() &&
+			magic.getTiming() != 0 ? (
 				<IonItem>
 					When cast in response to enemy action, hits{" "}
-					{props.magic.getResponseHits() == 1
+					{magic.getResponseHits() == 1
 						? "once"
-						: props.magic.getResponseHits() == 2
+						: magic.getResponseHits() == 2
 						? "twice"
-						: `${props.magic.getResponseHits()} times`}
+						: `${magic.getResponseHits()} times`}
 				</IonItem>
 			) : null}
-			{props.magic.getCounterHits() >= 1 ? (
+			{magic.getCounterHits() >= 1 ? (
 				<IonItem>
 					Usable for counter attacks, hits{" "}
-					{props.magic.getCounterHits() == 1
+					{magic.getCounterHits() == 1
 						? "once"
-						: props.magic.getCounterHits() == 2
+						: magic.getCounterHits() == 2
 						? "twice"
-						: `${props.magic.getCounterHits()} times`}
+						: `${magic.getCounterHits()} times`}
 				</IonItem>
 			) : null}
-			{props.magic.getNoEvade() ? (
-				<IonItem>Cannot be dodged</IonItem>
-			) : null}
-			{props.magic.getCanCounterAttack() ? (
+			{magic.getNoEvade() ? <IonItem>Cannot be dodged</IonItem> : null}
+			{magic.getCanCounterAttack() ? (
 				<IonItem>Allows counter attacks</IonItem>
 			) : null}
-			{props.magic.getNoCounter() ? (
+			{magic.getNoCounter() ? (
 				<IonItem>Cannot be countered</IonItem>
 			) : null}
-			{props.magic.getTiming() == 1 ? (
+			{magic.getTiming() == 1 ? (
 				<IonItem>Can be cast in response to enemy action</IonItem>
-			) : props.magic.getTiming() == 2 ? (
+			) : magic.getTiming() == 2 ? (
 				<IonItem>Can only be cast in response to enemy action</IonItem>
 			) : null}
-			{props.magic.getCounterSpell() == 1 ||
-			props.magic.getCounterSpell() == 3 ? (
+			{magic.getCounterSpell() == 1 || magic.getCounterSpell() == 3 ? (
 				<IonItem>
 					Can counter spells if cast in response, preventing their
 					effects
 				</IonItem>
 			) : null}
-			{props.magic.getCounterSpell() == 2 ||
-			props.magic.getCounterSpell() == 3 ? (
+			{magic.getCounterSpell() == 2 || magic.getCounterSpell() == 3 ? (
 				<IonItem>
 					Can shield against some weapon attacks if cast in response,
 					preventing their effects
 				</IonItem>
 			) : null}
-			{props.magic.getBonusActionsModifierEnemy() == 1 ? (
+			{magic.getBonusActionsModifierEnemy() == 1 ? (
 				<IonItem>
 					Target gains an additional bonus action (applied on hit)
 				</IonItem>
-			) : props.magic.getBonusActionsModifierEnemy() > 1 ? (
+			) : magic.getBonusActionsModifierEnemy() > 1 ? (
 				<IonItem>
-					Target gains {props.magic.getBonusActionsModifierEnemy()}{" "}
+					Target gains {magic.getBonusActionsModifierEnemy()}{" "}
 					additional bonus actions (applied on hit)
 				</IonItem>
-			) : props.magic.getBonusActionsModifierEnemy() == -1 ? (
+			) : magic.getBonusActionsModifierEnemy() == -1 ? (
 				<IonItem>Target loses a bonus action (applied on hit)</IonItem>
-			) : props.magic.getBonusActionsModifierEnemy() < -1 ? (
+			) : magic.getBonusActionsModifierEnemy() < -1 ? (
 				<IonItem>
-					Target loses {-props.magic.getBonusActionsModifierEnemy()}{" "}
-					bonus actions (applied on hit)
+					Target loses {-magic.getBonusActionsModifierEnemy()} bonus
+					actions (applied on hit)
 				</IonItem>
 			) : null}
-			{props.magic.getBonusActionsModifier() == 1 ? (
+			{magic.getBonusActionsModifier() == 1 ? (
 				<IonItem>Gain an additional bonus action on cast</IonItem>
-			) : props.magic.getBonusActionsModifier() > 1 ? (
+			) : magic.getBonusActionsModifier() > 1 ? (
 				<IonItem>
-					Gain {props.magic.getBonusActionsModifier()} additional
-					bonus actions on cast
+					Gain {magic.getBonusActionsModifier()} additional bonus
+					actions on cast
 				</IonItem>
-			) : props.magic.getBonusActionsModifier() == -1 ? (
+			) : magic.getBonusActionsModifier() == -1 ? (
 				<IonItem>Lose a bonus action on cast</IonItem>
-			) : props.magic.getBonusActionsModifier() ? (
+			) : magic.getBonusActionsModifier() ? (
 				<IonItem>
-					Lose {-props.magic.getBonusActionsModifier()} bonus actions
-					on cast
-				</IonItem>
-			) : null}
-			{props.magic.getManaChangeEnemy() < 0 ? (
-				<IonItem>
-					Target loses {-props.magic.getManaChangeEnemy()} mana per
-					hit
-				</IonItem>
-			) : props.magic.getManaChangeEnemy() > 0 ? (
-				<IonItem>
-					Target gains {props.magic.getManaChangeEnemy()} mana per hit
-				</IonItem>
-			) : null}
-			{props.magic.getManaChange() < 0 ? (
-				<IonItem>
-					Costs {-props.magic.getManaChange()} mana to cast
-				</IonItem>
-			) : props.magic.getManaChange() > 0 ? (
-				<IonItem>
-					Gain {props.magic.getManaChange()} mana on cast
-				</IonItem>
-			) : null}
-			{props.magic.getProjectileChange() == -1 ? (
-				<IonItem>Requires 1 arrow to cast</IonItem>
-			) : props.magic.getProjectileChange() < -1 ? (
-				<IonItem>
-					Requires {-props.magic.getProjectileChange()} arrows to cast
-				</IonItem>
-			) : props.magic.getProjectileChange() == 1 ? (
-				<IonItem>Regain 1 arrow on cast</IonItem>
-			) : props.magic.getProjectileChange() > 1 ? (
-				<IonItem>
-					Regain {props.magic.getProjectileChange()} arrows on cast
-				</IonItem>
-			) : null}
-			<IonItem>Cooldown: {props.magic.getCooldown()}</IonItem>
-			{props.magic.getPoison() > 0 ? (
-				<IonItem>
-					Applies {props.magic.getPoison()} poison to target on hit
-				</IonItem>
-			) : props.magic.getPoison() == -255 ? (
-				<IonItem>Removes all poison from target on hit</IonItem>
-			) : props.magic.getPoison() < 0 ? (
-				<IonItem>
-					Removes {-props.magic.getPoison()} poison from target on hit
-				</IonItem>
-			) : null}
-			{props.magic.getSelfPoison() > 0 ? (
-				<IonItem>
-					Applies {props.magic.getSelfPoison()} poison to user on cast
-				</IonItem>
-			) : props.magic.getSelfPoison() == -255 ? (
-				<IonItem>Removes all poison from user on cast</IonItem>
-			) : props.magic.getSelfPoison() < 0 ? (
-				<IonItem>
-					Removes {-props.magic.getSelfPoison()} poison from user on
+					Lose {-magic.getBonusActionsModifier()} bonus actions on
 					cast
 				</IonItem>
 			) : null}
-			{props.magic.getPoisonResistModifierEnemy() != 0 ? (
+			{magic.getManaChangeEnemy() < 0 ? (
 				<IonItem>
-					On hit, target gets{" "}
-					{props.magic.getPoisonResistModifierEnemy() > 0 ? "+" : ""}
-					{Math.round(
-						100 * props.magic.getPoisonResistModifierEnemy()
-					)}
-					% poison resist
+					Target loses {-magic.getManaChangeEnemy()} mana per hit
+				</IonItem>
+			) : magic.getManaChangeEnemy() > 0 ? (
+				<IonItem>
+					Target gains {magic.getManaChangeEnemy()} mana per hit
 				</IonItem>
 			) : null}
-			{props.magic.getPoisonResistModifier() != 0 ? (
+			{magic.getManaChange() < 0 ? (
+				<IonItem>Costs {-magic.getManaChange()} mana to cast</IonItem>
+			) : magic.getManaChange() > 0 ? (
+				<IonItem>Gain {magic.getManaChange()} mana on cast</IonItem>
+			) : null}
+			{magic.getProjectileChange() == -1 ? (
+				<IonItem>Requires 1 arrow to cast</IonItem>
+			) : magic.getProjectileChange() < -1 ? (
 				<IonItem>
-					On cast, user gets{" "}
-					{props.magic.getPoisonResistModifier() > 0 ? "+" : ""}
-					{Math.round(100 * props.magic.getPoisonResistModifier())}%
+					Requires {-magic.getProjectileChange()} arrows to cast
+				</IonItem>
+			) : magic.getProjectileChange() == 1 ? (
+				<IonItem>Regain 1 arrow on cast</IonItem>
+			) : magic.getProjectileChange() > 1 ? (
+				<IonItem>
+					Regain {magic.getProjectileChange()} arrows on cast
+				</IonItem>
+			) : null}
+			<IonItem>Cooldown: {magic.getCooldown()}</IonItem>
+			{magic.getPoison() > 0 ? (
+				<IonItem>
+					Applies {magic.getPoison()} poison to target on hit
+				</IonItem>
+			) : magic.getPoison() == -255 ? (
+				<IonItem>Removes all poison from target on hit</IonItem>
+			) : magic.getPoison() < 0 ? (
+				<IonItem>
+					Removes {-magic.getPoison()} poison from target on hit
+				</IonItem>
+			) : null}
+			{magic.getSelfPoison() > 0 ? (
+				<IonItem>
+					Applies {magic.getSelfPoison()} poison to user on cast
+				</IonItem>
+			) : magic.getSelfPoison() == -255 ? (
+				<IonItem>Removes all poison from user on cast</IonItem>
+			) : magic.getSelfPoison() < 0 ? (
+				<IonItem>
+					Removes {-magic.getSelfPoison()} poison from user on cast
+				</IonItem>
+			) : null}
+			{magic.getPoisonResistModifierEnemy() != 0 ? (
+				<IonItem>
+					On hit, target gets{" "}
+					{magic.getPoisonResistModifierEnemy() > 0 ? "+" : ""}
+					{Math.round(100 * magic.getPoisonResistModifierEnemy())}%
 					poison resist
 				</IonItem>
 			) : null}
-			{props.magic.getBleed() > 0 ? (
-				<IonItem>
-					Applies {props.magic.getBleed()} bleed to target on hit
-				</IonItem>
-			) : props.magic.getBleed() == -255 ? (
-				<IonItem>Removes all bleed from target on hit</IonItem>
-			) : props.magic.getBleed() < 0 ? (
-				<IonItem>
-					Removes {-props.magic.getBleed()} bleed from target on hit
-				</IonItem>
-			) : null}
-			{props.magic.getSelfBleed() > 0 ? (
-				<IonItem>
-					Applies {props.magic.getSelfBleed()} bleed to user on cast
-				</IonItem>
-			) : props.magic.getSelfBleed() == -255 ? (
-				<IonItem>Removes all bleed from user on cast</IonItem>
-			) : props.magic.getSelfBleed() < 0 ? (
-				<IonItem>
-					Removes {-props.magic.getSelfBleed()} bleed from user on
-					cast
-				</IonItem>
-			) : null}
-			{props.magic.getBleedResistModifierEnemy() != 0 ? (
-				<IonItem>
-					On hit, target gets{" "}
-					{props.magic.getBleedResistModifierEnemy() > 0 ? "+" : ""}
-					{Math.round(
-						100 * props.magic.getBleedResistModifierEnemy()
-					)}
-					% bleed resist
-				</IonItem>
-			) : null}
-			{props.magic.getBleedResistModifier() != 0 ? (
+			{magic.getPoisonResistModifier() != 0 ? (
 				<IonItem>
 					On cast, user gets{" "}
-					{props.magic.getBleedResistModifier() > 0 ? "+" : ""}
-					{Math.round(100 * props.magic.getBleedResistModifier())}%
+					{magic.getPoisonResistModifier() > 0 ? "+" : ""}
+					{Math.round(100 * magic.getPoisonResistModifier())}% poison
+					resist
+				</IonItem>
+			) : null}
+			{magic.getBleed() > 0 ? (
+				<IonItem>
+					Applies {magic.getBleed()} bleed to target on hit
+				</IonItem>
+			) : magic.getBleed() == -255 ? (
+				<IonItem>Removes all bleed from target on hit</IonItem>
+			) : magic.getBleed() < 0 ? (
+				<IonItem>
+					Removes {-magic.getBleed()} bleed from target on hit
+				</IonItem>
+			) : null}
+			{magic.getSelfBleed() > 0 ? (
+				<IonItem>
+					Applies {magic.getSelfBleed()} bleed to user on cast
+				</IonItem>
+			) : magic.getSelfBleed() == -255 ? (
+				<IonItem>Removes all bleed from user on cast</IonItem>
+			) : magic.getSelfBleed() < 0 ? (
+				<IonItem>
+					Removes {-magic.getSelfBleed()} bleed from user on cast
+				</IonItem>
+			) : null}
+			{magic.getBleedResistModifierEnemy() != 0 ? (
+				<IonItem>
+					On hit, target gets{" "}
+					{magic.getBleedResistModifierEnemy() > 0 ? "+" : ""}
+					{Math.round(100 * magic.getBleedResistModifierEnemy())}%
 					bleed resist
 				</IonItem>
 			) : null}
-			{props.magic.getMaxHealthModifierEnemy() > 0 ? (
+			{magic.getBleedResistModifier() != 0 ? (
+				<IonItem>
+					On cast, user gets{" "}
+					{magic.getBleedResistModifier() > 0 ? "+" : ""}
+					{Math.round(100 * magic.getBleedResistModifier())}% bleed
+					resist
+				</IonItem>
+			) : null}
+			{magic.getMaxHealthModifierEnemy() > 0 ? (
 				<IonItem>
 					Increases target's maximum health by{" "}
-					{props.magic.getMaxHealthModifierEnemy()} on hit
+					{magic.getMaxHealthModifierEnemy()} on hit
 				</IonItem>
-			) : props.magic.getMaxHealthModifierEnemy() < 0 ? (
+			) : magic.getMaxHealthModifierEnemy() < 0 ? (
 				<IonItem>
 					Reduces target's maximum health by{" "}
-					{-props.magic.getMaxHealthModifierEnemy()} on hit
+					{-magic.getMaxHealthModifierEnemy()} on hit
 				</IonItem>
 			) : null}
-			{props.magic.getMaxHealthModifier() > 0 ? (
+			{magic.getMaxHealthModifier() > 0 ? (
 				<IonItem>
 					Increases user's maximum health by{" "}
-					{props.magic.getMaxHealthModifier()} on cast
+					{magic.getMaxHealthModifier()} on cast
 				</IonItem>
-			) : props.magic.getMaxHealthModifier() < 0 ? (
+			) : magic.getMaxHealthModifier() < 0 ? (
 				<IonItem>
 					Reduces user's maximum health by{" "}
-					{-props.magic.getMaxHealthModifier()} on cast
+					{-magic.getMaxHealthModifier()} on cast
 				</IonItem>
 			) : null}
-			{props.magic.getTempRegen() > 0 ? (
+			{magic.getTempRegen() > 0 ? (
 				<IonItem>
-					Applies {props.magic.getTempRegen()} regeneration to target
-					on hit
+					Applies {magic.getTempRegen()} regeneration to target on hit
 				</IonItem>
-			) : props.magic.getTempRegen() == -255 ? (
+			) : magic.getTempRegen() == -255 ? (
 				<IonItem>Removes all regeneration from target on hit</IonItem>
-			) : props.magic.getTempRegen() < 0 ? (
+			) : magic.getTempRegen() < 0 ? (
 				<IonItem>
-					Removes {-props.magic.getTempRegen()} regeneration from
-					target on hit
+					Removes {-magic.getTempRegen()} regeneration from target on
+					hit
 				</IonItem>
 			) : null}
-			{props.magic.getTempRegenSelf() > 0 ? (
+			{magic.getTempRegenSelf() > 0 ? (
 				<IonItem>
-					Applies {props.magic.getTempRegenSelf()} regeneration to
-					user on cast
+					Applies {magic.getTempRegenSelf()} regeneration to user on
+					cast
 				</IonItem>
-			) : props.magic.getTempRegenSelf() == -255 ? (
+			) : magic.getTempRegenSelf() == -255 ? (
 				<IonItem>Removes all regeneration from user on cast</IonItem>
-			) : props.magic.getTempRegenSelf() < 0 ? (
+			) : magic.getTempRegenSelf() < 0 ? (
 				<IonItem>
-					Removes {-props.magic.getTempRegenSelf()} regeneration from
-					user on cast
+					Removes {-magic.getTempRegenSelf()} regeneration from user
+					on cast
 				</IonItem>
 			) : null}
-			{props.magic.getTurnRegenModifierEnemy() != 0 ? (
+			{magic.getTurnRegenModifierEnemy() != 0 ? (
 				<IonItem>
 					Target gets{" "}
-					{props.magic.getTurnRegenModifierEnemy() > 0 ? "+" : ""}
-					{props.magic.getTurnRegenModifierEnemy()} health per turn
-					(applied on hit)
+					{magic.getTurnRegenModifierEnemy() > 0 ? "+" : ""}
+					{magic.getTurnRegenModifierEnemy()} health per turn (applied
+					on hit)
 				</IonItem>
 			) : null}
-			{props.magic.getTurnRegenModifier() != 0 ? (
+			{magic.getTurnRegenModifier() != 0 ? (
 				<IonItem>
-					User gets{" "}
-					{props.magic.getTurnRegenModifier() > 0 ? "+" : ""}
-					{props.magic.getTurnRegenModifier()} health per turn
+					User gets {magic.getTurnRegenModifier() > 0 ? "+" : ""}
+					{magic.getTurnRegenModifier()} health per turn
 				</IonItem>
 			) : null}
-			{props.magic.getBattleRegenModifierEnemy() != 0 ? (
+			{magic.getBattleRegenModifierEnemy() != 0 ? (
 				<IonItem>
 					Target gains{" "}
-					{props.magic.getBattleRegenModifierEnemy() > 0 ? "+" : ""}
-					{props.magic.getBattleRegenModifierEnemy()} health at end of
+					{magic.getBattleRegenModifierEnemy() > 0 ? "+" : ""}
+					{magic.getBattleRegenModifierEnemy()} health at end of
 					battle (applied on hit)
 				</IonItem>
 			) : null}
-			{props.magic.getBattleRegenModifier() != 0 ? (
+			{magic.getBattleRegenModifier() != 0 ? (
 				<IonItem>
-					User gets{" "}
-					{props.magic.getBattleRegenModifier() > 0 ? "+" : ""}
-					{props.magic.getBattleRegenModifier()} health at end of
-					battle
+					User gets {magic.getBattleRegenModifier() > 0 ? "+" : ""}
+					{magic.getBattleRegenModifier()} health at end of battle
 				</IonItem>
 			) : null}
-			{props.magic.getMaxManaModifierEnemy() > 0 ? (
+			{magic.getMaxManaModifierEnemy() > 0 ? (
 				<IonItem>
 					Increases target's maximum mana by{" "}
-					{props.magic.getMaxManaModifierEnemy()} on hit
+					{magic.getMaxManaModifierEnemy()} on hit
 				</IonItem>
-			) : props.magic.getMaxManaModifierEnemy() < 0 ? (
+			) : magic.getMaxManaModifierEnemy() < 0 ? (
 				<IonItem>
 					Reduces target's maximum mana by{" "}
-					{-props.magic.getMaxManaModifierEnemy()} on hit
+					{-magic.getMaxManaModifierEnemy()} on hit
 				</IonItem>
 			) : null}
-			{props.magic.getMaxManaModifier() > 0 ? (
+			{magic.getMaxManaModifier() > 0 ? (
 				<IonItem>
 					Increases user's maximum mana by{" "}
-					{props.magic.getMaxManaModifier()} on cast
+					{magic.getMaxManaModifier()} on cast
 				</IonItem>
-			) : props.magic.getMaxManaModifier() < 0 ? (
+			) : magic.getMaxManaModifier() < 0 ? (
 				<IonItem>
-					Reduces user's maximum mana by{" "}
-					{-props.magic.getMaxManaModifier()} on cast
+					Reduces user's maximum mana by {-magic.getMaxManaModifier()}{" "}
+					on cast
 				</IonItem>
 			) : null}
-			{props.magic.getTurnManaRegenModifierEnemy() > 0 ? (
+			{magic.getTurnManaRegenModifierEnemy() > 0 ? (
 				<IonItem>
 					Increases target's mana recovery by{" "}
-					{props.magic.getTurnManaRegenModifierEnemy()} on hit
+					{magic.getTurnManaRegenModifierEnemy()} on hit
 				</IonItem>
-			) : props.magic.getTurnManaRegenModifierEnemy() < 0 ? (
+			) : magic.getTurnManaRegenModifierEnemy() < 0 ? (
 				<IonItem>
 					Reduces target's mana recovery by{" "}
-					{-props.magic.getTurnManaRegenModifierEnemy()} on hit
+					{-magic.getTurnManaRegenModifierEnemy()} on hit
 				</IonItem>
 			) : null}
-			{props.magic.getTurnManaRegenModifier() > 0 ? (
+			{magic.getTurnManaRegenModifier() > 0 ? (
 				<IonItem>
 					Increases user's mana recovery by{" "}
-					{props.magic.getTurnManaRegenModifier()} on cast
+					{magic.getTurnManaRegenModifier()} on cast
 				</IonItem>
-			) : props.magic.getTurnManaRegenModifier() < 0 ? (
+			) : magic.getTurnManaRegenModifier() < 0 ? (
 				<IonItem>
 					Reduces user's mana recovery by{" "}
-					{-props.magic.getTurnManaRegenModifier()} on cast
+					{-magic.getTurnManaRegenModifier()} on cast
 				</IonItem>
 			) : null}
-			{props.magic.getBattleManaRegenModifierEnemy() > 0 ? (
+			{magic.getBattleManaRegenModifierEnemy() > 0 ? (
 				<IonItem>
-					Target recovers{" "}
-					{props.magic.getBattleManaRegenModifierEnemy()} mana at end
-					of battle (applied on hit)
+					Target recovers {magic.getBattleManaRegenModifierEnemy()}{" "}
+					mana at end of battle (applied on hit)
 				</IonItem>
-			) : props.magic.getBattleManaRegenModifierEnemy() < 0 ? (
+			) : magic.getBattleManaRegenModifierEnemy() < 0 ? (
 				<IonItem>
-					Target loses{" "}
-					{-props.magic.getBattleManaRegenModifierEnemy()} mana at end
-					of battle (applied on hit)
+					Target loses {-magic.getBattleManaRegenModifierEnemy()} mana
+					at end of battle (applied on hit)
 				</IonItem>
 			) : null}
-			{props.magic.getBattleManaRegenModifier() != 0 ? (
+			{magic.getBattleManaRegenModifier() != 0 ? (
 				<IonItem>
 					User gets{" "}
-					{props.magic.getBattleManaRegenModifier() > 0 ? "+" : ""}
-					{props.magic.getBattleManaRegenModifier()} mana at end of
-					battle
+					{magic.getBattleManaRegenModifier() > 0 ? "+" : ""}
+					{magic.getBattleManaRegenModifier()} mana at end of battle
 				</IonItem>
 			) : null}
-			{props.magic.getFlatArmourModifierEnemy() > 0 ? (
+			{magic.getFlatArmourModifierEnemy() > 0 ? (
 				<IonItem>
 					Increases target's physical armour rating by{" "}
-					{props.magic.getFlatArmourModifierEnemy()} on hit
+					{magic.getFlatArmourModifierEnemy()} on hit
 				</IonItem>
-			) : props.magic.getFlatArmourModifierEnemy() < 0 ? (
+			) : magic.getFlatArmourModifierEnemy() < 0 ? (
 				<IonItem>
 					Reduces target's physical armour rating by{" "}
-					{-props.magic.getFlatArmourModifierEnemy()} on hit
+					{-magic.getFlatArmourModifierEnemy()} on hit
 				</IonItem>
 			) : null}
-			{props.magic.getFlatArmourModifier() > 0 ? (
+			{magic.getFlatArmourModifier() > 0 ? (
 				<IonItem>
 					Increases user's physical armour rating by{" "}
-					{props.magic.getFlatArmourModifier()} on cast
+					{magic.getFlatArmourModifier()} on cast
 				</IonItem>
-			) : props.magic.getFlatArmourModifier() < 0 ? (
+			) : magic.getFlatArmourModifier() < 0 ? (
 				<IonItem>
 					Reduces user's physical armour rating by{" "}
-					{-props.magic.getFlatArmourModifier()} on cast
+					{-magic.getFlatArmourModifier()} on cast
 				</IonItem>
 			) : null}
-			{props.magic.getPropArmourModifierEnemy() > 0 ? (
+			{magic.getPropArmourModifierEnemy() > 0 ? (
 				<IonItem>
 					Target receives{" "}
-					{Math.round(100 * props.magic.getPropArmourModifierEnemy())}
-					% more physical damage (applied on hit)
-				</IonItem>
-			) : props.magic.getPropArmourModifierEnemy() < 0 ? (
-				<IonItem>
-					Target receives{" "}
-					{
-						-Math.round(
-							100 * props.magic.getPropArmourModifierEnemy()
-						)
-					}
-					% less physical damage (applied on hit)
-				</IonItem>
-			) : null}
-			{props.magic.getPropArmourModifier() > 0 ? (
-				<IonItem>
-					User receives{" "}
-					{Math.round(100 * props.magic.getPropArmourModifier())}%
-					more physical damage
-				</IonItem>
-			) : props.magic.getPropArmourModifier() < 0 ? (
-				<IonItem>
-					User receives{" "}
-					{-Math.round(100 * props.magic.getPropArmourModifier())}%
-					less physical damage
-				</IonItem>
-			) : null}
-			{props.magic.getFlatMagicArmourModifierEnemy() > 0 ? (
-				<IonItem>
-					Increases target's magic armour rating by{" "}
-					{props.magic.getFlatMagicArmourModifierEnemy()} on hit
-				</IonItem>
-			) : props.magic.getFlatMagicArmourModifierEnemy() < 0 ? (
-				<IonItem>
-					Reduces target's magic armour rating by{" "}
-					{-props.magic.getFlatMagicArmourModifierEnemy()} on hit
-				</IonItem>
-			) : null}
-			{props.magic.getFlatMagicArmourModifier() > 0 ? (
-				<IonItem>
-					Increases user's magic armour rating by{" "}
-					{props.magic.getFlatMagicArmourModifier()} on cast
-				</IonItem>
-			) : props.magic.getFlatMagicArmourModifier() < 0 ? (
-				<IonItem>
-					Reduces user's magic armour rating by{" "}
-					{-props.magic.getFlatMagicArmourModifier()} on cast
-				</IonItem>
-			) : null}
-			{props.magic.getPropMagicArmourModifierEnemy() > 0 ? (
-				<IonItem>
-					Target receives{" "}
-					{Math.round(
-						100 * props.magic.getPropMagicArmourModifierEnemy()
-					)}
-					% more magic damage (applied on hit)
-				</IonItem>
-			) : props.magic.getPropMagicArmourModifierEnemy() < 0 ? (
-				<IonItem>
-					Target receives{" "}
-					{
-						-Math.round(
-							100 * props.magic.getPropMagicArmourModifierEnemy()
-						)
-					}
-					% less magic damage (applied on hit)
-				</IonItem>
-			) : null}
-			{props.magic.getPropMagicArmourModifier() > 0 ? (
-				<IonItem>
-					User receives{" "}
-					{Math.round(100 * props.magic.getPropMagicArmourModifier())}
-					% more magic damage
-				</IonItem>
-			) : props.magic.getPropMagicArmourModifier() < 0 ? (
-				<IonItem>
-					User receives{" "}
-					{
-						-Math.round(
-							100 * props.magic.getPropMagicArmourModifier()
-						)
-					}
-					% less magic damage
-				</IonItem>
-			) : null}
-			{props.magic.getFlatDamageModifierEnemy() > 0 ? (
-				<IonItem>
-					Target deals {props.magic.getFlatDamageModifierEnemy()} more
+					{Math.round(100 * magic.getPropArmourModifierEnemy())}% more
 					physical damage (applied on hit)
 				</IonItem>
-			) : props.magic.getFlatDamageModifierEnemy() < 0 ? (
+			) : magic.getPropArmourModifierEnemy() < 0 ? (
 				<IonItem>
-					Target deals {-props.magic.getFlatDamageModifierEnemy()}{" "}
+					Target receives{" "}
+					{-Math.round(100 * magic.getPropArmourModifierEnemy())}%
 					less physical damage (applied on hit)
 				</IonItem>
 			) : null}
-			{props.magic.getFlatDamageModifier() > 0 ? (
+			{magic.getPropArmourModifier() > 0 ? (
 				<IonItem>
-					User deals {props.magic.getFlatDamageModifier()} more
+					User receives{" "}
+					{Math.round(100 * magic.getPropArmourModifier())}% more
 					physical damage
 				</IonItem>
-			) : props.magic.getFlatDamageModifier() < 0 ? (
+			) : magic.getPropArmourModifier() < 0 ? (
 				<IonItem>
-					User deals {-props.magic.getFlatDamageModifier()} less
+					User receives{" "}
+					{-Math.round(100 * magic.getPropArmourModifier())}% less
 					physical damage
 				</IonItem>
 			) : null}
-			{props.magic.getPropDamageModifierEnemy() > 0 ? (
+			{magic.getFlatMagicArmourModifierEnemy() > 0 ? (
 				<IonItem>
-					Target deals{" "}
-					{Math.round(100 * props.magic.getPropDamageModifierEnemy())}
-					% more physical damage (applied on hit)
+					Increases target's magic armour rating by{" "}
+					{magic.getFlatMagicArmourModifierEnemy()} on hit
 				</IonItem>
-			) : props.magic.getPropDamageModifierEnemy() < 0 ? (
+			) : magic.getFlatMagicArmourModifierEnemy() < 0 ? (
 				<IonItem>
-					Target deals{" "}
-					{
-						-Math.round(
-							100 * props.magic.getPropDamageModifierEnemy()
-						)
-					}
-					% less physical damage (applied on hit)
+					Reduces target's magic armour rating by{" "}
+					{-magic.getFlatMagicArmourModifierEnemy()} on hit
 				</IonItem>
 			) : null}
-			{props.magic.getPropDamageModifier() > 0 ? (
+			{magic.getFlatMagicArmourModifier() > 0 ? (
 				<IonItem>
-					User deals{" "}
-					{Math.round(100 * props.magic.getPropDamageModifier())}%
-					more physical damage
+					Increases user's magic armour rating by{" "}
+					{magic.getFlatMagicArmourModifier()} on cast
 				</IonItem>
-			) : props.magic.getPropDamageModifier() < 0 ? (
+			) : magic.getFlatMagicArmourModifier() < 0 ? (
 				<IonItem>
-					User deals{" "}
-					{-Math.round(100 * props.magic.getPropDamageModifier())}%
-					less physical damage
+					Reduces user's magic armour rating by{" "}
+					{-magic.getFlatMagicArmourModifier()} on cast
 				</IonItem>
 			) : null}
-			{props.magic.getFlatMagicDamageModifierEnemy() > 0 ? (
+			{magic.getPropMagicArmourModifierEnemy() > 0 ? (
 				<IonItem>
-					Target deals {props.magic.getFlatMagicDamageModifierEnemy()}{" "}
+					Target receives{" "}
+					{Math.round(100 * magic.getPropMagicArmourModifierEnemy())}%
 					more magic damage (applied on hit)
 				</IonItem>
-			) : props.magic.getFlatMagicDamageModifierEnemy() < 0 ? (
+			) : magic.getPropMagicArmourModifierEnemy() < 0 ? (
 				<IonItem>
-					Target deals{" "}
-					{-props.magic.getFlatMagicDamageModifierEnemy()} less magic
-					damage (applied on hit)
-				</IonItem>
-			) : null}
-			{props.magic.getFlatMagicDamageModifier() > 0 ? (
-				<IonItem>
-					User deals {props.magic.getFlatMagicDamageModifier()} more
-					magic damage
-				</IonItem>
-			) : props.magic.getFlatMagicDamageModifier() < 0 ? (
-				<IonItem>
-					User deals {-props.magic.getFlatMagicDamageModifier()} less
-					magic damage
-				</IonItem>
-			) : null}
-			{props.magic.getPropMagicDamageModifierEnemy() > 0 ? (
-				<IonItem>
-					Target deals{" "}
-					{Math.round(
-						100 * props.magic.getPropMagicDamageModifierEnemy()
-					)}
-					% more magic damage (applied on hit)
-				</IonItem>
-			) : props.magic.getPropMagicDamageModifierEnemy() < 0 ? (
-				<IonItem>
-					Target deals{" "}
-					{
-						-Math.round(
-							100 * props.magic.getPropMagicDamageModifierEnemy()
-						)
-					}
+					Target receives{" "}
+					{-Math.round(100 * magic.getPropMagicArmourModifierEnemy())}
 					% less magic damage (applied on hit)
 				</IonItem>
 			) : null}
-			{props.magic.getPropMagicDamageModifier() > 0 ? (
+			{magic.getPropMagicArmourModifier() > 0 ? (
 				<IonItem>
-					User deals{" "}
-					{Math.round(100 * props.magic.getPropMagicDamageModifier())}
-					% more magic damage
+					User receives{" "}
+					{Math.round(100 * magic.getPropMagicArmourModifier())}% more
+					magic damage
 				</IonItem>
-			) : props.magic.getPropMagicDamageModifier() < 0 ? (
+			) : magic.getPropMagicArmourModifier() < 0 ? (
 				<IonItem>
-					User deals{" "}
-					{
-						-Math.round(
-							100 * props.magic.getPropMagicDamageModifier()
-						)
-					}
-					% less magic damage
+					User receives{" "}
+					{-Math.round(100 * magic.getPropMagicArmourModifier())}%
+					less magic damage
 				</IonItem>
 			) : null}
-			{props.magic.getFlatArmourPiercingDamageModifierEnemy() > 0 ? (
+			{magic.getFlatDamageModifierEnemy() > 0 ? (
+				<IonItem>
+					Target deals {magic.getFlatDamageModifierEnemy()} more
+					physical damage (applied on hit)
+				</IonItem>
+			) : magic.getFlatDamageModifierEnemy() < 0 ? (
+				<IonItem>
+					Target deals {-magic.getFlatDamageModifierEnemy()} less
+					physical damage (applied on hit)
+				</IonItem>
+			) : null}
+			{magic.getFlatDamageModifier() > 0 ? (
+				<IonItem>
+					User deals {magic.getFlatDamageModifier()} more physical
+					damage
+				</IonItem>
+			) : magic.getFlatDamageModifier() < 0 ? (
+				<IonItem>
+					User deals {-magic.getFlatDamageModifier()} less physical
+					damage
+				</IonItem>
+			) : null}
+			{magic.getPropDamageModifierEnemy() > 0 ? (
 				<IonItem>
 					Target deals{" "}
-					{props.magic.getFlatArmourPiercingDamageModifierEnemy()}{" "}
-					more armour piercing damage (applied on hit)
+					{Math.round(100 * magic.getPropDamageModifierEnemy())}% more
+					physical damage (applied on hit)
 				</IonItem>
-			) : props.magic.getFlatArmourPiercingDamageModifierEnemy() < 0 ? (
+			) : magic.getPropDamageModifierEnemy() < 0 ? (
 				<IonItem>
 					Target deals{" "}
-					{-props.magic.getFlatArmourPiercingDamageModifierEnemy()}{" "}
-					less armour piercing damage (applied on hit)
+					{-Math.round(100 * magic.getPropDamageModifierEnemy())}%
+					less physical damage (applied on hit)
 				</IonItem>
 			) : null}
-			{props.magic.getFlatArmourPiercingDamageModifier() > 0 ? (
+			{magic.getPropDamageModifier() > 0 ? (
 				<IonItem>
-					User deals{" "}
-					{props.magic.getFlatArmourPiercingDamageModifier()} more
-					armour piercing damage
+					User deals {Math.round(100 * magic.getPropDamageModifier())}
+					% more physical damage
 				</IonItem>
-			) : props.magic.getFlatArmourPiercingDamageModifier() < 0 ? (
+			) : magic.getPropDamageModifier() < 0 ? (
 				<IonItem>
 					User deals{" "}
-					{-props.magic.getFlatArmourPiercingDamageModifier()} less
-					armour piercing damage
+					{-Math.round(100 * magic.getPropDamageModifier())}% less
+					physical damage
 				</IonItem>
 			) : null}
-			{props.magic.getPropArmourPiercingDamageModifierEnemy() > 0 ? (
+			{magic.getFlatMagicDamageModifierEnemy() > 0 ? (
+				<IonItem>
+					Target deals {magic.getFlatMagicDamageModifierEnemy()} more
+					magic damage (applied on hit)
+				</IonItem>
+			) : magic.getFlatMagicDamageModifierEnemy() < 0 ? (
+				<IonItem>
+					Target deals {-magic.getFlatMagicDamageModifierEnemy()} less
+					magic damage (applied on hit)
+				</IonItem>
+			) : null}
+			{magic.getFlatMagicDamageModifier() > 0 ? (
+				<IonItem>
+					User deals {magic.getFlatMagicDamageModifier()} more magic
+					damage
+				</IonItem>
+			) : magic.getFlatMagicDamageModifier() < 0 ? (
+				<IonItem>
+					User deals {-magic.getFlatMagicDamageModifier()} less magic
+					damage
+				</IonItem>
+			) : null}
+			{magic.getPropMagicDamageModifierEnemy() > 0 ? (
+				<IonItem>
+					Target deals{" "}
+					{Math.round(100 * magic.getPropMagicDamageModifierEnemy())}%
+					more magic damage (applied on hit)
+				</IonItem>
+			) : magic.getPropMagicDamageModifierEnemy() < 0 ? (
+				<IonItem>
+					Target deals{" "}
+					{-Math.round(100 * magic.getPropMagicDamageModifierEnemy())}
+					% less magic damage (applied on hit)
+				</IonItem>
+			) : null}
+			{magic.getPropMagicDamageModifier() > 0 ? (
+				<IonItem>
+					User deals{" "}
+					{Math.round(100 * magic.getPropMagicDamageModifier())}% more
+					magic damage
+				</IonItem>
+			) : magic.getPropMagicDamageModifier() < 0 ? (
+				<IonItem>
+					User deals{" "}
+					{-Math.round(100 * magic.getPropMagicDamageModifier())}%
+					less magic damage
+				</IonItem>
+			) : null}
+			{magic.getFlatArmourPiercingDamageModifierEnemy() > 0 ? (
+				<IonItem>
+					Target deals{" "}
+					{magic.getFlatArmourPiercingDamageModifierEnemy()} more
+					armour piercing damage (applied on hit)
+				</IonItem>
+			) : magic.getFlatArmourPiercingDamageModifierEnemy() < 0 ? (
+				<IonItem>
+					Target deals{" "}
+					{-magic.getFlatArmourPiercingDamageModifierEnemy()} less
+					armour piercing damage (applied on hit)
+				</IonItem>
+			) : null}
+			{magic.getFlatArmourPiercingDamageModifier() > 0 ? (
+				<IonItem>
+					User deals {magic.getFlatArmourPiercingDamageModifier()}{" "}
+					more armour piercing damage
+				</IonItem>
+			) : magic.getFlatArmourPiercingDamageModifier() < 0 ? (
+				<IonItem>
+					User deals {-magic.getFlatArmourPiercingDamageModifier()}{" "}
+					less armour piercing damage
+				</IonItem>
+			) : null}
+			{magic.getPropArmourPiercingDamageModifierEnemy() > 0 ? (
 				<IonItem>
 					Target deals{" "}
 					{Math.round(
-						100 *
-							props.magic.getPropArmourPiercingDamageModifierEnemy()
+						100 * magic.getPropArmourPiercingDamageModifierEnemy()
 					)}
 					% more armour piercing damage (applied on hit)
 				</IonItem>
-			) : props.magic.getPropArmourPiercingDamageModifierEnemy() < 0 ? (
+			) : magic.getPropArmourPiercingDamageModifierEnemy() < 0 ? (
 				<IonItem>
 					Target deals{" "}
 					{
 						-Math.round(
 							100 *
-								props.magic.getPropArmourPiercingDamageModifierEnemy()
+								magic.getPropArmourPiercingDamageModifierEnemy()
 						)
 					}
 					% less armour piercing damage (applied on hit)
 				</IonItem>
 			) : null}
-			{props.magic.getPropArmourPiercingDamageModifier() > 0 ? (
+			{magic.getPropArmourPiercingDamageModifier() > 0 ? (
 				<IonItem>
 					User deals{" "}
 					{Math.round(
-						100 * props.magic.getPropArmourPiercingDamageModifier()
+						100 * magic.getPropArmourPiercingDamageModifier()
 					)}
 					% more armour piercing damage
 				</IonItem>
-			) : props.magic.getPropArmourPiercingDamageModifier() < 0 ? (
+			) : magic.getPropArmourPiercingDamageModifier() < 0 ? (
 				<IonItem>
 					User deals{" "}
 					{
 						-Math.round(
-							100 *
-								props.magic.getPropArmourPiercingDamageModifier()
+							100 * magic.getPropArmourPiercingDamageModifier()
 						)
 					}
 					% less armour piercing damage
 				</IonItem>
 			) : null}
-			{props.magic.getEvadeChanceModifierEnemy() > 0 ? (
+			{magic.getEvadeChanceModifierEnemy() > 0 ? (
 				<IonItem>
 					Increases target's evasion chance by{" "}
-					{Math.round(
-						100 * props.magic.getEvadeChanceModifierEnemy()
-					)}
-					% (applied on hit)
+					{Math.round(100 * magic.getEvadeChanceModifierEnemy())}%
+					(applied on hit)
 				</IonItem>
-			) : props.magic.getEvadeChanceModifierEnemy() < 0 ? (
+			) : magic.getEvadeChanceModifierEnemy() < 0 ? (
 				<IonItem>
 					Reduces target's evasion chance by{" "}
-					{
-						-Math.round(
-							100 * props.magic.getEvadeChanceModifierEnemy()
-						)
-					}
-					% (applied on hit)
+					{-Math.round(100 * magic.getEvadeChanceModifierEnemy())}%
+					(applied on hit)
 				</IonItem>
 			) : null}
-			{props.magic.getEvadeChanceModifier() > 0 ? (
+			{magic.getEvadeChanceModifier() > 0 ? (
 				<IonItem>
 					Increases user's evasion chance by{" "}
-					{Math.round(100 * props.magic.getEvadeChanceModifier())}%
+					{Math.round(100 * magic.getEvadeChanceModifier())}%
 				</IonItem>
-			) : props.magic.getEvadeChanceModifier() < 0 ? (
+			) : magic.getEvadeChanceModifier() < 0 ? (
 				<IonItem>
 					Reduces user's evasion chance by{" "}
-					{-Math.round(100 * props.magic.getEvadeChanceModifier())}%
+					{-Math.round(100 * magic.getEvadeChanceModifier())}%
 				</IonItem>
 			) : null}
-			{props.magic.getCounterAttackChanceModifierEnemy() > 0 ? (
+			{magic.getCounterAttackChanceModifierEnemy() > 0 ? (
 				<IonItem>
 					Increases target's counter attack chance by{" "}
 					{Math.round(
-						100 * props.magic.getCounterAttackChanceModifierEnemy()
+						100 * magic.getCounterAttackChanceModifierEnemy()
 					)}
 					% (applied on hit)
 				</IonItem>
-			) : props.magic.getCounterAttackChanceModifierEnemy() < 0 ? (
+			) : magic.getCounterAttackChanceModifierEnemy() < 0 ? (
 				<IonItem>
 					Reduces target's counter attack chance by{" "}
 					{
 						-Math.round(
-							100 *
-								props.magic.getCounterAttackChanceModifierEnemy()
+							100 * magic.getCounterAttackChanceModifierEnemy()
 						)
 					}
 					% (applied on hit)
 				</IonItem>
 			) : null}
-			{props.magic.getCounterAttackChanceModifier() > 0 ? (
+			{magic.getCounterAttackChanceModifier() > 0 ? (
 				<IonItem>
 					Increases user's counter attack chance by{" "}
-					{Math.round(
-						100 * props.magic.getCounterAttackChanceModifier()
-					)}
-					%
+					{Math.round(100 * magic.getCounterAttackChanceModifier())}%
 				</IonItem>
-			) : props.magic.getCounterAttackChanceModifier() < 0 ? (
+			) : magic.getCounterAttackChanceModifier() < 0 ? (
 				<IonItem>
 					Reduces user's counter attack chance by{" "}
-					{
-						-Math.round(
-							100 * props.magic.getCounterAttackChanceModifier()
-						)
-					}
-					%
+					{-Math.round(100 * magic.getCounterAttackChanceModifier())}%
 				</IonItem>
 			) : null}
 		</IonList>

@@ -15,11 +15,15 @@ import {
 	ShowPlayerInventory,
 	player
 } from "../functionality/player";
-import {Fragment, useEffect, useState} from "react";
+import {Fragment, useState} from "react";
 import {actionChoice} from "../functionality/data";
 import {close} from "ionicons/icons";
-import {randomFloat} from "../functionality/rng";
-import {SpellCast, WeaponAttack, spellDeclare, weaponDeclare} from "./attacks";
+import {
+	SpellCast,
+	WeaponAttack,
+	spellDeclare,
+	weaponDeclare
+} from "../components/attacks";
 import {useGenerator} from "../hooks/hooks";
 import {weapon} from "../functionality/weapons";
 import {spell} from "../functionality/spells";
@@ -43,7 +47,11 @@ export const REGEN_MULTIPLIER = 1;
  */
 
 /**Displays the Battle page */
-export function BattlePage(props: {
+export function BattlePage({
+	playerCharacter,
+	opponent,
+	endBattle
+}: {
 	/**The player */
 	playerCharacter: player;
 	/**The enemy */
@@ -59,12 +67,7 @@ export function BattlePage(props: {
 	const [isInventoryOpen, setIsInventoryOpen] = useState<boolean>(false);
 	/**Holds the battle display buffer */
 	const displayBuffer: React.JSX.Element | null = useGenerator(
-		battleHandler(
-			props.playerCharacter,
-			props.opponent,
-			props.endBattle,
-			battleLog
-		)
+		battleHandler(playerCharacter, opponent, endBattle, battleLog)
 	);
 	/**Holds the battle handler iterator */
 	//const [battleHandlerIterator] = useState<
@@ -75,9 +78,9 @@ export function BattlePage(props: {
 	//	>
 	//>(
 	//	battleHandler(
-	//		props.playerCharacter,
-	//		props.opponent,
-	//		props.endBattle,
+	//		playerCharacter,
+	//		opponent,
+	//		endBattle,
 	//		battleLog
 	//	)
 	//);
@@ -105,7 +108,7 @@ export function BattlePage(props: {
 			<IonHeader>
 				<IonToolbar>
 					<IonButtons slot="start">
-						<IonButton mode="ios" onClick={() => props.endBattle()}>
+						<IonButton mode="ios" onClick={() => endBattle()}>
 							End Battle
 						</IonButton>
 					</IonButtons>
@@ -121,7 +124,7 @@ export function BattlePage(props: {
 							onDidDismiss={() => setIsInventoryOpen(false)}
 						>
 							<ShowPlayerInventory
-								playerCharacter={props.playerCharacter}
+								playerCharacter={playerCharacter}
 								closeInventory={() => setIsInventoryOpen(false)}
 							/>
 						</IonModal>
@@ -168,8 +171,15 @@ export function BattlePage(props: {
 		</IonPage>
 	);
 }
-/**Handles the actual battle */
-export function BattleHandler(props: {
+/**Handles the actual battle
+ * @deprecated
+ */
+export function BattleHandler({
+	playerCharacter,
+	opponent,
+	endBattle,
+	battleLog
+}: {
 	/**The player */
 	playerCharacter: player;
 	/**The enemy */
@@ -181,7 +191,7 @@ export function BattleHandler(props: {
 }): React.JSX.Element | null {
 	/**Tracks whose turn it is, true is player turn */
 	const [playerTurn, setPlayerTurn] = useState<boolean>(
-		props.playerCharacter.rollInitiative() > props.opponent.rollInitiative()
+		playerCharacter.rollInitiative() > opponent.rollInitiative()
 	);
 	const [firstTurn, setFirstTurn] = useState<boolean>(true);
 	/**Tracks which phase of the turn we are in */
@@ -218,19 +228,19 @@ export function BattleHandler(props: {
 	 * @returns true if one of them is dead
 	 */
 	function deathCheck(): boolean {
-		if (props.opponent.getHealth() <= 0) {
-			if (props.opponent.getDeathSpell()?.getReal()) {
+		if (opponent.getHealth() <= 0) {
+			if (opponent.getDeathSpell()?.getReal()) {
 				setPhaseCounter(6.5);
 				return true;
 			}
-			if (props.playerCharacter.getHealth() <= 0) {
+			if (playerCharacter.getHealth() <= 0) {
 				setPhaseCounter(7);
 				return true;
 			}
 			setPhaseCounter(6);
 			return true;
 		}
-		if (props.playerCharacter.getHealth() <= 0) {
+		if (playerCharacter.getHealth() <= 0) {
 			setPhaseCounter(7);
 			return true;
 		}
@@ -243,21 +253,19 @@ export function BattleHandler(props: {
 			if (deathCheck()) {
 				break phaseSwitch;
 			}
-			props.playerCharacter.resetBonusActions();
-			props.opponent.resetBonusActions();
-			props.battleLog.push(props.opponent.getIntroduction());
-			props.battleLog.push(
-				playerTurn ? "You go first" : `${props.opponent} goes first`
+			playerCharacter.resetBonusActions();
+			opponent.resetBonusActions();
+			battleLog.push(opponent.getIntroduction());
+			battleLog.push(
+				playerTurn ? "You go first" : `${opponent} goes first`
 			);
 			return (
 				<IonContent>
 					<div className="ion-text-center">
-						{props.opponent.getIntroduction()}
+						{opponent.getIntroduction()}
 					</div>
 					<div className="ion-text-center">
-						{playerTurn
-							? "You go first"
-							: `${props.opponent} goes first`}
+						{playerTurn ? "You go first" : `${opponent} goes first`}
 					</div>
 					<IonButton
 						mode="ios"
@@ -275,14 +283,14 @@ export function BattleHandler(props: {
 		//Main action selection
 		case 0:
 			if (playerTurn) {
-				props.playerCharacter.turnStart();
+				playerCharacter.turnStart();
 				if (deathCheck()) {
 					break phaseSwitch;
 				}
 				return (
 					<ChoosePlayerAction
-						playerCharacter={props.playerCharacter}
-						enemyName={props.opponent.getName()}
+						playerCharacter={playerCharacter}
+						enemyName={opponent.getName()}
 						timing={0}
 						submitChoice={(choice: actionChoice) => {
 							setPlayerSelection(choice);
@@ -291,11 +299,11 @@ export function BattleHandler(props: {
 					/>
 				);
 			} else {
-				props.opponent.turnStart();
+				opponent.turnStart();
 				if (deathCheck()) {
 					break phaseSwitch;
 				}
-				setEnemySelection(props.opponent.chooseAction(0, firstTurn));
+				setEnemySelection(opponent.chooseAction(0, firstTurn));
 				setPhaseCounter(0.5);
 			}
 			break phaseSwitch;
@@ -309,60 +317,52 @@ export function BattleHandler(props: {
 						setPlayerTurn(false);
 						break phaseSwitch;
 					case 1:
-						props.battleLog.push(
-							`You attack with ${props.playerCharacter.getWeapon(
+						battleLog.push(
+							`You attack with ${playerCharacter.getWeapon(
 								playerSelection.slot1
 							)}`
 						);
 						weaponDeclare(
-							props.playerCharacter,
-							props.playerCharacter.getWeapon(
-								playerSelection.slot1
-							)
+							playerCharacter,
+							playerCharacter.getWeapon(playerSelection.slot1)
 						);
 						break;
 					case 3:
-						props.battleLog.push(
-							`You attack with ${props.playerCharacter.getWeapon(
+						battleLog.push(
+							`You attack with ${playerCharacter.getWeapon(
 								playerSelection.slot1
-							)} and ${props.playerCharacter.getWeapon(
+							)} and ${playerCharacter.getWeapon(
 								playerSelection.slot2
 							)}`
 						);
 						weaponDeclare(
-							props.playerCharacter,
-							props.playerCharacter.getWeapon(
-								playerSelection.slot1
-							),
-							props.playerCharacter.getWeapon(
-								playerSelection.slot2
-							)
+							playerCharacter,
+							playerCharacter.getWeapon(playerSelection.slot1),
+							playerCharacter.getWeapon(playerSelection.slot2)
 						);
 						break;
 					case 2:
-						props.battleLog.push(
-							`You cast ${props.playerCharacter.getSpell(
+						battleLog.push(
+							`You cast ${playerCharacter.getSpell(
 								playerSelection.slot1
 							)}`
 						);
 						spellDeclare(
-							props.playerCharacter.getSpell(
-								playerSelection.slot1
-							),
-							props.playerCharacter
+							playerCharacter.getSpell(playerSelection.slot1),
+							playerCharacter
 						);
 				}
 				return (
 					<IonContent>
 						<div className="ion-text-center">
-							{props.battleLog.at(-1)}
+							{battleLog.at(-1)}
 						</div>
 						<IonButton
 							mode="ios"
 							onClick={() => {
 								setPhaseCounter(1);
 								setPostDeclarationHealth(
-									props.playerCharacter.getHealth()
+									playerCharacter.getHealth()
 								);
 							}}
 						>
@@ -373,11 +373,11 @@ export function BattleHandler(props: {
 			} else {
 				switch (enemySelection.actionType) {
 					case 0:
-						props.battleLog.push(`${props.opponent} does nothing`);
+						battleLog.push(`${opponent} does nothing`);
 						return (
 							<IonContent>
 								<div className="ion-text-center">
-									{props.opponent.getName()} does nothing
+									{opponent.getName()} does nothing
 								</div>
 								<IonButton
 									mode="ios"
@@ -392,57 +392,49 @@ export function BattleHandler(props: {
 							</IonContent>
 						);
 					case 1:
-						props.battleLog.push(
-							`${
-								props.opponent
-							} attacks with ${props.opponent.getWeapon(
+						battleLog.push(
+							`${opponent} attacks with ${opponent.getWeapon(
 								enemySelection.slot1
 							)}`
 						);
 						weaponDeclare(
-							props.opponent,
-							props.opponent.getWeapon(enemySelection.slot1)
+							opponent,
+							opponent.getWeapon(enemySelection.slot1)
 						);
 						break;
 					case 3:
-						props.battleLog.push(
-							`${
-								props.opponent
-							} attacks with ${props.opponent.getWeapon(
+						battleLog.push(
+							`${opponent} attacks with ${opponent.getWeapon(
 								enemySelection.slot1
-							)} and ${props.opponent.getWeapon(
-								enemySelection.slot2
-							)}`
+							)} and ${opponent.getWeapon(enemySelection.slot2)}`
 						);
 						weaponDeclare(
-							props.opponent,
-							props.opponent.getWeapon(enemySelection.slot1),
-							props.opponent.getWeapon(enemySelection.slot2)
+							opponent,
+							opponent.getWeapon(enemySelection.slot1),
+							opponent.getWeapon(enemySelection.slot2)
 						);
 						break;
 					case 2:
-						props.battleLog.push(
-							`${props.opponent} casts ${props.opponent.getSpell(
+						battleLog.push(
+							`${opponent} casts ${opponent.getSpell(
 								enemySelection.slot1
 							)}`
 						);
 						spellDeclare(
-							props.opponent.getSpell(enemySelection.slot1),
-							props.opponent
+							opponent.getSpell(enemySelection.slot1),
+							opponent
 						);
 				}
 				return (
 					<IonContent>
 						<div className="ion-text-center">
-							{props.battleLog.at(-1)}
+							{battleLog.at(-1)}
 						</div>
 						<IonButton
 							mode="ios"
 							onClick={() => {
 								setPhaseCounter(1);
-								setPostDeclarationHealth(
-									props.opponent.getHealth()
-								);
+								setPostDeclarationHealth(opponent.getHealth());
 							}}
 						>
 							Continue
@@ -456,10 +448,10 @@ export function BattleHandler(props: {
 				switch (playerSelection.actionType) {
 					case 1:
 						setEnemySelection(
-							props.opponent.chooseAction(
+							opponent.chooseAction(
 								1,
 								firstTurn,
-								props.playerCharacter
+								playerCharacter
 									.getWeapon(playerSelection.slot1)
 									.getName()
 							)
@@ -467,13 +459,13 @@ export function BattleHandler(props: {
 						break;
 					case 3:
 						setEnemySelection(
-							props.opponent.chooseAction(
+							opponent.chooseAction(
 								4,
 								firstTurn,
-								props.playerCharacter
+								playerCharacter
 									.getWeapon(playerSelection.slot1)
 									.getName(),
-								props.playerCharacter
+								playerCharacter
 									.getWeapon(playerSelection.slot2)
 									.getName()
 							)
@@ -481,10 +473,10 @@ export function BattleHandler(props: {
 						break;
 					case 2:
 						setEnemySelection(
-							props.opponent.chooseAction(
+							opponent.chooseAction(
 								2,
 								firstTurn,
-								props.playerCharacter
+								playerCharacter
 									.getSpell(playerSelection.slot1)
 									.getName()
 							)
@@ -496,64 +488,64 @@ export function BattleHandler(props: {
 			} else {
 				switch (enemySelection.actionType) {
 					case 1:
-						if (!props.playerCharacter.checkPlayerActions(1)) {
+						if (!playerCharacter.checkPlayerActions(1)) {
 							setPhaseCounter(2);
 							setPlayerSelection({actionType: 0});
 							break phaseSwitch;
 						}
 						return (
 							<ChoosePlayerAction
-								playerCharacter={props.playerCharacter}
-								enemyName={props.opponent.getName()}
+								playerCharacter={playerCharacter}
+								enemyName={opponent.getName()}
 								timing={1}
 								submitChoice={(choice) => {
 									setPhaseCounter(2);
 									setPlayerSelection(choice);
 								}}
-								itemName1={props.opponent
+								itemName1={opponent
 									.getWeapon(enemySelection.slot1)
 									.getName()}
 							/>
 						);
 					case 3:
-						if (!props.playerCharacter.checkPlayerActions(4)) {
+						if (!playerCharacter.checkPlayerActions(4)) {
 							setPhaseCounter(2);
 							setPlayerSelection({actionType: 0});
 							break phaseSwitch;
 						}
 						return (
 							<ChoosePlayerAction
-								playerCharacter={props.playerCharacter}
-								enemyName={props.opponent.getName()}
+								playerCharacter={playerCharacter}
+								enemyName={opponent.getName()}
 								timing={3}
 								submitChoice={(choice) => {
 									setPhaseCounter(2);
 									setPlayerSelection(choice);
 								}}
-								itemName1={props.opponent
+								itemName1={opponent
 									.getWeapon(enemySelection.slot1)
 									.getName()}
-								itemName2={props.opponent
+								itemName2={opponent
 									.getWeapon(enemySelection.slot2)
 									.getName()}
 							/>
 						);
 					case 2:
-						if (!props.playerCharacter.checkPlayerActions(2)) {
+						if (!playerCharacter.checkPlayerActions(2)) {
 							setPhaseCounter(2);
 							setPlayerSelection({actionType: 0});
 							break phaseSwitch;
 						}
 						return (
 							<ChoosePlayerAction
-								playerCharacter={props.playerCharacter}
-								enemyName={props.opponent.getName()}
+								playerCharacter={playerCharacter}
+								enemyName={opponent.getName()}
 								timing={2}
 								submitChoice={(choice) => {
 									setPhaseCounter(2);
 									setPlayerSelection(choice);
 								}}
-								itemName1={props.opponent
+								itemName1={opponent
 									.getSpell(enemySelection.slot1)
 									.getName()}
 							/>
@@ -568,37 +560,35 @@ export function BattleHandler(props: {
 					setPhaseCounter(3);
 					break phaseSwitch;
 				} else {
-					props.battleLog.push(
-						`${props.opponent} casts ${props.opponent.getSpell(
+					battleLog.push(
+						`${opponent} casts ${opponent.getSpell(
 							enemySelection.slot1
 						)} in response`
 					);
 					spellDeclare(
-						props.opponent.getSpell(enemySelection.slot1),
-						props.opponent
+						opponent.getSpell(enemySelection.slot1),
+						opponent
 					);
 					return (
 						<IonContent>
 							<div className="ion-text-center">
-								{props.battleLog.at(-1)}
+								{battleLog.at(-1)}
 							</div>
 							<SpellCast
-								magic={props.opponent.getSpell(
-									enemySelection.slot1
-								)}
-								caster={props.opponent}
-								target={props.playerCharacter}
-								battleLog={props.battleLog}
+								magic={opponent.getSpell(enemySelection.slot1)}
+								caster={opponent}
+								target={playerCharacter}
+								battleLog={battleLog}
 								timing={1}
 							/>
 							<IonButton
 								mode="ios"
 								onClick={() => {
 									if (
-										props.opponent
+										opponent
 											.getSpell(enemySelection.slot1)
 											.getPropDamage() > 0 ||
-										props.playerCharacter.getHealth() <
+										playerCharacter.getHealth() <
 											postDeclarationHealth
 									) {
 										if (!deathCheck()) {
@@ -619,37 +609,37 @@ export function BattleHandler(props: {
 					setPhaseCounter(3);
 					break phaseSwitch;
 				} else {
-					props.battleLog.push(
-						`You cast ${props.playerCharacter.getSpell(
+					battleLog.push(
+						`You cast ${playerCharacter.getSpell(
 							playerSelection.slot1
 						)} in response`
 					);
 					spellDeclare(
-						props.playerCharacter.getSpell(playerSelection.slot1),
-						props.playerCharacter
+						playerCharacter.getSpell(playerSelection.slot1),
+						playerCharacter
 					);
 					return (
 						<IonContent>
 							<div className="ion-text-center">
-								{props.battleLog.at(-1)}
+								{battleLog.at(-1)}
 							</div>
 							<SpellCast
-								magic={props.playerCharacter.getSpell(
+								magic={playerCharacter.getSpell(
 									playerSelection.slot1
 								)}
-								caster={props.playerCharacter}
-								target={props.opponent}
+								caster={playerCharacter}
+								target={opponent}
 								timing={1}
-								battleLog={props.battleLog}
+								battleLog={battleLog}
 							/>
 							<IonButton
 								mode="ios"
 								onClick={() => {
 									if (
-										props.playerCharacter
+										playerCharacter
 											.getSpell(playerSelection.slot1)
 											.getPropDamage() > 0 ||
-										props.opponent.getHealth() <
+										opponent.getHealth() <
 											postDeclarationHealth
 									) {
 										if (!deathCheck()) {
@@ -672,25 +662,25 @@ export function BattleHandler(props: {
 				switch (playerSelection.actionType) {
 					case 1:
 						if (
-							props.opponent
+							opponent
 								//@ts-expect-error
 								.getSpell(enemySelection.slot1)
 								.getCounterSpell() > 1
 						) {
 							if (
-								props.playerCharacter
+								playerCharacter
 									.getWeapon(playerSelection.slot1)
 									.getCanCounter()
 							) {
-								props.battleLog.push(
-									`The effects of ${props.playerCharacter.getWeapon(
+								battleLog.push(
+									`The effects of ${playerCharacter.getWeapon(
 										playerSelection.slot1
 									)} are countered`
 								);
 								return (
 									<IonContent>
 										<div className="ion-text-center">
-											{props.battleLog.at(-1)}
+											{battleLog.at(-1)}
 										</div>
 										<IonButton
 											mode="ios"
@@ -706,21 +696,21 @@ export function BattleHandler(props: {
 									</IonContent>
 								);
 							} else {
-								props.opponent.addNoCounter(
+								opponent.addNoCounter(
 									false,
-									props.playerCharacter
+									playerCharacter
 										.getWeapon(playerSelection.slot1)
 										.getName()
 								);
-								props.battleLog.push(
-									`${props.playerCharacter.getWeapon(
+								battleLog.push(
+									`${playerCharacter.getWeapon(
 										playerSelection.slot1
 									)} cannot be countered`
 								);
 								return (
 									<IonContent>
 										<div className="ion-text-center">
-											{props.battleLog.at(-1)}
+											{battleLog.at(-1)}
 										</div>
 										<IonButton
 											mode="ios"
@@ -737,35 +727,35 @@ export function BattleHandler(props: {
 						}
 					case 2:
 						if (
-							props.opponent
+							opponent
 								//@ts-expect-error
 								.getSpell(enemySelection.slot1)
 								.getCounterSpell() == 1 ||
-							props.opponent
+							opponent
 								//@ts-expect-error
 								.getSpell(enemySelection.slot1)
 								.getCounterSpell() == 3
 						) {
 							if (
-								props.playerCharacter
+								playerCharacter
 									.getSpell(playerSelection.slot1)
 									.getNoCounter()
 							) {
-								props.battleLog.push(
-									`${props.playerCharacter.getSpell(
+								battleLog.push(
+									`${playerCharacter.getSpell(
 										playerSelection.slot1
 									)} cannot be countered`
 								);
-								props.opponent.addNoCounter(
+								opponent.addNoCounter(
 									true,
-									props.playerCharacter
+									playerCharacter
 										.getSpell(playerSelection.slot1)
 										.getName()
 								);
 								return (
 									<IonContent>
 										<div className="ion-text-center">
-											{props.battleLog.at(-1)}
+											{battleLog.at(-1)}
 										</div>
 										<IonButton
 											mode="ios"
@@ -776,15 +766,15 @@ export function BattleHandler(props: {
 									</IonContent>
 								);
 							} else {
-								props.battleLog.push(
-									`The effects of ${props.playerCharacter.getSpell(
+								battleLog.push(
+									`The effects of ${playerCharacter.getSpell(
 										playerSelection.slot1
 									)} are countered`
 								);
 								return (
 									<IonContent>
 										<div className="ion-text-center">
-											{props.battleLog.at(-1)}
+											{battleLog.at(-1)}
 										</div>
 										<IonButton
 											mode="ios"
@@ -806,32 +796,32 @@ export function BattleHandler(props: {
 						}
 					case 3:
 						if (
-							props.opponent
+							opponent
 								//@ts-expect-error
 								.getSpell(enemySelection.slot1)
 								.getCounterSpell() > 1
 						) {
 							if (
-								props.playerCharacter
+								playerCharacter
 									.getWeapon(playerSelection.slot1)
 									.getCanCounter()
 							) {
 								if (
-									props.playerCharacter
+									playerCharacter
 										.getWeapon(playerSelection.slot2)
 										.getCanCounter()
 								) {
-									props.battleLog.push(
-										`The effects of ${props.playerCharacter.getWeapon(
+									battleLog.push(
+										`The effects of ${playerCharacter.getWeapon(
 											playerSelection.slot1
-										)} and ${props.playerCharacter.getWeapon(
+										)} and ${playerCharacter.getWeapon(
 											playerSelection.slot2
 										)} are countered`
 									);
 									return (
 										<IonContent>
 											<div className="ion-text-center">
-												{props.battleLog.at(-1)}
+												{battleLog.at(-1)}
 											</div>
 											<IonButton
 												mode="ios"
@@ -847,23 +837,23 @@ export function BattleHandler(props: {
 										</IonContent>
 									);
 								} else {
-									props.battleLog.push(
-										`The effects of ${props.playerCharacter
+									battleLog.push(
+										`The effects of ${playerCharacter
 											.getWeapon(playerSelection.slot1)
-											.getName()} are countered, but ${props.playerCharacter
+											.getName()} are countered, but ${playerCharacter
 											.getWeapon(playerSelection.slot2)
 											.getName()} cannot be countered`
 									);
-									props.opponent.addNoCounter(
+									opponent.addNoCounter(
 										false,
-										props.playerCharacter
+										playerCharacter
 											.getWeapon(playerSelection.slot2)
 											.getName()
 									);
 									return (
 										<IonContent>
 											<div className="ion-text-center">
-												{props.battleLog.at(-1)}
+												{battleLog.at(-1)}
 											</div>
 											<IonButton
 												mode="ios"
@@ -882,27 +872,27 @@ export function BattleHandler(props: {
 								}
 							} else {
 								if (
-									props.playerCharacter
+									playerCharacter
 										.getWeapon(playerSelection.slot2)
 										.getCanCounter()
 								) {
-									props.battleLog.push(
-										`The effects of ${props.playerCharacter
+									battleLog.push(
+										`The effects of ${playerCharacter
 											.getWeapon(playerSelection.slot2)
-											.getName()} are countered, but ${props.playerCharacter
+											.getName()} are countered, but ${playerCharacter
 											.getWeapon(playerSelection.slot1)
 											.getName()} cannot be countered`
 									);
-									props.opponent.addNoCounter(
+									opponent.addNoCounter(
 										false,
-										props.playerCharacter
+										playerCharacter
 											.getWeapon(playerSelection.slot1)
 											.getName()
 									);
 									return (
 										<IonContent>
 											<div className="ion-text-center">
-												{props.battleLog.at(-1)}
+												{battleLog.at(-1)}
 											</div>
 											<IonButton
 												mode="ios"
@@ -919,29 +909,29 @@ export function BattleHandler(props: {
 										</IonContent>
 									);
 								} else {
-									props.battleLog.push(
-										`${props.playerCharacter
+									battleLog.push(
+										`${playerCharacter
 											.getWeapon(playerSelection.slot1)
-											.getName()} and ${props.playerCharacter
+											.getName()} and ${playerCharacter
 											.getWeapon(playerSelection.slot2)
 											.getName()} cannot be countered`
 									);
-									props.opponent.addNoCounter(
+									opponent.addNoCounter(
 										false,
-										props.playerCharacter
+										playerCharacter
 											.getWeapon(playerSelection.slot1)
 											.getName()
 									);
-									props.opponent.addNoCounter(
+									opponent.addNoCounter(
 										false,
-										props.playerCharacter
+										playerCharacter
 											.getWeapon(playerSelection.slot2)
 											.getName()
 									);
 									return (
 										<IonContent>
 											<div className="ion-text-center">
-												{props.battleLog.at(-1)}
+												{battleLog.at(-1)}
 											</div>
 											<IonButton
 												mode="ios"
@@ -967,25 +957,25 @@ export function BattleHandler(props: {
 				switch (enemySelection.actionType) {
 					case 1:
 						if (
-							props.playerCharacter
+							playerCharacter
 								//@ts-expect-error
 								.getSpell(playerSelection.slot1)
 								.getCounterSpell() > 1
 						) {
 							if (
-								props.opponent
+								opponent
 									.getWeapon(enemySelection.slot1)
 									.getCanCounter()
 							) {
-								props.battleLog.push(
-									`The effects of ${props.opponent
+								battleLog.push(
+									`The effects of ${opponent
 										.getWeapon(enemySelection.slot1)
 										.getName()} are countered`
 								);
 								return (
 									<IonContent>
 										<div className="ion-text-center">
-											{props.battleLog.at(-1)}
+											{battleLog.at(-1)}
 										</div>
 										<IonButton
 											mode="ios"
@@ -1002,15 +992,15 @@ export function BattleHandler(props: {
 									</IonContent>
 								);
 							} else {
-								props.battleLog.push(
-									`${props.opponent
+								battleLog.push(
+									`${opponent
 										.getWeapon(enemySelection.slot1)
 										.getName()} cannot be countered`
 								);
 								return (
 									<IonContent>
 										<div className="ion-text-center">
-											{props.battleLog.at(-1)}
+											{battleLog.at(-1)}
 										</div>
 										<IonButton
 											mode="ios"
@@ -1027,29 +1017,29 @@ export function BattleHandler(props: {
 						}
 					case 2:
 						if (
-							props.playerCharacter
+							playerCharacter
 								//@ts-expect-error
 								.getSpell(playerSelection.slot1)
 								.getCounterSpell() == 1 ||
-							props.playerCharacter
+							playerCharacter
 								//@ts-expect-error
 								.getSpell(playerSelection.slot1)
 								.getCounterSpell() == 3
 						) {
 							if (
-								props.opponent
+								opponent
 									.getSpell(enemySelection.slot1)
 									.getNoCounter()
 							) {
-								props.battleLog.push(
-									`${props.opponent
+								battleLog.push(
+									`${opponent
 										.getSpell(enemySelection.slot1)
 										.getName()} cannot be countered`
 								);
 								return (
 									<IonContent>
 										<div className="ion-text-center">
-											{props.battleLog.at(-1)}
+											{battleLog.at(-1)}
 										</div>
 										<IonButton
 											mode="ios"
@@ -1060,15 +1050,15 @@ export function BattleHandler(props: {
 									</IonContent>
 								);
 							} else {
-								props.battleLog.push(
-									`The effects of ${props.opponent
+								battleLog.push(
+									`The effects of ${opponent
 										.getSpell(enemySelection.slot1)
 										.getName()} are countered`
 								);
 								return (
 									<IonContent>
 										<div className="ion-text-center">
-											{props.battleLog.at(-1)}
+											{battleLog.at(-1)}
 										</div>
 										<IonButton
 											mode="ios"
@@ -1091,32 +1081,32 @@ export function BattleHandler(props: {
 						}
 					case 3:
 						if (
-							props.playerCharacter
+							playerCharacter
 								//@ts-expect-error
 								.getSpell(playerSelection.slot1)
 								.getCounterSpell() > 1
 						) {
 							if (
-								props.opponent
+								opponent
 									.getWeapon(enemySelection.slot1)
 									.getCanCounter()
 							) {
 								if (
-									props.opponent
+									opponent
 										.getWeapon(enemySelection.slot2)
 										.getCanCounter()
 								) {
-									props.battleLog.push(
-										`The effects of ${props.opponent
+									battleLog.push(
+										`The effects of ${opponent
 											.getWeapon(enemySelection.slot1)
-											.getName()} and ${props.opponent
+											.getName()} and ${opponent
 											.getWeapon(enemySelection.slot2)
 											.getName()} are countered`
 									);
 									return (
 										<IonContent>
 											<div className="ion-text-center">
-												{props.battleLog.at(-1)}
+												{battleLog.at(-1)}
 											</div>
 											<IonButton
 												mode="ios"
@@ -1133,17 +1123,17 @@ export function BattleHandler(props: {
 										</IonContent>
 									);
 								} else {
-									props.battleLog.push(
-										`The effects of ${props.opponent
+									battleLog.push(
+										`The effects of ${opponent
 											.getWeapon(enemySelection.slot1)
-											.getName()} are countered, but ${props.opponent
+											.getName()} are countered, but ${opponent
 											.getWeapon(enemySelection.slot2)
 											.getName()} cannot be countered`
 									);
 									return (
 										<IonContent>
 											<div className="ion-text-center">
-												{props.battleLog.at(-1)}
+												{battleLog.at(-1)}
 											</div>
 											<IonButton
 												mode="ios"
@@ -1162,21 +1152,21 @@ export function BattleHandler(props: {
 								}
 							} else {
 								if (
-									props.opponent
+									opponent
 										.getWeapon(enemySelection.slot2)
 										.getCanCounter()
 								) {
-									props.battleLog.push(
-										`The effects of ${props.opponent
+									battleLog.push(
+										`The effects of ${opponent
 											.getWeapon(enemySelection.slot2)
-											.getName()} are countered, but ${props.opponent
+											.getName()} are countered, but ${opponent
 											.getWeapon(enemySelection.slot1)
 											.getName()} cannot be countered`
 									);
 									return (
 										<IonContent>
 											<div className="ion-text-center">
-												{props.battleLog.at(-1)}
+												{battleLog.at(-1)}
 											</div>
 											<IonButton
 												mode="ios"
@@ -1193,17 +1183,17 @@ export function BattleHandler(props: {
 										</IonContent>
 									);
 								} else {
-									props.battleLog.push(
-										`${props.opponent
+									battleLog.push(
+										`${opponent
 											.getWeapon(enemySelection.slot1)
-											.getName()} and ${props.opponent
+											.getName()} and ${opponent
 											.getWeapon(enemySelection.slot2)
 											.getName()} cannot be countered`
 									);
 									return (
 										<IonContent>
 											<div className="ion-text-center">
-												{props.battleLog.at(-1)}
+												{battleLog.at(-1)}
 											</div>
 											<IonButton
 												mode="ios"
@@ -1231,25 +1221,25 @@ export function BattleHandler(props: {
 						return (
 							<IonContent>
 								<WeaponAttack
-									weapon1={props.playerCharacter.getWeapon(
+									weapon1={playerCharacter.getWeapon(
 										playerSelection.slot1
 									)}
-									attacker={props.playerCharacter}
-									target={props.opponent}
-									battleLog={props.battleLog}
+									attacker={playerCharacter}
+									target={opponent}
+									battleLog={battleLog}
 								/>
 								<IonButton
 									mode="ios"
 									onClick={() => {
 										if (!deathCheck()) {
 											if (
-												props.playerCharacter
+												playerCharacter
 													.getWeapon(
 														playerSelection.slot1
 													)
 													.getNoCounterAttack() ||
-												randomFloat(0, 1) >=
-													props.opponent.getEvadeChance()
+												Math.random() >=
+													opponent.getEvadeChance()
 											) {
 												setPhaseCounter(0);
 												setPlayerTurn(false);
@@ -1267,33 +1257,33 @@ export function BattleHandler(props: {
 						return (
 							<IonContent>
 								<WeaponAttack
-									weapon1={props.playerCharacter.getWeapon(
+									weapon1={playerCharacter.getWeapon(
 										playerSelection.slot1
 									)}
-									weapon2={props.playerCharacter.getWeapon(
+									weapon2={playerCharacter.getWeapon(
 										playerSelection.slot2
 									)}
-									attacker={props.playerCharacter}
-									target={props.opponent}
-									battleLog={props.battleLog}
+									attacker={playerCharacter}
+									target={opponent}
+									battleLog={battleLog}
 								/>
 								<IonButton
 									mode="ios"
 									onClick={() => {
 										if (!deathCheck()) {
 											if (
-												(props.playerCharacter
+												(playerCharacter
 													.getWeapon(
 														playerSelection.slot1
 													)
 													.getNoCounterAttack() &&
-													props.playerCharacter
+													playerCharacter
 														.getWeapon(
 															playerSelection.slot2
 														)
 														.getNoCounterAttack()) ||
-												randomFloat(0, 1) >=
-													props.opponent.getEvadeChance()
+												Math.random() >=
+													opponent.getEvadeChance()
 											) {
 												setPhaseCounter(0);
 												setPlayerTurn(false);
@@ -1311,25 +1301,25 @@ export function BattleHandler(props: {
 						return (
 							<IonContent>
 								<SpellCast
-									magic={props.playerCharacter.getSpell(
+									magic={playerCharacter.getSpell(
 										playerSelection.slot1
 									)}
-									caster={props.playerCharacter}
-									target={props.opponent}
-									battleLog={props.battleLog}
+									caster={playerCharacter}
+									target={opponent}
+									battleLog={battleLog}
 								/>
 								<IonButton
 									mode="ios"
 									onClick={() => {
 										if (!deathCheck()) {
 											if (
-												props.playerCharacter
+												playerCharacter
 													.getSpell(
 														playerSelection.slot1
 													)
 													.getCanCounterAttack() &&
-												randomFloat(0, 1) <
-													props.opponent.getEvadeChance()
+												Math.random() <
+													opponent.getEvadeChance()
 											) {
 												setPhaseCounter(4);
 											} else {
@@ -1354,25 +1344,25 @@ export function BattleHandler(props: {
 						return (
 							<IonContent>
 								<WeaponAttack
-									weapon1={props.opponent.getWeapon(
+									weapon1={opponent.getWeapon(
 										enemySelection.slot1
 									)}
-									attacker={props.opponent}
-									target={props.playerCharacter}
-									battleLog={props.battleLog}
+									attacker={opponent}
+									target={playerCharacter}
+									battleLog={battleLog}
 								/>
 								<IonButton
 									mode="ios"
 									onClick={() => {
 										if (!deathCheck()) {
 											if (
-												props.opponent
+												opponent
 													.getWeapon(
 														enemySelection.slot1
 													)
 													.getNoCounterAttack() ||
-												randomFloat(0, 1) >=
-													props.playerCharacter.getEvadeChance()
+												Math.random() >=
+													playerCharacter.getEvadeChance()
 											) {
 												setPhaseCounter(0);
 												setPlayerTurn(true);
@@ -1391,33 +1381,33 @@ export function BattleHandler(props: {
 						return (
 							<IonContent>
 								<WeaponAttack
-									weapon1={props.opponent.getWeapon(
+									weapon1={opponent.getWeapon(
 										enemySelection.slot1
 									)}
-									weapon2={props.opponent.getWeapon(
+									weapon2={opponent.getWeapon(
 										enemySelection.slot2
 									)}
-									attacker={props.opponent}
-									target={props.playerCharacter}
-									battleLog={props.battleLog}
+									attacker={opponent}
+									target={playerCharacter}
+									battleLog={battleLog}
 								/>
 								<IonButton
 									mode="ios"
 									onClick={() => {
 										if (!deathCheck()) {
 											if (
-												(props.opponent
+												(opponent
 													.getWeapon(
 														enemySelection.slot1
 													)
 													.getNoCounterAttack() &&
-													props.opponent
+													opponent
 														.getWeapon(
 															enemySelection.slot2
 														)
 														.getNoCounterAttack()) ||
-												randomFloat(0, 1) >=
-													props.playerCharacter.getEvadeChance()
+												Math.random() >=
+													playerCharacter.getEvadeChance()
 											) {
 												setPhaseCounter(0);
 												setPlayerTurn(true);
@@ -1436,25 +1426,25 @@ export function BattleHandler(props: {
 						return (
 							<IonContent>
 								<SpellCast
-									magic={props.opponent.getSpell(
+									magic={opponent.getSpell(
 										enemySelection.slot1
 									)}
-									caster={props.opponent}
-									target={props.playerCharacter}
-									battleLog={props.battleLog}
+									caster={opponent}
+									target={playerCharacter}
+									battleLog={battleLog}
 								/>
 								<IonButton
 									mode="ios"
 									onClick={() => {
 										if (!deathCheck()) {
 											if (
-												props.opponent
+												opponent
 													.getSpell(
 														enemySelection.slot1
 													)
 													.getCanCounterAttack() &&
-												randomFloat(0, 1) <
-													props.playerCharacter.getEvadeChance()
+												Math.random() <
+													playerCharacter.getEvadeChance()
 											) {
 												setPhaseCounter(4);
 											} else {
@@ -1479,7 +1469,7 @@ export function BattleHandler(props: {
 		//Counter attack selection
 		case 4:
 			if (playerTurn) {
-				setEnemySelection(props.opponent.chooseAction(3, firstTurn));
+				setEnemySelection(opponent.chooseAction(3, firstTurn));
 				if (enemySelection.actionType == 0) {
 					setPhaseCounter(0);
 					setPlayerTurn(false);
@@ -1488,11 +1478,11 @@ export function BattleHandler(props: {
 				}
 				break phaseSwitch;
 			} else {
-				if (props.playerCharacter.checkPlayerActions(3)) {
+				if (playerCharacter.checkPlayerActions(3)) {
 					return (
 						<ChoosePlayerAction
-							playerCharacter={props.playerCharacter}
-							enemyName={props.opponent.getName()}
+							playerCharacter={playerCharacter}
+							enemyName={opponent.getName()}
 							timing={3}
 							submitChoice={(choice) => {
 								if (choice.actionType == 0) {
@@ -1519,28 +1509,28 @@ export function BattleHandler(props: {
 			if (playerTurn) {
 				switch (enemySelection.actionType) {
 					case 1:
-						props.battleLog.push(
-							`${props.opponent.getName()} counter attacks with ${props.opponent.getWeapon(
+						battleLog.push(
+							`${opponent.getName()} counter attacks with ${opponent.getWeapon(
 								enemySelection.slot1
 							)}`
 						);
 						weaponDeclare(
-							props.opponent,
-							props.opponent.getWeapon(enemySelection.slot1)
+							opponent,
+							opponent.getWeapon(enemySelection.slot1)
 						);
 						return (
 							<IonContent>
 								<div className="ion-text-center">
-									{props.battleLog.at(-1)}
+									{battleLog.at(-1)}
 								</div>
 								<WeaponAttack
-									weapon1={props.opponent.getWeapon(
+									weapon1={opponent.getWeapon(
 										enemySelection.slot1
 									)}
-									attacker={props.opponent}
-									target={props.playerCharacter}
+									attacker={opponent}
+									target={playerCharacter}
 									counter
-									battleLog={props.battleLog}
+									battleLog={battleLog}
 								/>
 								<IonButton
 									mode="ios"
@@ -1556,34 +1546,34 @@ export function BattleHandler(props: {
 							</IonContent>
 						);
 					case 3:
-						props.battleLog.push(
-							`${props.opponent.getName()} counter attacks with ${props.opponent
+						battleLog.push(
+							`${opponent.getName()} counter attacks with ${opponent
 								.getWeapon(enemySelection.slot1)
-								.getName()} and ${props.opponent
+								.getName()} and ${opponent
 								.getWeapon(enemySelection.slot2)
 								.getName()}`
 						);
 						weaponDeclare(
-							props.opponent,
-							props.opponent.getWeapon(enemySelection.slot1),
-							props.opponent.getWeapon(enemySelection.slot2)
+							opponent,
+							opponent.getWeapon(enemySelection.slot1),
+							opponent.getWeapon(enemySelection.slot2)
 						);
 						return (
 							<IonContent>
 								<div className="ion-text-center">
-									{props.battleLog.at(-1)}
+									{battleLog.at(-1)}
 								</div>
 								<WeaponAttack
-									weapon1={props.opponent.getWeapon(
+									weapon1={opponent.getWeapon(
 										enemySelection.slot1
 									)}
-									weapon2={props.opponent.getWeapon(
+									weapon2={opponent.getWeapon(
 										enemySelection.slot2
 									)}
-									attacker={props.opponent}
-									target={props.playerCharacter}
+									attacker={opponent}
+									target={playerCharacter}
 									counter
-									battleLog={props.battleLog}
+									battleLog={battleLog}
 								/>
 								<IonButton
 									mode="ios"
@@ -1599,28 +1589,28 @@ export function BattleHandler(props: {
 							</IonContent>
 						);
 					case 2:
-						props.battleLog.push(
-							`${props.opponent.getName()} counter attacks by casting ${props.opponent
+						battleLog.push(
+							`${opponent.getName()} counter attacks by casting ${opponent
 								.getSpell(enemySelection.slot1)
 								.getName()}`
 						);
 						spellDeclare(
-							props.opponent.getSpell(enemySelection.slot1),
-							props.opponent
+							opponent.getSpell(enemySelection.slot1),
+							opponent
 						);
 						return (
 							<IonContent>
 								<div className="ion-text-center">
-									{props.battleLog.at(-1)}
+									{battleLog.at(-1)}
 								</div>
 								<SpellCast
-									magic={props.opponent.getSpell(
+									magic={opponent.getSpell(
 										enemySelection.slot1
 									)}
-									caster={props.opponent}
-									target={props.playerCharacter}
+									caster={opponent}
+									target={playerCharacter}
 									timing={3}
-									battleLog={props.battleLog}
+									battleLog={battleLog}
 								/>
 								<IonButton
 									mode="ios"
@@ -1643,30 +1633,28 @@ export function BattleHandler(props: {
 			} else {
 				switch (playerSelection.actionType) {
 					case 1:
-						props.battleLog.push(
-							`You counter attack with ${props.playerCharacter
+						battleLog.push(
+							`You counter attack with ${playerCharacter
 								.getWeapon(playerSelection.slot1)
 								.getName()}`
 						);
 						weaponDeclare(
-							props.playerCharacter,
-							props.playerCharacter.getWeapon(
-								playerSelection.slot1
-							)
+							playerCharacter,
+							playerCharacter.getWeapon(playerSelection.slot1)
 						);
 						return (
 							<IonContent>
 								<div className="ion-text-center">
-									{props.battleLog.at(-1)}
+									{battleLog.at(-1)}
 								</div>
 								<WeaponAttack
-									weapon1={props.playerCharacter.getWeapon(
+									weapon1={playerCharacter.getWeapon(
 										playerSelection.slot1
 									)}
-									attacker={props.playerCharacter}
-									target={props.opponent}
+									attacker={playerCharacter}
+									target={opponent}
 									counter
-									battleLog={props.battleLog}
+									battleLog={battleLog}
 								/>
 								<IonButton
 									mode="ios"
@@ -1683,26 +1671,22 @@ export function BattleHandler(props: {
 							</IonContent>
 						);
 					case 3:
-						props.battleLog.push(
-							`You counter attack with ${props.playerCharacter
+						battleLog.push(
+							`You counter attack with ${playerCharacter
 								.getWeapon(playerSelection.slot1)
-								.getName()} and ${props.playerCharacter
+								.getName()} and ${playerCharacter
 								.getWeapon(playerSelection.slot2)
 								.getName()}`
 						);
 						weaponDeclare(
-							props.playerCharacter,
-							props.playerCharacter.getWeapon(
-								playerSelection.slot1
-							),
-							props.playerCharacter.getWeapon(
-								playerSelection.slot2
-							)
+							playerCharacter,
+							playerCharacter.getWeapon(playerSelection.slot1),
+							playerCharacter.getWeapon(playerSelection.slot2)
 						);
 						return (
 							<IonContent>
 								<div className="ion-text-center">
-									{props.battleLog.at(-1)}
+									{battleLog.at(-1)}
 								</div>
 								<IonButton
 									mode="ios"
@@ -1719,30 +1703,28 @@ export function BattleHandler(props: {
 							</IonContent>
 						);
 					case 2:
-						props.battleLog.push(
-							`You counter attack by casting ${props.playerCharacter
+						battleLog.push(
+							`You counter attack by casting ${playerCharacter
 								.getSpell(playerSelection.slot1)
 								.getName()}`
 						);
 						spellDeclare(
-							props.playerCharacter.getSpell(
-								playerSelection.slot1
-							),
-							props.playerCharacter
+							playerCharacter.getSpell(playerSelection.slot1),
+							playerCharacter
 						);
 						return (
 							<IonContent>
 								<div className="ion-text-center">
-									{props.battleLog.at(-1)}
+									{battleLog.at(-1)}
 								</div>
 								<SpellCast
-									magic={props.playerCharacter.getSpell(
+									magic={playerCharacter.getSpell(
 										playerSelection.slot1
 									)}
-									caster={props.playerCharacter}
-									target={props.opponent}
+									caster={playerCharacter}
+									target={opponent}
 									timing={3}
-									battleLog={props.battleLog}
+									battleLog={battleLog}
 								/>
 								<IonButton
 									mode="ios"
@@ -1781,7 +1763,7 @@ export function BattleHandler(props: {
 	}
 	return (
 		<IonContent>
-			<IonButton mode="ios" onClick={props.endBattle}>
+			<IonButton mode="ios" onClick={endBattle}>
 				Something went wrong, click to go back
 			</IonButton>
 		</IonContent>
@@ -1835,24 +1817,22 @@ function* battleHandler(
 	playerCharacter.resetBonusActions();
 	opponent.resetBonusActions();
 	//Turn cycle loop
-	while (true) {
+	for (; ; playerTurn = !playerTurn) {
 		if (playerTurn) {
 			playerCharacter.turnStart();
 			if (deathCheck()) {
 				return endOfCombat();
 			}
-			var playerSelection: actionChoice = {actionType: 0} as actionChoice;
+			var playerSelection: actionChoice;
 			yield (
 				<ChoosePlayerAction
 					playerCharacter={playerCharacter}
 					enemyName={opponent.getName()}
 					timing={0}
-					submitChoice={(choice) => {
-						playerSelection = choice;
-						advanceCombat();
-					}}
+					submitChoice={submitChoice}
 				/>
 			);
+			playerSelection ??= {actionType: 0};
 			playerTurn: switch (playerSelection.actionType) {
 				case 0:
 					battleLog.push("You do nothing");
@@ -1911,16 +1891,15 @@ function* battleHandler(
 								}
 								yield <ContinuePage />;
 								break playerTurn;
-							} else {
-								opponent.addNoCounter(
-									false,
-									weaponBuffer1.getName()
-								);
-								battleLog.push(
-									`${weaponBuffer1} cannot be countered!`
-								);
-								yield <ContinuePage />;
 							}
+							opponent.addNoCounter(
+								false,
+								weaponBuffer1.getName()
+							);
+							battleLog.push(
+								`${weaponBuffer1} cannot be countered!`
+							);
+							yield <ContinuePage />;
 						}
 					}
 					yield (
@@ -1940,7 +1919,7 @@ function* battleHandler(
 					if (weaponBuffer1.getNoCounterAttack()) {
 						break playerTurn;
 					}
-					if (randomFloat(0, 1) < opponent.getCounterAttackChance()) {
+					if (Math.random() < opponent.getCounterAttackChance()) {
 						enemySelection = opponent.chooseAction(3, firstTurn);
 						switch (enemySelection.actionType) {
 							case 1:
@@ -2051,7 +2030,7 @@ function* battleHandler(
 						weaponBuffer1.getName(),
 						weaponBuffer2.getName()
 					);
-					responseAndAttack: {
+					responseAndAttackPlayerTurn: {
 						if (enemySelection.actionType == 2) {
 							var responseSpellBuffer: spell = opponent.getSpell(
 								enemySelection.slot1
@@ -2095,77 +2074,70 @@ function* battleHandler(
 										}
 										yield <ContinuePage />;
 										break playerTurn;
-									} else {
-										opponent.addNoCounter(
-											false,
-											weaponBuffer2.getName()
-										);
-										battleLog.push(
-											`The effects of ${weaponBuffer1} are countered, but ${weaponBuffer2} cannot be countered!`
-										);
-										yield <ContinuePage />;
-										yield (
-											<IonContent>
-												<WeaponAttack
-													weapon1={weaponBuffer2}
-													attacker={playerCharacter}
-													target={opponent}
-													battleLog={battleLog}
-												/>
-												<ContinueButton />
-											</IonContent>
-										);
-										if (deathCheck()) {
-											return endOfCombat();
-										}
-										if (
-											weaponBuffer2.getNoCounterAttack()
-										) {
-											break playerTurn;
-										}
-										break responseAndAttack;
 									}
-								} else {
 									opponent.addNoCounter(
 										false,
-										weaponBuffer1.getName()
+										weaponBuffer2.getName()
 									);
-									if (weaponBuffer2.getCanCounter()) {
-										battleLog.push(
-											`The effects of ${weaponBuffer2} are countered, but ${weaponBuffer1} cannot be countered!`
-										);
-										yield <ContinuePage />;
-										yield (
-											<IonContent>
-												<WeaponAttack
-													weapon1={weaponBuffer1}
-													attacker={playerCharacter}
-													target={opponent}
-													battleLog={battleLog}
-												/>
-												<ContinueButton />
-											</IonContent>
-										);
-										if (deathCheck()) {
-											return endOfCombat();
-										}
-										if (
-											weaponBuffer1.getNoCounterAttack()
-										) {
-											break playerTurn;
-										}
-										break responseAndAttack;
-									} else {
-										opponent.addNoCounter(
-											false,
-											weaponBuffer2.getName()
-										);
-										battleLog.push(
-											`${weaponBuffer1} and ${weaponBuffer2} cannot be countered!`
-										);
-										yield <ContinuePage />;
+									battleLog.push(
+										`The effects of ${weaponBuffer1} are countered, but ${weaponBuffer2} cannot be countered!`
+									);
+									yield <ContinuePage />;
+									yield (
+										<IonContent>
+											<WeaponAttack
+												weapon1={weaponBuffer2}
+												attacker={playerCharacter}
+												target={opponent}
+												battleLog={battleLog}
+											/>
+											<ContinueButton />
+										</IonContent>
+									);
+									if (deathCheck()) {
+										return endOfCombat();
 									}
+									if (weaponBuffer2.getNoCounterAttack()) {
+										break playerTurn;
+									}
+									break responseAndAttackPlayerTurn;
 								}
+								opponent.addNoCounter(
+									false,
+									weaponBuffer1.getName()
+								);
+								if (weaponBuffer2.getCanCounter()) {
+									battleLog.push(
+										`The effects of ${weaponBuffer2} are countered, but ${weaponBuffer1} cannot be countered!`
+									);
+									yield <ContinuePage />;
+									yield (
+										<IonContent>
+											<WeaponAttack
+												weapon1={weaponBuffer1}
+												attacker={playerCharacter}
+												target={opponent}
+												battleLog={battleLog}
+											/>
+											<ContinueButton />
+										</IonContent>
+									);
+									if (deathCheck()) {
+										return endOfCombat();
+									}
+									if (weaponBuffer1.getNoCounterAttack()) {
+										break playerTurn;
+									}
+									break responseAndAttackPlayerTurn;
+								}
+								opponent.addNoCounter(
+									false,
+									weaponBuffer2.getName()
+								);
+								battleLog.push(
+									`${weaponBuffer1} and ${weaponBuffer2} cannot be countered!`
+								);
+								yield <ContinuePage />;
 							}
 						}
 						yield (
@@ -2190,7 +2162,7 @@ function* battleHandler(
 							break playerTurn;
 						}
 					}
-					if (randomFloat(0, 1) < opponent.getCounterAttackChance()) {
+					if (Math.random() < opponent.getCounterAttackChance()) {
 						enemySelection = opponent.chooseAction(3, firstTurn);
 						switch (enemySelection.actionType) {
 							case 1:
@@ -2364,7 +2336,7 @@ function* battleHandler(
 					if (!spellBuffer.getCanCounterAttack()) {
 						break playerTurn;
 					}
-					if (randomFloat(0, 1) < opponent.getCounterAttackChance()) {
+					if (Math.random() < opponent.getCounterAttackChance()) {
 						enemySelection = opponent.chooseAction(3, firstTurn);
 						switch (enemySelection.actionType) {
 							case 1:
@@ -2454,9 +2426,662 @@ function* battleHandler(
 					break playerTurn;
 			}
 		} else {
+			opponent.turnStart();
+			if (deathCheck()) {
+				return endOfCombat();
+			}
+			var enemySelection: actionChoice = opponent.chooseAction(
+				0,
+				firstTurn
+			);
+			enemyTurn: switch (enemySelection.actionType) {
+				case 0:
+					battleLog.push(`${opponent} does nothing`);
+					yield <ContinuePage />;
+					break enemyTurn;
+				case 1:
+					var weaponBuffer1: weapon = opponent.getWeapon(
+						enemySelection.slot1
+					);
+					battleLog.push(`${opponent} attacks with ${weaponBuffer1}`);
+					weaponDeclare(opponent, weaponBuffer1);
+					var health: number = opponent.getHealth();
+					yield <ContinuePage />;
+					var playerSelection: actionChoice;
+					if (playerCharacter.checkPlayerActions(1)) {
+						yield (
+							<ChoosePlayerAction
+								playerCharacter={playerCharacter}
+								enemyName={opponent.getName()}
+								timing={1}
+								submitChoice={submitChoice}
+								itemName1={weaponBuffer1.getName()}
+							/>
+						);
+					} else {
+						playerSelection = {actionType: 0};
+					}
+					playerSelection ??= {actionType: 0};
+					if (playerSelection.actionType == 2) {
+						var responseSpellBuffer: spell =
+							playerCharacter.getSpell(playerSelection.slot1);
+						battleLog.push(
+							`You cast ${responseSpellBuffer} in response`
+						);
+						spellDeclare(responseSpellBuffer, playerCharacter);
+						yield (
+							<IonContent>
+								<div className="ion-text-center">
+									{battleLog.at(-1)}
+								</div>
+								<SpellCast
+									magic={responseSpellBuffer}
+									caster={playerCharacter}
+									target={opponent}
+									timing={1}
+									battleLog={battleLog}
+								/>
+								<ContinueButton />
+							</IonContent>
+						);
+						if (
+							(responseSpellBuffer.getPropDamage() > 0 ||
+								opponent.getHealth() < health) &&
+							deathCheck()
+						) {
+							return endOfCombat();
+						}
+						if (responseSpellBuffer.getCounterSpell() >= 2) {
+							if (weaponBuffer1.getCanCounter()) {
+								battleLog.push(
+									`The effects of ${weaponBuffer1} are countered!`
+								);
+								if (deathCheck()) {
+									return endOfCombat(battleLog.at(-1));
+								}
+								yield <ContinuePage />;
+								break enemyTurn;
+							}
+							battleLog.push(
+								`${weaponBuffer1} cannot be countered!`
+							);
+							yield <ContinuePage />;
+						}
+					}
+					yield (
+						<IonContent>
+							<WeaponAttack
+								weapon1={weaponBuffer1}
+								attacker={opponent}
+								target={playerCharacter}
+								battleLog={battleLog}
+							/>
+							<ContinueButton />
+						</IonContent>
+					);
+					if (deathCheck()) {
+						return endOfCombat();
+					}
+					if (weaponBuffer1.getNoCounterAttack()) {
+						break enemyTurn;
+					}
+					if (
+						Math.random() < playerCharacter.getCounterAttackChance()
+					) {
+						if (playerCharacter.checkPlayerActions(3)) {
+							yield (
+								<ChoosePlayerAction
+									playerCharacter={playerCharacter}
+									enemyName={opponent.getName()}
+									timing={3}
+									submitChoice={submitChoice}
+								/>
+							);
+						} else {
+							playerSelection = {actionType: 0};
+						}
+						switch (playerSelection.actionType) {
+							case 1:
+								var weaponBuffer1: weapon =
+									playerCharacter.getWeapon(
+										playerSelection.slot1
+									);
+								battleLog.push(
+									`You counter attack with ${weaponBuffer1}`
+								);
+								yield <ContinuePage />;
+								weaponDeclare(playerCharacter, weaponBuffer1);
+								yield (
+									<IonContent>
+										<WeaponAttack
+											weapon1={weaponBuffer1}
+											attacker={playerCharacter}
+											target={opponent}
+											counter
+											battleLog={battleLog}
+										/>
+										<ContinueButton />
+									</IonContent>
+								);
+								if (deathCheck()) {
+									return endOfCombat();
+								}
+								break enemyTurn;
+							case 3:
+								var weaponBuffer1: weapon =
+										playerCharacter.getWeapon(
+											playerSelection.slot1
+										),
+									weaponBuffer2: weapon =
+										playerCharacter.getWeapon(
+											playerSelection.slot2
+										);
+								battleLog.push(
+									`You counter attack with ${weaponBuffer1} and ${weaponBuffer2}`
+								);
+								yield <ContinuePage />;
+								weaponDeclare(
+									playerCharacter,
+									weaponBuffer1,
+									weaponBuffer2
+								);
+								yield (
+									<IonContent>
+										<WeaponAttack
+											weapon1={weaponBuffer1}
+											weapon2={weaponBuffer2}
+											attacker={playerCharacter}
+											target={opponent}
+											counter
+											battleLog={battleLog}
+										/>
+										<ContinueButton />
+									</IonContent>
+								);
+								if (deathCheck()) {
+									return endOfCombat();
+								}
+								break enemyTurn;
+							case 2:
+								var spellBuffer: spell =
+									playerCharacter.getSpell(
+										playerSelection.slot1
+									);
+								battleLog.push(
+									`You counter attack by casting ${spellBuffer}`
+								);
+								yield <ContinuePage />;
+								spellDeclare(spellBuffer, playerCharacter);
+								yield (
+									<IonContent>
+										<SpellCast
+											magic={spellBuffer}
+											caster={playerCharacter}
+											target={opponent}
+											timing={3}
+											battleLog={battleLog}
+										/>
+										<ContinueButton />
+									</IonContent>
+								);
+								if (deathCheck()) {
+									return endOfCombat();
+								}
+						}
+					}
+					break enemyTurn;
+				case 3:
+					var weaponBuffer1: weapon = opponent.getWeapon(
+							enemySelection.slot1
+						),
+						weaponBuffer2: weapon = opponent.getWeapon(
+							enemySelection.slot2
+						);
+					battleLog.push(
+						`${opponent} attacks with ${weaponBuffer1} and ${weaponBuffer2}`
+					);
+					weaponDeclare(opponent, weaponBuffer1, weaponBuffer2);
+					var health: number = opponent.getHealth();
+					yield <ContinuePage />;
+					var playerSelection: actionChoice;
+					if (playerCharacter.checkPlayerActions(4)) {
+						yield (
+							<ChoosePlayerAction
+								playerCharacter={playerCharacter}
+								enemyName={opponent.getName()}
+								timing={4}
+								submitChoice={submitChoice}
+								itemName1={weaponBuffer1.getName()}
+								itemName2={weaponBuffer2.getName()}
+							/>
+						);
+					} else {
+						playerSelection = {actionType: 0};
+					}
+					playerSelection ??= {actionType: 0};
+					responseAndAttackEnemyTurn: {
+						if (playerSelection.actionType == 2) {
+							var responseSpellBuffer: spell =
+								playerCharacter.getSpell(playerSelection.slot1);
+							battleLog.push(
+								`You cast ${responseSpellBuffer} in response`
+							);
+							spellDeclare(responseSpellBuffer, playerCharacter);
+							yield (
+								<IonContent>
+									<div className="ion-text-center">
+										{battleLog.at(-1)}
+									</div>
+									<SpellCast
+										magic={responseSpellBuffer}
+										caster={playerCharacter}
+										target={opponent}
+										timing={4}
+										battleLog={battleLog}
+									/>
+									<ContinueButton />
+								</IonContent>
+							);
+							if (
+								(responseSpellBuffer.getPropDamage() > 0 ||
+									opponent.getHealth() < health) &&
+								deathCheck()
+							) {
+								return endOfCombat();
+							}
+							if (responseSpellBuffer.getCounterSpell() >= 2) {
+								if (weaponBuffer1.getCanCounter()) {
+									if (weaponBuffer2.getCanCounter()) {
+										battleLog.push(
+											`The effects of ${weaponBuffer1} and ${weaponBuffer2} are counterd!`
+										);
+										if (deathCheck()) {
+											return endOfCombat(
+												battleLog.at(-1)
+											);
+										}
+										yield <ContinuePage />;
+										break enemyTurn;
+									}
+									battleLog.push(
+										`The effects of ${weaponBuffer1} are countered, but ${weaponBuffer2} cannot be countered!`
+									);
+									yield <ContinuePage />;
+									yield (
+										<IonContent>
+											<WeaponAttack
+												weapon1={weaponBuffer2}
+												attacker={opponent}
+												target={playerCharacter}
+												battleLog={battleLog}
+											/>
+											<ContinueButton />
+										</IonContent>
+									);
+									if (deathCheck()) {
+										return endOfCombat();
+									}
+									if (weaponBuffer2.getNoCounterAttack()) {
+										break enemyTurn;
+									}
+									break responseAndAttackEnemyTurn;
+								}
+								if (weaponBuffer2.getCanCounter()) {
+									battleLog.push(
+										`The effects of ${weaponBuffer2} are countered, but ${weaponBuffer1} cannot be countered!`
+									);
+									yield <ContinuePage />;
+									yield (
+										<IonContent>
+											<WeaponAttack
+												weapon1={weaponBuffer1}
+												attacker={opponent}
+												target={playerCharacter}
+												battleLog={battleLog}
+											/>
+											<ContinueButton />
+										</IonContent>
+									);
+									if (deathCheck()) {
+										return endOfCombat();
+									}
+									if (weaponBuffer1.getNoCounterAttack()) {
+										break enemyTurn;
+									}
+									break responseAndAttackEnemyTurn;
+								}
+								battleLog.push(
+									`${weaponBuffer1} and ${weaponBuffer2} cannot be countered!`
+								);
+								yield <ContinuePage />;
+							}
+						}
+						yield (
+							<IonContent>
+								<WeaponAttack
+									weapon1={weaponBuffer1}
+									weapon2={weaponBuffer2}
+									attacker={opponent}
+									target={playerCharacter}
+									battleLog={battleLog}
+								/>
+								<ContinueButton />
+							</IonContent>
+						);
+						if (deathCheck()) {
+							return endOfCombat();
+						}
+						if (
+							weaponBuffer1.getNoCounterAttack() &&
+							weaponBuffer2.getNoCounterAttack()
+						) {
+							break enemyTurn;
+						}
+					}
+					if (
+						Math.random() < playerCharacter.getCounterAttackChance()
+					) {
+						if (playerCharacter.checkPlayerActions(3)) {
+							yield (
+								<ChoosePlayerAction
+									playerCharacter={playerCharacter}
+									enemyName={opponent.getName()}
+									timing={3}
+									submitChoice={submitChoice}
+								/>
+							);
+						} else {
+							playerSelection = {actionType: 0};
+						}
+						switch (playerSelection.actionType) {
+							case 1:
+								var weaponBuffer1: weapon =
+									playerCharacter.getWeapon(
+										playerSelection.slot1
+									);
+								battleLog.push(
+									`You counter attack with ${weaponBuffer1}`
+								);
+								yield <ContinuePage />;
+								weaponDeclare(playerCharacter, weaponBuffer1);
+								yield (
+									<IonContent>
+										<WeaponAttack
+											weapon1={weaponBuffer1}
+											attacker={playerCharacter}
+											target={opponent}
+											counter
+											battleLog={battleLog}
+										/>
+										<ContinueButton />
+									</IonContent>
+								);
+								if (deathCheck()) {
+									return endOfCombat();
+								}
+								break enemyTurn;
+							case 3:
+								var weaponBuffer1: weapon =
+										playerCharacter.getWeapon(
+											playerSelection.slot1
+										),
+									weaponBuffer2: weapon =
+										playerCharacter.getWeapon(
+											playerSelection.slot2
+										);
+								battleLog.push(
+									`You counter attack with ${weaponBuffer1} and ${weaponBuffer2}`
+								);
+								yield <ContinuePage />;
+								weaponDeclare(
+									playerCharacter,
+									weaponBuffer1,
+									weaponBuffer2
+								);
+								yield (
+									<IonContent>
+										<WeaponAttack
+											weapon1={weaponBuffer1}
+											weapon2={weaponBuffer2}
+											attacker={playerCharacter}
+											target={opponent}
+											counter
+											battleLog={battleLog}
+										/>
+										<ContinueButton />
+									</IonContent>
+								);
+								if (deathCheck()) {
+									return endOfCombat();
+								}
+								break enemyTurn;
+							case 2:
+								var spellBuffer: spell =
+									playerCharacter.getSpell(
+										playerSelection.slot1
+									);
+								battleLog.push(
+									`You counter attack by casting ${spellBuffer}`
+								);
+								yield <ContinuePage />;
+								spellDeclare(spellBuffer, playerCharacter);
+								yield (
+									<IonContent>
+										<SpellCast
+											magic={spellBuffer}
+											caster={playerCharacter}
+											target={opponent}
+											timing={3}
+											battleLog={battleLog}
+										/>
+										<ContinueButton />
+									</IonContent>
+								);
+								if (deathCheck()) {
+									return endOfCombat();
+								}
+						}
+					}
+					break enemyTurn;
+				case 2:
+					var spellBuffer: spell = opponent.getSpell(
+						enemySelection.slot1
+					);
+					battleLog.push(`${opponent} casts ${spellBuffer}`);
+					spellDeclare(spellBuffer, opponent);
+					var health: number = opponent.getHealth();
+					yield <ContinuePage />;
+					var playerSelection: actionChoice;
+					if (playerCharacter.checkPlayerActions(2)) {
+						yield (
+							<ChoosePlayerAction
+								playerCharacter={playerCharacter}
+								enemyName={opponent.getName()}
+								timing={2}
+								submitChoice={submitChoice}
+								itemName1={spellBuffer.getName()}
+							/>
+						);
+					} else {
+						playerSelection = {actionType: 0};
+					}
+					playerSelection ??= {actionType: 0};
+					if (playerSelection.actionType == 2) {
+						var responseSpellBuffer: spell =
+							playerCharacter.getSpell(playerSelection.slot1);
+						battleLog.push(
+							`You cast ${responseSpellBuffer.getName()} in response`
+						);
+						spellDeclare(responseSpellBuffer, playerCharacter);
+						yield (
+							<IonContent>
+								<div className="ion-text-center">
+									{battleLog.at(-1)}
+								</div>
+								<SpellCast
+									magic={responseSpellBuffer}
+									caster={playerCharacter}
+									target={opponent}
+									timing={2}
+									battleLog={battleLog}
+								/>
+								<ContinueButton />
+							</IonContent>
+						);
+						if (
+							responseSpellBuffer.getCounterSpell() == 1 ||
+							responseSpellBuffer.getCounterSpell() == 3
+						) {
+							if (spellBuffer.getNoCounter()) {
+								battleLog.push(
+									`${spellBuffer} cannot be countered!`
+								);
+								yield <ContinuePage />;
+							} else {
+								battleLog.push(
+									`The effects of ${spellBuffer} are countered!`
+								);
+								if (deathCheck()) {
+									return endOfCombat(battleLog.at(-1));
+								}
+								yield <ContinuePage />;
+								break enemyTurn;
+							}
+						}
+					}
+					yield (
+						<IonContent>
+							<SpellCast
+								magic={spellBuffer}
+								caster={opponent}
+								target={playerCharacter}
+								timing={0}
+								battleLog={battleLog}
+							/>
+							<ContinueButton />
+						</IonContent>
+					);
+					if (deathCheck()) {
+						return endOfCombat();
+					}
+					if (!spellBuffer.getCanCounterAttack()) {
+						break enemyTurn;
+					}
+					if (
+						Math.random() < playerCharacter.getCounterAttackChance()
+					) {
+						if (playerCharacter.checkPlayerActions(3)) {
+							yield (
+								<ChoosePlayerAction
+									playerCharacter={playerCharacter}
+									enemyName={opponent.getName()}
+									timing={3}
+									submitChoice={submitChoice}
+								/>
+							);
+						} else {
+							playerSelection = {actionType: 0};
+						}
+						switch (playerSelection.actionType) {
+							case 1:
+								var weaponBuffer1: weapon =
+									playerCharacter.getWeapon(
+										playerSelection.slot1
+									);
+								battleLog.push(
+									`You counter attack with ${weaponBuffer1}`
+								);
+								yield <ContinuePage />;
+								weaponDeclare(playerCharacter, weaponBuffer1);
+								yield (
+									<IonContent>
+										<WeaponAttack
+											weapon1={weaponBuffer1}
+											attacker={playerCharacter}
+											target={opponent}
+											counter
+											battleLog={battleLog}
+										/>
+										<ContinueButton />
+									</IonContent>
+								);
+								if (deathCheck()) {
+									return endOfCombat();
+								}
+								break enemyTurn;
+							case 3:
+								var weaponBuffer1: weapon =
+										playerCharacter.getWeapon(
+											playerSelection.slot1
+										),
+									weaponBuffer2: weapon =
+										playerCharacter.getWeapon(
+											playerSelection.slot2
+										);
+								battleLog.push(
+									`You counter attack with ${weaponBuffer1} and ${weaponBuffer2}`
+								);
+								yield <ContinuePage />;
+								weaponDeclare(
+									playerCharacter,
+									weaponBuffer1,
+									weaponBuffer2
+								);
+								yield (
+									<IonContent>
+										<WeaponAttack
+											weapon1={weaponBuffer1}
+											weapon2={weaponBuffer2}
+											attacker={playerCharacter}
+											target={opponent}
+											counter
+											battleLog={battleLog}
+										/>
+										<ContinueButton />
+									</IonContent>
+								);
+								if (deathCheck()) {
+									return endOfCombat();
+								}
+								break enemyTurn;
+							case 2:
+								var spellBuffer: spell =
+									playerCharacter.getSpell(
+										playerSelection.slot1
+									);
+								battleLog.push(
+									`You counter attack by casting ${spellBuffer}`
+								);
+								yield <ContinuePage />;
+								spellDeclare(spellBuffer, playerCharacter);
+								yield (
+									<IonContent>
+										<SpellCast
+											magic={spellBuffer}
+											caster={playerCharacter}
+											target={opponent}
+											timing={3}
+											battleLog={battleLog}
+										/>
+										<ContinueButton />
+									</IonContent>
+								);
+								if (deathCheck()) {
+									return endOfCombat();
+								}
+						}
+					}
+					break enemyTurn;
+			}
 			firstTurn = false;
 		}
-		playerTurn = !playerTurn;
+	}
+	/**Function for the player to submit a choice
+	 * @param choice - The choice made
+	 */
+	function submitChoice(choice: actionChoice): void {
+		playerSelection = choice;
+		advanceCombat();
 	}
 	/**Checks if either fighter is dead */
 	function deathCheck(): boolean {

@@ -1,6 +1,6 @@
 import {IonApp, IonRouterOutlet, setupIonicReact} from "@ionic/react";
 import {IonReactRouter} from "@ionic/react-router";
-import MainMenuPage from "./pages/mainMenu.page";
+import MainMenuPage from "./pages/mainMenuPage";
 import {Redirect, Route} from "react-router";
 
 /* Core CSS required for Ionic components to work properly */

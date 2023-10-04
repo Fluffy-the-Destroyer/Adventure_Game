@@ -2,7 +2,6 @@ import {Fragment} from "react";
 import {enemy} from "../functionality/enemies";
 import {player} from "../functionality/player";
 import {weapon} from "../functionality/weapons";
-import {randomFloat} from "../functionality/rng";
 import {spell} from "../functionality/spells";
 
 /**Weapon declare
@@ -26,7 +25,14 @@ export function weaponDeclare(
 }
 
 /**Weapon attack */
-export function WeaponAttack(props: {
+export function WeaponAttack({
+	weapon1,
+	weapon2,
+	attacker,
+	target,
+	counter,
+	battleLog
+}: {
 	/**First weapon */
 	weapon1: weapon;
 	/**Second weapon (if present) */
@@ -41,7 +47,14 @@ export function WeaponAttack(props: {
 	battleLog: string[];
 }): React.JSX.Element;
 /**Weapon attack */
-export function WeaponAttack(props: {
+export function WeaponAttack({
+	weapon1,
+	weapon2,
+	attacker,
+	target,
+	counter,
+	battleLog
+}: {
 	/**First weapon */
 	weapon1: weapon;
 	/**Second weapon (if present) */
@@ -56,7 +69,14 @@ export function WeaponAttack(props: {
 	battleLog: string[];
 }): React.JSX.Element;
 /**Weapon attack */
-export function WeaponAttack(props: {
+export function WeaponAttack({
+	weapon1,
+	weapon2,
+	attacker,
+	target,
+	counter,
+	battleLog
+}: {
 	/**First weapon */
 	weapon1: weapon;
 	/**Second weapon (if present) */
@@ -71,33 +91,31 @@ export function WeaponAttack(props: {
 	battleLog: string[];
 }): React.JSX.Element {
 	//If dual wielding, ensure weapon1 hits at least as many times as weapon2
-	if (props.weapon2 != undefined) {
-		if (props.counter) {
-			if (
-				props.weapon2.getCounterHits() > props.weapon1.getCounterHits()
-			) {
+	if (weapon2 != undefined) {
+		if (counter) {
+			if (weapon2.getCounterHits() > weapon1.getCounterHits()) {
 				return (
 					//@ts-expect-error
 					<WeaponAttack
-						weapon1={props.weapon2}
-						weapon2={props.weapon1}
-						attacker={props.attacker}
-						target={props.target}
-						battleLog={props.battleLog}
+						weapon1={weapon2}
+						weapon2={weapon1}
+						attacker={attacker}
+						target={target}
+						battleLog={battleLog}
 						counter
 					/>
 				);
 			}
 		} else {
-			if (props.weapon2.getHitCount() > props.weapon1.getHitCount()) {
+			if (weapon2.getHitCount() > weapon1.getHitCount()) {
 				return (
 					//@ts-expect-error
 					<WeaponAttack
-						weapon1={props.weapon2}
-						weapon2={props.weapon1}
-						attacker={props.attacker}
-						target={props.target}
-						battleLog={props.battleLog}
+						weapon1={weapon2}
+						weapon2={weapon1}
+						attacker={attacker}
+						target={target}
+						battleLog={battleLog}
 					/>
 				);
 			}
@@ -109,17 +127,17 @@ export function WeaponAttack(props: {
 	/**For holding damage values */
 	var damageBuffer: number;
 	if (
-		props.weapon1.getEffectType()[1] == 1 ||
-		props.weapon1.getEffectType()[1] == 2 ||
-		props.weapon1.getEffectType()[0] == 1 ||
-		props.weapon1.getEffectType()[0] == 2 ||
-		props.weapon2?.getEffectType()[1] == 1 ||
-		props.weapon2?.getEffectType()[1] == 2 ||
-		props.weapon2?.getEffectType()[0] == 1 ||
-		props.weapon2?.getEffectType()[0] == 2
+		weapon1.getEffectType()[1] == 1 ||
+		weapon1.getEffectType()[1] == 2 ||
+		weapon1.getEffectType()[0] == 1 ||
+		weapon1.getEffectType()[0] == 2 ||
+		weapon2?.getEffectType()[1] == 1 ||
+		weapon2?.getEffectType()[1] == 2 ||
+		weapon2?.getEffectType()[0] == 1 ||
+		weapon2?.getEffectType()[0] == 2
 	) {
 		outputText = "Attacker effects:";
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		attackerEffects.push(
 			<div className="ion-text-center" key="attacker-effects">
 				{outputText}
@@ -127,88 +145,86 @@ export function WeaponAttack(props: {
 		);
 	}
 	//Positive and negative prop damage do not commute, so take care over the ordering
-	if (props.weapon1.getPropSelfDamage() > 0) {
+	if (weapon1.getPropSelfDamage() > 0) {
 		//@ts-expect-error
-		if (props.weapon2?.getPropSelfDamage() > 0) {
+		if (weapon2?.getPropSelfDamage() > 0) {
 			damageBuffer =
-				props.weapon1.getPropSelfDamage() +
-				props.weapon2!.getPropSelfDamage() -
-				props.weapon1.getPropSelfDamage() *
-					props.weapon2!.getPropSelfDamage();
-			props.attacker.propDamage(damageBuffer);
+				weapon1.getPropSelfDamage() +
+				weapon2!.getPropSelfDamage() -
+				weapon1.getPropSelfDamage() * weapon2!.getPropSelfDamage();
+			attacker.propDamage(damageBuffer);
 			outputText = `${-Math.round(100 * damageBuffer)}% health`;
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
 				</div>
 			);
 			//@ts-expect-error
-		} else if (props.weapon2?.getPropSelfDamage() < 0) {
-			props.attacker.propDamage(props.weapon1.getPropSelfDamage());
-			props.attacker.propDamage(props.weapon2!.getPropSelfDamage());
+		} else if (weapon2?.getPropSelfDamage() < 0) {
+			attacker.propDamage(weapon1.getPropSelfDamage());
+			attacker.propDamage(weapon2!.getPropSelfDamage());
 			outputText = `${-Math.round(
-				100 * props.weapon1.getPropSelfDamage()
+				100 * weapon1.getPropSelfDamage()
 			)}% health, then ${-Math.round(
-				100 * props.weapon2!.getPropSelfDamage()
+				100 * weapon2!.getPropSelfDamage()
 			)}% of health recovered`;
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
 				</div>
 			);
 		} else {
-			props.attacker.propDamage(props.weapon1.getPropSelfDamage());
+			attacker.propDamage(weapon1.getPropSelfDamage());
 			outputText = `${-Math.round(
-				100 * props.weapon1.getPropSelfDamage()
+				100 * weapon1.getPropSelfDamage()
 			)}% health`;
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
 				</div>
 			);
 		}
-	} else if (props.weapon1.getPropSelfDamage() < 0) {
+	} else if (weapon1.getPropSelfDamage() < 0) {
 		//@ts-expect-error
-		if (props.weapon2?.getPropSelfDamage() > 0) {
-			props.attacker.propDamage(props.weapon2!.getPropSelfDamage());
-			props.attacker.propDamage(props.weapon1.getPropSelfDamage());
+		if (weapon2?.getPropSelfDamage() > 0) {
+			attacker.propDamage(weapon2!.getPropSelfDamage());
+			attacker.propDamage(weapon1.getPropSelfDamage());
 			outputText = `${-Math.round(
-				100 * props.weapon2!.getPropSelfDamage()
+				100 * weapon2!.getPropSelfDamage()
 			)}% health, then ${-Math.round(
-				100 * props.weapon1.getPropSelfDamage()
+				100 * weapon1.getPropSelfDamage()
 			)}% of health recovered`;
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
 				</div>
 			);
 			//@ts-expect-error
-		} else if (props.weapon2?.getPropSelfDamage() < 0) {
+		} else if (weapon2?.getPropSelfDamage() < 0) {
 			damageBuffer = Math.max(
 				-1,
-				props.weapon1.getPropSelfDamage() +
-					props.weapon2!.getPropSelfDamage()
+				weapon1.getPropSelfDamage() + weapon2!.getPropSelfDamage()
 			);
-			props.attacker.propDamage(damageBuffer);
+			attacker.propDamage(damageBuffer);
 			outputText = `${-Math.round(
 				100 * damageBuffer
 			)}% of health recovered`;
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
 				</div>
 			);
 		} else {
-			props.attacker.propDamage(props.weapon1.getPropSelfDamage());
+			attacker.propDamage(weapon1.getPropSelfDamage());
 			outputText = `${-Math.round(
-				100 * props.weapon1.getPropSelfDamage()
+				100 * weapon1.getPropSelfDamage()
 			)}% of health recovered`;
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
@@ -217,24 +233,24 @@ export function WeaponAttack(props: {
 		}
 	} else {
 		//@ts-expect-error
-		if (props.weapon2?.getPropSelfDamage() > 0) {
-			props.attacker.propDamage(props.weapon2!.getPropSelfDamage());
+		if (weapon2?.getPropSelfDamage() > 0) {
+			attacker.propDamage(weapon2!.getPropSelfDamage());
 			outputText = `${-Math.round(
-				100 * props.weapon2!.getPropSelfDamage()
+				100 * weapon2!.getPropSelfDamage()
 			)}% health`;
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
 				</div>
 			);
 			//@ts-expect-error
-		} else if (props.weapon2?.getPropSelfDamage() < 0) {
-			props.attacker.propDamage(props.weapon2!.getPropSelfDamage());
+		} else if (weapon2?.getPropSelfDamage() < 0) {
+			attacker.propDamage(weapon2!.getPropSelfDamage());
 			outputText = `${-Math.round(
-				100 * props.weapon2!.getPropSelfDamage()
+				100 * weapon2!.getPropSelfDamage()
 			)}% of health recovered`;
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
@@ -244,58 +260,58 @@ export function WeaponAttack(props: {
 	}
 	selfDamage: {
 		if (
-			props.weapon1.getEffectType()[1] == 1 ||
-			props.weapon1.getEffectType()[1] == 2
+			weapon1.getEffectType()[1] == 1 ||
+			weapon1.getEffectType()[1] == 2
 		) {
 			if (
-				props.weapon2?.getEffectType()[1] == 1 ||
-				props.weapon2?.getEffectType()[1] == 2
+				weapon2?.getEffectType()[1] == 1 ||
+				weapon2?.getEffectType()[1] == 2
 			) {
-				if (props.weapon1.getSelfOverHeal()) {
+				if (weapon1.getSelfOverHeal()) {
 					damageBuffer =
-						props.attacker.flatDamage(
-							props.weapon2.getFlatSelfDamage(),
-							props.weapon2.getFlatSelfMagicDamage(),
-							props.weapon2.getFlatSelfArmourPiercingDamage(),
-							props.weapon2.getSelfOverHeal()
+						attacker.flatDamage(
+							weapon2.getFlatSelfDamage(),
+							weapon2.getFlatSelfMagicDamage(),
+							weapon2.getFlatSelfArmourPiercingDamage(),
+							weapon2.getSelfOverHeal()
 						) +
-						props.attacker.flatDamage(
-							props.weapon1.getFlatSelfDamage(),
-							props.weapon1.getFlatSelfMagicDamage(),
-							props.weapon1.getFlatSelfArmourPiercingDamage(),
+						attacker.flatDamage(
+							weapon1.getFlatSelfDamage(),
+							weapon1.getFlatSelfMagicDamage(),
+							weapon1.getFlatSelfArmourPiercingDamage(),
 							true
 						);
 				} else {
 					damageBuffer =
-						props.attacker.flatDamage(
-							props.weapon1.getFlatSelfDamage(),
-							props.weapon1.getFlatSelfMagicDamage(),
-							props.weapon1.getFlatSelfArmourPiercingDamage()
+						attacker.flatDamage(
+							weapon1.getFlatSelfDamage(),
+							weapon1.getFlatSelfMagicDamage(),
+							weapon1.getFlatSelfArmourPiercingDamage()
 						) +
-						props.attacker.flatDamage(
-							props.weapon2.getFlatSelfDamage(),
-							props.weapon2.getFlatSelfMagicDamage(),
-							props.weapon2.getFlatSelfArmourPiercingDamage(),
-							props.weapon2.getSelfOverHeal()
+						attacker.flatDamage(
+							weapon2.getFlatSelfDamage(),
+							weapon2.getFlatSelfMagicDamage(),
+							weapon2.getFlatSelfArmourPiercingDamage(),
+							weapon2.getSelfOverHeal()
 						);
 				}
 			} else {
-				damageBuffer = props.attacker.flatDamage(
-					props.weapon1.getFlatSelfDamage(),
-					props.weapon1.getFlatSelfMagicDamage(),
-					props.weapon1.getFlatSelfArmourPiercingDamage(),
-					props.weapon1.getSelfOverHeal()
+				damageBuffer = attacker.flatDamage(
+					weapon1.getFlatSelfDamage(),
+					weapon1.getFlatSelfMagicDamage(),
+					weapon1.getFlatSelfArmourPiercingDamage(),
+					weapon1.getSelfOverHeal()
 				);
 			}
 		} else if (
-			props.weapon2?.getEffectType()[1] == 1 ||
-			props.weapon2?.getEffectType()[1] == 2
+			weapon2?.getEffectType()[1] == 1 ||
+			weapon2?.getEffectType()[1] == 2
 		) {
-			damageBuffer = props.attacker.flatDamage(
-				props.weapon2.getFlatSelfDamage(),
-				props.weapon2.getFlatSelfMagicDamage(),
-				props.weapon2.getFlatSelfArmourPiercingDamage(),
-				props.weapon2.getSelfOverHeal()
+			damageBuffer = attacker.flatDamage(
+				weapon2.getFlatSelfDamage(),
+				weapon2.getFlatSelfMagicDamage(),
+				weapon2.getFlatSelfArmourPiercingDamage(),
+				weapon2.getSelfOverHeal()
 			);
 		} else {
 			break selfDamage;
@@ -307,7 +323,7 @@ export function WeaponAttack(props: {
 		} else {
 			outputText = "No damage";
 		}
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		attackerEffects.push(
 			<div className="ion-text-center" key="flatSelfDamage">
 				{outputText}
@@ -316,29 +332,26 @@ export function WeaponAttack(props: {
 	}
 	{
 		const selfPoison =
-				props.weapon1.getSelfPoison() +
-				(props.weapon2?.getSelfPoison() ?? 0),
-			selfBleed =
-				props.weapon1.getSelfBleed() +
-				(props.weapon2?.getSelfBleed() ?? 0);
+				weapon1.getSelfPoison() + (weapon2?.getSelfPoison() ?? 0),
+			selfBleed = weapon1.getSelfBleed() + (weapon2?.getSelfBleed() ?? 0);
 		if (selfPoison > 0 || selfBleed > 0) {
 			let dotEffects: string = "";
 			if (selfPoison > 0) {
-				if (props.attacker.modifyPoison(selfPoison)) {
+				if (attacker.modifyPoison(selfPoison)) {
 					dotEffects = `+${selfPoison} poison, `;
 				} else {
 					dotEffects = "Poison resisted, ";
 				}
 			}
 			if (selfBleed > 0) {
-				if (props.attacker.modifyBleed(selfBleed)) {
+				if (attacker.modifyBleed(selfBleed)) {
 					dotEffects += `+${selfBleed} bleed, `;
 				} else {
 					dotEffects += "Bleed resisted, ";
 				}
 			}
 			outputText = dotEffects.slice(0, -2);
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="dotSelf">
 					{outputText}
@@ -347,11 +360,10 @@ export function WeaponAttack(props: {
 		}
 	}
 	if (
-		props.weapon1.getEffectType()[1] < 2 &&
-		props.weapon1.getEffectType()[0] < 2 &&
-		(props.weapon2 == undefined ||
-			(props.weapon2.getEffectType()[1] < 2 &&
-				props.weapon2.getEffectType()[0] < 2))
+		weapon1.getEffectType()[1] < 2 &&
+		weapon1.getEffectType()[0] < 2 &&
+		(weapon2 == undefined ||
+			(weapon2.getEffectType()[1] < 2 && weapon2.getEffectType()[0] < 2))
 	) {
 		return <Fragment>{attackerEffects}</Fragment>;
 	}
@@ -361,22 +373,22 @@ export function WeaponAttack(props: {
 		</div>
 	];
 	var hits1: number, hits2: number | undefined;
-	if (props.counter) {
-		hits1 = props.weapon1.getCounterHits();
-		hits2 = props.weapon2?.getCounterHits();
+	if (counter) {
+		hits1 = weapon1.getCounterHits();
+		hits2 = weapon2?.getCounterHits();
 	} else {
-		hits1 = props.weapon1.getHitCount();
-		hits2 = props.weapon2?.getHitCount();
+		hits1 = weapon1.getHitCount();
+		hits2 = weapon2?.getHitCount();
 	}
 	for (let i: number = 0; i < hits1; i++) {
 		targetEffects.push(
 			//@ts-expect-error
 			<WeaponHit
-				key={`${props.weapon1.getKey()}-${i}`}
-				weaponry={props.weapon1}
-				attacker={props.attacker}
-				target={props.target}
-				battleLog={props.battleLog}
+				key={`${weapon1.getKey()}-${i}`}
+				weaponry={weapon1}
+				attacker={attacker}
+				target={target}
+				battleLog={battleLog}
 			/>
 		);
 		//@ts-expect-error
@@ -384,11 +396,11 @@ export function WeaponAttack(props: {
 			targetEffects.push(
 				//@ts-expect-error
 				<WeaponHit
-					key={`${props.weapon2!.getKey()}-${i}`}
-					weaponry={props.weapon2!}
-					attacker={props.attacker}
-					target={props.target}
-					battleLog={props.battleLog}
+					key={`${weapon2!.getKey()}-${i}`}
+					weaponry={weapon2!}
+					attacker={attacker}
+					target={target}
+					battleLog={battleLog}
 				/>
 			);
 		}
@@ -402,7 +414,12 @@ export function WeaponAttack(props: {
 }
 
 /**Weapon hit */
-export function WeaponHit(props: {
+export function WeaponHit({
+	weaponry,
+	attacker,
+	target,
+	battleLog
+}: {
 	/**The weapon */
 	weaponry: weapon;
 	/**The attacker */
@@ -413,7 +430,12 @@ export function WeaponHit(props: {
 	battleLog: string[];
 }): React.JSX.Element;
 /**Weapon hit */
-export function WeaponHit(props: {
+export function WeaponHit({
+	weaponry,
+	attacker,
+	target,
+	battleLog
+}: {
 	/**The weapon */
 	weaponry: weapon;
 	/**The attacker */
@@ -424,7 +446,12 @@ export function WeaponHit(props: {
 	battleLog: string[];
 }): React.JSX.Element;
 /**Weapon hit */
-export function WeaponHit(props: {
+export function WeaponHit({
+	weaponry,
+	attacker,
+	target,
+	battleLog
+}: {
 	/**The weapon */
 	weaponry: weapon;
 	/**The attacker */
@@ -434,70 +461,65 @@ export function WeaponHit(props: {
 	/**The battle log */
 	battleLog: string[];
 }): React.JSX.Element {
-	if (
-		!props.weaponry.getNoEvade() &&
-		randomFloat(0, 1) < props.target.getEvadeChance()
-	) {
-		props.battleLog.push("Evade!");
+	if (!weaponry.getNoEvade() && Math.random() < target.getEvadeChance()) {
+		battleLog.push("Evade!");
 		return (
 			<div className="ion-text-center" key="hit">
 				Evade!
 			</div>
 		);
 	}
-	props.battleLog.push("Hit!");
+	battleLog.push("Hit!");
 	const hitEffects: React.JSX.Element[] = [
 		<div className="ion-text-center" key="hit">
 			Hit!
 		</div>
 	];
 	var outputText: string;
-	props.target.propDamage(props.weaponry.getPropDamage());
-	if (props.weaponry.getPropDamage() > 0) {
-		outputText = `${-Math.round(
-			100 * props.weaponry.getPropDamage()
-		)}% health`;
-		props.battleLog.push(outputText);
+	target.propDamage(weaponry.getPropDamage());
+	if (weaponry.getPropDamage() > 0) {
+		outputText = `${-Math.round(100 * weaponry.getPropDamage())}% health`;
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="propDamage">
 				{outputText}
 			</div>
 		);
-	} else if (props.weaponry.getPropDamage() < 0) {
+	} else if (weaponry.getPropDamage() < 0) {
 		outputText = `${-Math.round(
-			100 * props.weaponry.getPropDamage()
+			100 * weaponry.getPropDamage()
 		)} % of health recovered`;
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="propDamage">
 				{outputText}
 			</div>
 		);
 	}
-	if (props.weaponry.getEffectType()[1] > 1) {
-		let healthSteal: number = Math.max(0, props.target.getHealth());
+	if (weaponry.getEffectType()[1] > 1) {
+		let healthSteal: number = Math.max(0, target.getHealth());
 		let {
 			p: p,
 			m: m,
 			a: a
-		} = props.attacker.applyDamageModifiers(
-			props.weaponry.getFlatDamage(),
-			props.weaponry.getFlatMagicDamage(),
-			props.weaponry.getFlatArmourPiercingDamage()
+		} = attacker.applyDamageModifiers(
+			weaponry.getFlatDamage(),
+			weaponry.getFlatMagicDamage(),
+			weaponry.getFlatArmourPiercingDamage()
 		);
-		let healthLoss: number = props.target.flatDamage(
+		let healthLoss: number = target.flatDamage(
 			p,
 			m,
 			a,
-			props.weaponry.getTargetOverHeal()
+			weaponry.getTargetOverHeal()
 		);
 		if (healthLoss > 0) {
 			outputText = `${healthLoss} damage`;
-			if (props.weaponry.getLifeLink()) {
+			if (weaponry.getLifeLink()) {
 				healthSteal = Math.min(healthSteal, healthLoss);
 				if (healthSteal > 0) {
 					outputText += ` (attacker is healed for ${healthSteal} by lifelink)`;
-					props.attacker.modifyHealth(healthSteal);
+					attacker.modifyHealth(healthSteal);
 				}
 			}
 		} else if (healthLoss < 0) {
@@ -505,31 +527,31 @@ export function WeaponHit(props: {
 		} else {
 			outputText = "No damage";
 		}
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="flatDamage">
 				{outputText}
 			</div>
 		);
 	}
-	if (props.weaponry.getPoison() > 0 || props.weaponry.getBleed() > 0) {
+	if (weaponry.getPoison() > 0 || weaponry.getBleed() > 0) {
 		outputText = "";
-		if (props.weaponry.getPoison() > 0) {
-			if (props.target.modifyPoison(props.weaponry.getPoison())) {
-				outputText = `+${props.weaponry.getPoison()} poison, `;
+		if (weaponry.getPoison() > 0) {
+			if (target.modifyPoison(weaponry.getPoison())) {
+				outputText = `+${weaponry.getPoison()} poison, `;
 			} else {
 				outputText = "Poison resisted, ";
 			}
 		}
-		if (props.weaponry.getBleed() > 0) {
-			if (props.target.modifyBleed(props.weaponry.getBleed())) {
-				outputText += `+${props.weaponry.getBleed()} bleed, `;
+		if (weaponry.getBleed() > 0) {
+			if (target.modifyBleed(weaponry.getBleed())) {
+				outputText += `+${weaponry.getBleed()} bleed, `;
 			} else {
 				outputText += "Bleed resisted, ";
 			}
 		}
 		outputText = outputText.slice(0, -2);
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="dot">
 				{outputText}
@@ -551,7 +573,13 @@ export function spellDeclare(magic: spell, caster: player | enemy): void {
 }
 
 /**Spell cast */
-export function SpellCast(props: {
+export function SpellCast({
+	magic,
+	caster,
+	target,
+	timing,
+	battleLog
+}: {
 	/**The spell */
 	magic: spell;
 	/**The caster */
@@ -564,7 +592,13 @@ export function SpellCast(props: {
 	battleLog: string[];
 }): React.JSX.Element;
 /**Spell cast */
-export function SpellCast(props: {
+export function SpellCast({
+	magic,
+	caster,
+	target,
+	timing,
+	battleLog
+}: {
 	/**The spell */
 	magic: spell;
 	/**The caster */
@@ -577,7 +611,13 @@ export function SpellCast(props: {
 	battleLog: string[];
 }): React.JSX.Element;
 /**Spell cast */
-export function SpellCast(props: {
+export function SpellCast({
+	magic,
+	caster,
+	target,
+	timing,
+	battleLog
+}: {
 	/**The spell */
 	magic: spell;
 	/**The caster */
@@ -591,52 +631,49 @@ export function SpellCast(props: {
 }): React.JSX.Element {
 	const attackerEffects: React.JSX.Element[] = [];
 	var outputText: string;
-	if (props.caster != undefined) {
+	if (caster != undefined) {
 		if (
-			props.magic.getEffectType()[1] == 1 ||
-			props.magic.getEffectType()[1] == 2 ||
-			props.magic.getEffectType()[0] == 1 ||
-			props.magic.getEffectType()[0] == 2
+			magic.getEffectType()[1] == 1 ||
+			magic.getEffectType()[1] == 2 ||
+			magic.getEffectType()[0] == 1 ||
+			magic.getEffectType()[0] == 2
 		) {
 			outputText = "Caster effects:";
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="caster-effects">
 					{outputText}
 				</div>
 			);
 		}
-		props.caster.propDamage(props.magic.getPropSelfDamage());
-		if (props.magic.getPropSelfDamage() > 0) {
+		caster.propDamage(magic.getPropSelfDamage());
+		if (magic.getPropSelfDamage() > 0) {
 			outputText = `${-Math.round(
-				100 * props.magic.getPropSelfDamage()
+				100 * magic.getPropSelfDamage()
 			)}% health`;
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
 				</div>
 			);
-		} else if (props.magic.getPropSelfDamage() < 0) {
+		} else if (magic.getPropSelfDamage() < 0) {
 			outputText = `${-Math.round(
-				100 * props.magic.getPropSelfDamage()
+				100 * magic.getPropSelfDamage()
 			)}% of health recovered`;
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
 				</div>
 			);
 		}
-		if (
-			props.magic.getEffectType()[1] == 1 ||
-			props.magic.getEffectType()[1] == 2
-		) {
-			let healthLoss: number = props.caster.flatDamage(
-				props.magic.getFlatSelfDamage(),
-				props.magic.getFlatSelfMagicDamage(),
-				props.magic.getFlatSelfArmourPiercingDamage(),
-				props.magic.getSelfOverHeal()
+		if (magic.getEffectType()[1] == 1 || magic.getEffectType()[1] == 2) {
+			let healthLoss: number = caster.flatDamage(
+				magic.getFlatSelfDamage(),
+				magic.getFlatSelfMagicDamage(),
+				magic.getFlatSelfArmourPiercingDamage(),
+				magic.getSelfOverHeal()
 			);
 			if (healthLoss > 0) {
 				outputText = `${healthLoss} damage`;
@@ -645,63 +682,52 @@ export function SpellCast(props: {
 			} else {
 				outputText = "No damage";
 			}
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="flatSelfDamage">
 					{outputText}
 				</div>
 			);
 		}
-		if (
-			props.magic.getEffectType()[0] == 1 ||
-			props.magic.getEffectType()[0] == 2
-		) {
+		if (magic.getEffectType()[0] == 1 || magic.getEffectType()[0] == 2) {
 			if (
-				props.magic.getSelfPoison() != 0 ||
-				props.magic.getSelfBleed() != 0 ||
-				props.magic.getTempRegenSelf() != 0
+				magic.getSelfPoison() != 0 ||
+				magic.getSelfBleed() != 0 ||
+				magic.getTempRegenSelf() != 0
 			) {
 				outputText = "";
-				if (props.magic.getSelfPoison() != 0) {
-					if (
-						props.caster.modifyPoison(props.magic.getSelfPoison())
-					) {
+				if (magic.getSelfPoison() != 0) {
+					if (caster.modifyPoison(magic.getSelfPoison())) {
 						outputText +=
-							props.magic.getSelfPoison() == -255
+							magic.getSelfPoison() == -255
 								? "Poison cured, "
 								: `${
-										props.magic.getSelfPoison() > 0
-											? "+"
-											: ""
-								  }${props.magic.getSelfPoison()} poison, `;
+										magic.getSelfPoison() > 0 ? "+" : ""
+								  }${magic.getSelfPoison()} poison, `;
 					} else {
 						outputText += "Poison resisted, ";
 					}
 				}
-				if (props.magic.getSelfBleed() != 0) {
-					if (props.caster.modifyBleed(props.magic.getSelfBleed())) {
+				if (magic.getSelfBleed() != 0) {
+					if (caster.modifyBleed(magic.getSelfBleed())) {
 						outputText +=
-							props.magic.getSelfBleed() == -255
+							magic.getSelfBleed() == -255
 								? "Bleed cured, "
 								: `${
-										props.magic.getSelfBleed() > 0
-											? "+"
-											: ""
-								  }${props.magic.getSelfBleed()} bleed, `;
+										magic.getSelfBleed() > 0 ? "+" : ""
+								  }${magic.getSelfBleed()} bleed, `;
 					} else {
 						outputText += "Bleed resisted, ";
 					}
 				}
-				if (props.magic.getTempRegenSelf() != 0) {
-					props.caster.modifyTempRegen(
-						props.magic.getTempRegenSelf()
-					);
+				if (magic.getTempRegenSelf() != 0) {
+					caster.modifyTempRegen(magic.getTempRegenSelf());
 					outputText += `${
-						props.magic.getTempRegenSelf() > 0 ? "+" : ""
-					}${props.magic.getTempRegenSelf()} regeneration, `;
+						magic.getTempRegenSelf() > 0 ? "+" : ""
+					}${magic.getTempRegenSelf()} regeneration, `;
 				}
 				outputText = outputText.slice(0, -2);
-				props.battleLog.push(outputText);
+				battleLog.push(outputText);
 				attackerEffects.push(
 					<div className="ion-text-center" key="dotSelf">
 						{outputText}
@@ -709,34 +735,30 @@ export function SpellCast(props: {
 				);
 			}
 			if (
-				props.magic.getPoisonResistModifier() != 0 ||
-				props.magic.getBleedResistModifier() != 0
+				magic.getPoisonResistModifier() != 0 ||
+				magic.getBleedResistModifier() != 0
 			) {
 				outputText = "";
-				if (props.magic.getPoisonResistModifier() != 0) {
-					console.log(props.caster);
-					props.caster.modifyPoisonResist(
-						props.magic.getPoisonResistModifier()
-					);
-					console.log(props.caster);
+				if (magic.getPoisonResistModifier() != 0) {
+					console.log(caster);
+					caster.modifyPoisonResist(magic.getPoisonResistModifier());
+					console.log(caster);
 					outputText += `${
-						props.magic.getPoisonResistModifier() > 0 ? "+" : ""
+						magic.getPoisonResistModifier() > 0 ? "+" : ""
 					}${Math.round(
-						100 * props.magic.getPoisonResistModifier()
+						100 * magic.getPoisonResistModifier()
 					)}% poison resist, `;
 				}
-				if (props.magic.getBleedResistModifier() != 0) {
-					props.caster.modifyBleedResist(
-						props.magic.getBleedResistModifier()
-					);
+				if (magic.getBleedResistModifier() != 0) {
+					caster.modifyBleedResist(magic.getBleedResistModifier());
 					outputText += `${
-						props.magic.getBleedResistModifier() > 0 ? "+" : ""
+						magic.getBleedResistModifier() > 0 ? "+" : ""
 					}${Math.round(
-						100 * props.magic.getBleedResistModifier()
+						100 * magic.getBleedResistModifier()
 					)}% bleed resist, `;
 				}
 				outputText = outputText.slice(0, -2);
-				props.battleLog.push(outputText);
+				battleLog.push(outputText);
 				attackerEffects.push(
 					<div className="ion-text-center" key="selfResistModifiers">
 						{outputText}
@@ -744,41 +766,35 @@ export function SpellCast(props: {
 				);
 			}
 			if (
-				props.magic.getMaxHealthModifier() != 0 ||
-				props.magic.getTurnRegenModifier() != 0 ||
-				(props.caster instanceof player &&
-					props.magic.getBattleRegenModifier() != 0)
+				magic.getMaxHealthModifier() != 0 ||
+				magic.getTurnRegenModifier() != 0 ||
+				(caster instanceof player &&
+					magic.getBattleRegenModifier() != 0)
 			) {
 				outputText = "";
-				if (props.magic.getMaxHealthModifier() != 0) {
-					props.caster.modifyMaxHealth(
-						props.magic.getMaxHealthModifier()
-					);
+				if (magic.getMaxHealthModifier() != 0) {
+					caster.modifyMaxHealth(magic.getMaxHealthModifier());
 					outputText += `${
-						props.magic.getMaxHealthModifier() > 0 ? "+" : ""
-					}${props.magic.getMaxHealthModifier()} max health, `;
+						magic.getMaxHealthModifier() > 0 ? "+" : ""
+					}${magic.getMaxHealthModifier()} max health, `;
 				}
-				if (props.magic.getTurnRegenModifier() != 0) {
-					props.caster.modifyTurnRegen(
-						props.magic.getTurnRegenModifier()
-					);
+				if (magic.getTurnRegenModifier() != 0) {
+					caster.modifyTurnRegen(magic.getTurnRegenModifier());
 					outputText += `${
-						props.magic.getTurnRegenModifier() > 0 ? "+" : ""
-					}${props.magic.getTurnRegenModifier()} health per turn, `;
+						magic.getTurnRegenModifier() > 0 ? "+" : ""
+					}${magic.getTurnRegenModifier()} health per turn, `;
 				}
 				if (
-					props.caster instanceof player &&
-					props.magic.getBattleRegenModifier() != 0
+					caster instanceof player &&
+					magic.getBattleRegenModifier() != 0
 				) {
-					props.caster.modifyBattleRegen(
-						props.magic.getBattleRegenModifier()
-					);
+					caster.modifyBattleRegen(magic.getBattleRegenModifier());
 					outputText += `${
-						props.magic.getBattleRegenModifier() > 0 ? "+" : ""
-					}${props.magic.getBattleRegenModifier()} health at end of battle, `;
+						magic.getBattleRegenModifier() > 0 ? "+" : ""
+					}${magic.getBattleRegenModifier()} health at end of battle, `;
 				}
 				outputText = outputText.slice(0, -2);
-				props.battleLog.push(outputText);
+				battleLog.push(outputText);
 				attackerEffects.push(
 					<div className="ion-text-center" key="selfHealthModifiers">
 						{outputText}
@@ -786,41 +802,39 @@ export function SpellCast(props: {
 				);
 			}
 			if (
-				props.magic.getMaxManaModifier() != 0 ||
-				props.magic.getTurnManaRegenModifier() != 0 ||
-				(props.caster instanceof player &&
-					props.magic.getBattleManaRegenModifier() != 0)
+				magic.getMaxManaModifier() != 0 ||
+				magic.getTurnManaRegenModifier() != 0 ||
+				(caster instanceof player &&
+					magic.getBattleManaRegenModifier() != 0)
 			) {
 				outputText = "";
-				if (props.magic.getMaxManaModifier() != 0) {
-					props.caster.modifyMaxMana(
-						props.magic.getMaxManaModifier()
-					);
+				if (magic.getMaxManaModifier() != 0) {
+					caster.modifyMaxMana(magic.getMaxManaModifier());
 					outputText += `${
-						props.magic.getMaxManaModifier() > 0 ? "+" : ""
-					}${props.magic.getMaxManaModifier()} maximum mana, `;
+						magic.getMaxManaModifier() > 0 ? "+" : ""
+					}${magic.getMaxManaModifier()} maximum mana, `;
 				}
-				if (props.magic.getTurnManaRegenModifier() != 0) {
-					props.caster.modifyTurnManaRegen(
-						props.magic.getTurnManaRegenModifier()
+				if (magic.getTurnManaRegenModifier() != 0) {
+					caster.modifyTurnManaRegen(
+						magic.getTurnManaRegenModifier()
 					);
 					outputText += `${
-						props.magic.getTurnManaRegenModifier() > 0 ? "+" : ""
-					}${props.magic.getTurnManaRegenModifier()} mana per turn, `;
+						magic.getTurnManaRegenModifier() > 0 ? "+" : ""
+					}${magic.getTurnManaRegenModifier()} mana per turn, `;
 				}
 				if (
-					props.caster instanceof player &&
-					props.magic.getBattleManaRegenModifier() != 0
+					caster instanceof player &&
+					magic.getBattleManaRegenModifier() != 0
 				) {
-					props.caster.modifyBattleManaRegen(
-						props.magic.getBattleManaRegenModifier()
+					caster.modifyBattleManaRegen(
+						magic.getBattleManaRegenModifier()
 					);
 					outputText += `${
-						props.magic.getBattleManaRegenModifier() > 0 ? "+" : ""
-					}${props.magic.getBattleManaRegenModifier()} mana at end of battle, `;
+						magic.getBattleManaRegenModifier() > 0 ? "+" : ""
+					}${magic.getBattleManaRegenModifier()} mana at end of battle, `;
 				}
 				outputText = outputText.slice(0, -2);
-				props.battleLog.push(outputText);
+				battleLog.push(outputText);
 				attackerEffects.push(
 					<div className="ion-text-center" key="selfManaModifiers">
 						{outputText}
@@ -828,28 +842,26 @@ export function SpellCast(props: {
 				);
 			}
 			if (
-				props.magic.getFlatArmourModifier() != 0 ||
-				props.magic.getFlatMagicArmourModifier() != 0
+				magic.getFlatArmourModifier() != 0 ||
+				magic.getFlatMagicArmourModifier() != 0
 			) {
 				outputText = "";
-				if (props.magic.getFlatArmourModifier() != 0) {
-					props.caster.modifyFlatArmour(
-						props.magic.getFlatArmourModifier()
-					);
+				if (magic.getFlatArmourModifier() != 0) {
+					caster.modifyFlatArmour(magic.getFlatArmourModifier());
 					outputText += `${
-						props.magic.getFlatArmourModifier() > 0 ? "+" : ""
-					}${props.magic.getFlatArmourModifier()} physical armour, `;
+						magic.getFlatArmourModifier() > 0 ? "+" : ""
+					}${magic.getFlatArmourModifier()} physical armour, `;
 				}
-				if (props.magic.getFlatMagicArmourModifier() != 0) {
-					props.caster.modifyFlatMagicArmour(
-						props.magic.getFlatMagicArmourModifier()
+				if (magic.getFlatMagicArmourModifier() != 0) {
+					caster.modifyFlatMagicArmour(
+						magic.getFlatMagicArmourModifier()
 					);
 					outputText += `${
-						props.magic.getFlatMagicArmourModifier() > 0 ? "+" : ""
-					}${props.magic.getFlatMagicArmourModifier()} magic armour, `;
+						magic.getFlatMagicArmourModifier() > 0 ? "+" : ""
+					}${magic.getFlatMagicArmourModifier()} magic armour, `;
 				}
 				outputText = outputText.slice(0, -2);
-				props.battleLog.push(outputText);
+				battleLog.push(outputText);
 				attackerEffects.push(
 					<div
 						className="ion-text-center"
@@ -860,32 +872,30 @@ export function SpellCast(props: {
 				);
 			}
 			if (
-				props.magic.getPropArmourModifier() != 0 ||
-				props.magic.getPropMagicArmourModifier() != 0
+				magic.getPropArmourModifier() != 0 ||
+				magic.getPropMagicArmourModifier() != 0
 			) {
 				outputText = "";
-				if (props.magic.getPropArmourModifier() != 0) {
-					props.caster.modifyPropArmour(
-						props.magic.getPropArmourModifier()
-					);
+				if (magic.getPropArmourModifier() != 0) {
+					caster.modifyPropArmour(magic.getPropArmourModifier());
 					outputText += `${
-						props.magic.getPropArmourModifier() > 0 ? "+" : ""
+						magic.getPropArmourModifier() > 0 ? "+" : ""
 					}${Math.round(
-						100 * props.magic.getPropArmourModifier()
+						100 * magic.getPropArmourModifier()
 					)}% physical damage received, `;
 				}
-				if (props.magic.getPropMagicArmourModifier() != 0) {
-					props.caster.modifyPropMagicArmour(
-						props.magic.getPropMagicArmourModifier()
+				if (magic.getPropMagicArmourModifier() != 0) {
+					caster.modifyPropMagicArmour(
+						magic.getPropMagicArmourModifier()
 					);
 					outputText += `${
-						props.magic.getPropMagicArmourModifier() > 0 ? "+" : ""
+						magic.getPropMagicArmourModifier() > 0 ? "+" : ""
 					}${Math.round(
-						100 * props.magic.getPropMagicArmourModifier()
+						100 * magic.getPropMagicArmourModifier()
 					)}% magic damage received, `;
 				}
 				outputText = outputText.slice(0, -2);
-				props.battleLog.push(outputText);
+				battleLog.push(outputText);
 				attackerEffects.push(
 					<div
 						className="ion-text-center"
@@ -896,39 +906,39 @@ export function SpellCast(props: {
 				);
 			}
 			if (
-				props.magic.getFlatDamageModifier() != 0 ||
-				props.magic.getFlatMagicDamageModifier() != 0 ||
-				props.magic.getFlatArmourPiercingDamageModifier() != 0
+				magic.getFlatDamageModifier() != 0 ||
+				magic.getFlatMagicDamageModifier() != 0 ||
+				magic.getFlatArmourPiercingDamageModifier() != 0
 			) {
 				outputText = "";
-				if (props.magic.getFlatDamageModifier() != 0) {
-					props.caster.modifyFlatDamageModifier(
-						props.magic.getFlatDamageModifier()
+				if (magic.getFlatDamageModifier() != 0) {
+					caster.modifyFlatDamageModifier(
+						magic.getFlatDamageModifier()
 					);
 					outputText += `${
-						props.magic.getFlatDamageModifier() > 0 ? "+" : ""
-					}${props.magic.getFlatDamageModifier()} physical damage dealt, `;
+						magic.getFlatDamageModifier() > 0 ? "+" : ""
+					}${magic.getFlatDamageModifier()} physical damage dealt, `;
 				}
-				if (props.magic.getFlatMagicDamageModifier() != 0) {
-					props.caster.modifyFlatMagicDamageModifier(
-						props.magic.getFlatMagicDamageModifier()
+				if (magic.getFlatMagicDamageModifier() != 0) {
+					caster.modifyFlatMagicDamageModifier(
+						magic.getFlatMagicDamageModifier()
 					);
 					outputText += `${
-						props.magic.getFlatMagicDamageModifier() > 0 ? "+" : ""
-					}${props.magic.getFlatMagicDamageModifier()} magic damage dealt, `;
+						magic.getFlatMagicDamageModifier() > 0 ? "+" : ""
+					}${magic.getFlatMagicDamageModifier()} magic damage dealt, `;
 				}
-				if (props.magic.getFlatArmourPiercingDamageModifier() != 0) {
-					props.caster.modifyFlatArmourPiercingDamageModifier(
-						props.magic.getFlatArmourPiercingDamageModifier()
+				if (magic.getFlatArmourPiercingDamageModifier() != 0) {
+					caster.modifyFlatArmourPiercingDamageModifier(
+						magic.getFlatArmourPiercingDamageModifier()
 					);
 					outputText += `${
-						props.magic.getFlatArmourPiercingDamageModifier() > 0
+						magic.getFlatArmourPiercingDamageModifier() > 0
 							? "+"
 							: ""
-					}${props.magic.getFlatArmourPiercingDamageModifier()} armour piercing damage dealt, `;
+					}${magic.getFlatArmourPiercingDamageModifier()} armour piercing damage dealt, `;
 				}
 				outputText = outputText.slice(0, -2);
-				props.battleLog.push(outputText);
+				battleLog.push(outputText);
 				attackerEffects.push(
 					<div
 						className="ion-text-center"
@@ -939,45 +949,45 @@ export function SpellCast(props: {
 				);
 			}
 			if (
-				props.magic.getPropDamageModifier() != 0 ||
-				props.magic.getPropMagicDamageModifier() != 0 ||
-				props.magic.getPropArmourPiercingDamageModifier() != 0
+				magic.getPropDamageModifier() != 0 ||
+				magic.getPropMagicDamageModifier() != 0 ||
+				magic.getPropArmourPiercingDamageModifier() != 0
 			) {
 				outputText = "";
-				if (props.magic.getPropDamageModifier() != 0) {
-					props.caster.modifyPropDamageModifier(
-						props.magic.getPropDamageModifier()
+				if (magic.getPropDamageModifier() != 0) {
+					caster.modifyPropDamageModifier(
+						magic.getPropDamageModifier()
 					);
 					outputText += `${
-						props.magic.getPropDamageModifier() > 0 ? "+" : ""
+						magic.getPropDamageModifier() > 0 ? "+" : ""
 					}${Math.round(
-						100 * props.magic.getPropDamageModifier()
+						100 * magic.getPropDamageModifier()
 					)}% physical damage dealt, `;
 				}
-				if (props.magic.getPropMagicDamageModifier() != 0) {
-					props.caster.modifyPropMagicDamageModifier(
-						props.magic.getPropMagicDamageModifier()
+				if (magic.getPropMagicDamageModifier() != 0) {
+					caster.modifyPropMagicDamageModifier(
+						magic.getPropMagicDamageModifier()
 					);
 					outputText += `${
-						props.magic.getPropMagicDamageModifier() > 0 ? "+" : ""
+						magic.getPropMagicDamageModifier() > 0 ? "+" : ""
 					}${Math.round(
-						100 * props.magic.getPropMagicDamageModifier()
+						100 * magic.getPropMagicDamageModifier()
 					)}% magic damage dealt, `;
 				}
-				if (props.magic.getPropArmourPiercingDamageModifier() != 0) {
-					props.caster.modifyPropArmourPiercingDamageModifier(
-						props.magic.getPropArmourPiercingDamageModifier()
+				if (magic.getPropArmourPiercingDamageModifier() != 0) {
+					caster.modifyPropArmourPiercingDamageModifier(
+						magic.getPropArmourPiercingDamageModifier()
 					);
 					outputText += `${
-						props.magic.getPropArmourPiercingDamageModifier() > 0
+						magic.getPropArmourPiercingDamageModifier() > 0
 							? "+"
 							: ""
 					}${Math.round(
-						100 * props.magic.getPropArmourPiercingDamageModifier()
+						100 * magic.getPropArmourPiercingDamageModifier()
 					)}% armour piercing damage dealt, `;
 				}
 				outputText = outputText.slice(0, -2);
-				props.battleLog.push(outputText);
+				battleLog.push(outputText);
 				attackerEffects.push(
 					<div
 						className="ion-text-center"
@@ -988,32 +998,28 @@ export function SpellCast(props: {
 				);
 			}
 		}
-		if (props.magic.getEvadeChanceModifier() != 0) {
-			props.caster.modifyEvadeChance(
-				props.magic.getEvadeChanceModifier()
-			);
+		if (magic.getEvadeChanceModifier() != 0) {
+			caster.modifyEvadeChance(magic.getEvadeChanceModifier());
 			outputText = `${
-				props.magic.getEvadeChanceModifier() > 0 ? "+" : ""
-			}${Math.round(
-				100 * props.magic.getEvadeChanceModifier()
-			)}% evade chance`;
-			props.battleLog.push(outputText);
+				magic.getEvadeChanceModifier() > 0 ? "+" : ""
+			}${Math.round(100 * magic.getEvadeChanceModifier())}% evade chance`;
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="selfEvadeChanceModifier">
 					{outputText}
 				</div>
 			);
 		}
-		if (props.magic.getCounterAttackChanceModifier() != 0) {
-			props.caster.modifyCounterAttackChance(
-				props.magic.getCounterAttackChanceModifier()
+		if (magic.getCounterAttackChanceModifier() != 0) {
+			caster.modifyCounterAttackChance(
+				magic.getCounterAttackChanceModifier()
 			);
 			outputText = `${
-				props.magic.getCounterAttackChanceModifier() > 0 ? "+" : ""
+				magic.getCounterAttackChanceModifier() > 0 ? "+" : ""
 			}${Math.round(
-				100 * props.magic.getCounterAttackChanceModifier()
+				100 * magic.getCounterAttackChanceModifier()
 			)}% counter attack chance`;
-			props.battleLog.push(outputText);
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div
 					className="ion-text-center"
@@ -1023,14 +1029,12 @@ export function SpellCast(props: {
 				</div>
 			);
 		}
-		if (props.magic.getBonusActionsModifier() != 0) {
-			props.caster.modifyBonusActions(
-				props.magic.getBonusActionsModifier()
-			);
+		if (magic.getBonusActionsModifier() != 0) {
+			caster.modifyBonusActions(magic.getBonusActionsModifier());
 			outputText = `${
-				props.magic.getBonusActionsModifier() > 0 ? "+" : ""
-			}${props.magic.getBonusActionsModifier()} bonus actions`;
-			props.battleLog.push(outputText);
+				magic.getBonusActionsModifier() > 0 ? "+" : ""
+			}${magic.getBonusActionsModifier()} bonus actions`;
+			battleLog.push(outputText);
 			attackerEffects.push(
 				<div className="ion-text-center" key="selfBonusActionModifier">
 					{outputText}
@@ -1038,10 +1042,7 @@ export function SpellCast(props: {
 			);
 		}
 	}
-	if (
-		props.magic.getEffectType()[0] < 2 ||
-		props.magic.getEffectType()[1] < 2
-	) {
+	if (magic.getEffectType()[0] < 2 || magic.getEffectType()[1] < 2) {
 		return <Fragment>{attackerEffects}</Fragment>;
 	}
 	const targetEffects: React.JSX.Element[] = [
@@ -1050,26 +1051,26 @@ export function SpellCast(props: {
 		</div>
 	];
 	var hits: number;
-	switch (props.timing) {
+	switch (timing) {
 		case undefined:
 		case 0:
-			hits = props.magic.getHitCount();
+			hits = magic.getHitCount();
 			break;
 		case 3:
-			hits = props.magic.getCounterHits();
+			hits = magic.getCounterHits();
 			break;
 		default:
-			hits = props.magic.getResponseHits();
+			hits = magic.getResponseHits();
 	}
 	for (let i: number = 0; i < hits; i++) {
 		targetEffects.push(
 			//@ts-expect-error
 			<SpellHit
-				key={`${props.magic.getKey()}-${i}`}
-				magic={props.magic}
-				caster={props.caster}
-				target={props.target}
-				battleLog={props.battleLog}
+				key={`${magic.getKey()}-${i}`}
+				magic={magic}
+				caster={caster}
+				target={target}
+				battleLog={battleLog}
 			/>
 		);
 	}
@@ -1082,7 +1083,12 @@ export function SpellCast(props: {
 }
 
 /**Spell hit */
-function SpellHit(props: {
+function SpellHit({
+	magic,
+	caster,
+	target,
+	battleLog
+}: {
 	/**The spell */
 	magic: spell;
 	/**The caster */
@@ -1093,7 +1099,12 @@ function SpellHit(props: {
 	battleLog: string[];
 }): React.JSX.Element;
 /**Spell hit */
-function SpellHit(props: {
+function SpellHit({
+	magic,
+	caster,
+	target,
+	battleLog
+}: {
 	/**The spell */
 	magic: spell;
 	/**The caster */
@@ -1104,7 +1115,12 @@ function SpellHit(props: {
 	battleLog: string[];
 }): React.JSX.Element;
 /**Spell hit */
-function SpellHit(props: {
+function SpellHit({
+	magic,
+	caster,
+	target,
+	battleLog
+}: {
 	/**The spell */
 	magic: spell;
 	/**The caster */
@@ -1116,12 +1132,9 @@ function SpellHit(props: {
 }): React.JSX.Element {
 	var outputText: string = "";
 	const hitEffects: React.JSX.Element[] = [];
-	if (
-		!props.magic.getNoEvade() &&
-		randomFloat(0, 1) < props.target.getEvadeChance()
-	) {
+	if (!magic.getNoEvade() && Math.random() < target.getEvadeChance()) {
 		outputText = "Evade!";
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="hit">
 				{outputText}
@@ -1129,55 +1142,53 @@ function SpellHit(props: {
 		);
 	}
 	outputText = "Hit!";
-	props.battleLog.push(outputText);
+	battleLog.push(outputText);
 	hitEffects.push(
 		<div className="ion-text-center" key="hit">
 			{outputText}
 		</div>
 	);
-	props.target.propDamage(props.magic.getPropDamage());
-	if (props.magic.getPropDamage() > 0) {
-		outputText = `${-Math.round(
-			100 * props.magic.getPropDamage()
-		)}% health`;
-		props.battleLog.push(outputText);
+	target.propDamage(magic.getPropDamage());
+	if (magic.getPropDamage() > 0) {
+		outputText = `${-Math.round(100 * magic.getPropDamage())}% health`;
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="propDamage">
 				{outputText}
 			</div>
 		);
-	} else if (props.magic.getPropDamage() < 0) {
+	} else if (magic.getPropDamage() < 0) {
 		outputText = `${-Math.round(
-			100 * props.magic.getPropDamage()
+			100 * magic.getPropDamage()
 		)}% of health recovered`;
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="propDamage">
 				{outputText}
 			</div>
 		);
 	}
-	if (props.magic.getEffectType()[1] > 1) {
-		let healthSteal: number = Math.max(0, props.target.getHealth());
-		let p: number = props.magic.getFlatDamage(),
-			m: number = props.magic.getFlatMagicDamage(),
-			a: number = props.magic.getFlatArmourPiercingDamage();
-		if (props.caster != undefined) {
-			({p: p, m: m, a: a} = props.caster.applyDamageModifiers(p, m, m));
+	if (magic.getEffectType()[1] > 1) {
+		let healthSteal: number = Math.max(0, target.getHealth());
+		let p: number = magic.getFlatDamage(),
+			m: number = magic.getFlatMagicDamage(),
+			a: number = magic.getFlatArmourPiercingDamage();
+		if (caster != undefined) {
+			({p: p, m: m, a: a} = caster.applyDamageModifiers(p, m, m));
 		}
-		let healthLoss: number = props.target.flatDamage(
+		let healthLoss: number = target.flatDamage(
 			p,
 			m,
 			a,
-			props.magic.getTargetOverHeal()
+			magic.getTargetOverHeal()
 		);
 		if (healthLoss > 0) {
 			outputText = `${healthLoss} damage`;
-			if (props.caster != undefined && props.magic.getLifeLink()) {
+			if (caster != undefined && magic.getLifeLink()) {
 				healthSteal = Math.min(healthSteal, healthLoss);
 				if (healthSteal > 0) {
 					outputText += ` (caster is healed for ${healthSteal} by lifelink)`;
-					props.caster.modifyHealth(healthSteal);
+					caster.modifyHealth(healthSteal);
 				}
 			}
 		} else if (healthLoss < 0) {
@@ -1185,48 +1196,48 @@ function SpellHit(props: {
 		} else {
 			outputText = "No damage";
 		}
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="flatDamage">
 				{outputText}
 			</div>
 		);
 	}
-	if (props.magic.getEffectType()[0] < 2) {
+	if (magic.getEffectType()[0] < 2) {
 		return <Fragment>{hitEffects}</Fragment>;
 	}
 	if (
-		props.magic.getPoison() != 0 ||
-		props.magic.getBleed() != 0 ||
-		props.magic.getTempRegen() != 0
+		magic.getPoison() != 0 ||
+		magic.getBleed() != 0 ||
+		magic.getTempRegen() != 0
 	) {
 		outputText = "";
-		if (props.magic.getPoison() != 0) {
-			if (props.target.modifyPoison(props.magic.getPoison())) {
+		if (magic.getPoison() != 0) {
+			if (target.modifyPoison(magic.getPoison())) {
 				outputText += `${
-					props.magic.getPoison() > 0 ? "+" : ""
-				}${props.magic.getPoison()} poison, `;
+					magic.getPoison() > 0 ? "+" : ""
+				}${magic.getPoison()} poison, `;
 			} else {
 				outputText += "Poison resisted, ";
 			}
 		}
-		if (props.magic.getBleed() != 0) {
-			if (props.target.modifyBleed(props.magic.getBleed())) {
+		if (magic.getBleed() != 0) {
+			if (target.modifyBleed(magic.getBleed())) {
 				outputText += `${
-					props.magic.getBleed() > 0 ? "+" : ""
-				}${props.magic.getBleed()} bleed, `;
+					magic.getBleed() > 0 ? "+" : ""
+				}${magic.getBleed()} bleed, `;
 			} else {
 				outputText += "Bleed resisted, ";
 			}
 		}
-		if (props.magic.getTempRegen() != 0) {
-			props.target.modifyTempRegen(props.magic.getTempRegen());
+		if (magic.getTempRegen() != 0) {
+			target.modifyTempRegen(magic.getTempRegen());
 			outputText += `${
-				props.magic.getTempRegen() > 0 ? "+" : ""
-			}${props.magic.getTempRegen()} regeneration, `;
+				magic.getTempRegen() > 0 ? "+" : ""
+			}${magic.getTempRegen()} regeneration, `;
 		}
 		outputText = outputText.slice(0, -2);
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="dot">
 				{outputText}
@@ -1234,41 +1245,34 @@ function SpellHit(props: {
 		);
 	}
 	if (
-		props.magic.getMaxHealthModifierEnemy() != 0 ||
-		props.magic.getTurnRegenModifierEnemy() ||
-		(props.target instanceof player &&
-			props.magic.getBattleRegenModifierEnemy() != 0)
+		magic.getMaxHealthModifierEnemy() != 0 ||
+		magic.getTurnRegenModifierEnemy() ||
+		(target instanceof player && magic.getBattleRegenModifierEnemy() != 0)
 	) {
 		outputText = "";
-		if (props.magic.getMaxHealthModifierEnemy() != 0) {
-			props.target.modifyMaxHealth(
-				props.magic.getMaxHealthModifierEnemy()
-			);
+		if (magic.getMaxHealthModifierEnemy() != 0) {
+			target.modifyMaxHealth(magic.getMaxHealthModifierEnemy());
 			outputText += `${
-				props.magic.getMaxHealthModifierEnemy() > 0 ? "+" : ""
-			}${props.magic.getMaxHealthModifierEnemy()} maximum health, `;
+				magic.getMaxHealthModifierEnemy() > 0 ? "+" : ""
+			}${magic.getMaxHealthModifierEnemy()} maximum health, `;
 		}
-		if (props.magic.getTurnRegenModifierEnemy() != 0) {
-			props.target.modifyTurnRegen(
-				props.magic.getTurnRegenModifierEnemy()
-			);
+		if (magic.getTurnRegenModifierEnemy() != 0) {
+			target.modifyTurnRegen(magic.getTurnRegenModifierEnemy());
 			outputText += `${
-				props.magic.getTurnRegenModifierEnemy() > 0 ? "+" : ""
-			}${props.magic.getTurnRegenModifierEnemy()} health per turn, `;
+				magic.getTurnRegenModifierEnemy() > 0 ? "+" : ""
+			}${magic.getTurnRegenModifierEnemy()} health per turn, `;
 		}
 		if (
-			props.target instanceof player &&
-			props.magic.getBattleRegenModifierEnemy() != 0
+			target instanceof player &&
+			magic.getBattleRegenModifierEnemy() != 0
 		) {
-			props.target.modifyBattleRegen(
-				props.magic.getBattleRegenModifierEnemy()
-			);
+			target.modifyBattleRegen(magic.getBattleRegenModifierEnemy());
 			outputText += `${
-				props.magic.getBattleRegenModifierEnemy() > 0 ? "+" : ""
-			}${props.magic.getBattleRegenModifierEnemy()} health at end of battle, `;
+				magic.getBattleRegenModifierEnemy() > 0 ? "+" : ""
+			}${magic.getBattleRegenModifierEnemy()} health at end of battle, `;
 		}
 		outputText = outputText.slice(0, -2);
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="healthModifiers">
 				{outputText}
@@ -1276,46 +1280,44 @@ function SpellHit(props: {
 		);
 	}
 	if (
-		props.magic.getMaxManaModifierEnemy() != 0 ||
-		props.magic.getManaChangeEnemy() != 0 ||
-		props.magic.getTurnManaRegenModifierEnemy() != 0 ||
-		(props.target instanceof player &&
-			props.magic.getBattleManaRegenModifierEnemy() != 0)
+		magic.getMaxManaModifierEnemy() != 0 ||
+		magic.getManaChangeEnemy() != 0 ||
+		magic.getTurnManaRegenModifierEnemy() != 0 ||
+		(target instanceof player &&
+			magic.getBattleManaRegenModifierEnemy() != 0)
 	) {
 		outputText = "";
-		if (props.magic.getMaxManaModifierEnemy() != 0) {
-			props.target.modifyMaxMana(props.magic.getMaxManaModifierEnemy());
+		if (magic.getMaxManaModifierEnemy() != 0) {
+			target.modifyMaxMana(magic.getMaxManaModifierEnemy());
 			outputText += `${
-				props.magic.getMaxManaModifierEnemy() > 0 ? "+" : ""
-			}${props.magic.getMaxManaModifierEnemy()} maximum mana, `;
+				magic.getMaxManaModifierEnemy() > 0 ? "+" : ""
+			}${magic.getMaxManaModifierEnemy()} maximum mana, `;
 		}
-		if (props.magic.getManaChangeEnemy() != 0) {
-			props.target.modifyMana(props.magic.getManaChangeEnemy());
+		if (magic.getManaChangeEnemy() != 0) {
+			target.modifyMana(magic.getManaChangeEnemy());
 			outputText += `${
-				props.magic.getManaChangeEnemy() > 0 ? "+" : ""
-			}${props.magic.getManaChangeEnemy()} mana, `;
+				magic.getManaChangeEnemy() > 0 ? "+" : ""
+			}${magic.getManaChangeEnemy()} mana, `;
 		}
-		if (props.magic.getTurnManaRegenModifierEnemy() != 0) {
-			props.target.modifyTurnManaRegen(
-				props.magic.getTurnManaRegenModifierEnemy()
-			);
+		if (magic.getTurnManaRegenModifierEnemy() != 0) {
+			target.modifyTurnManaRegen(magic.getTurnManaRegenModifierEnemy());
 			outputText += `${
-				props.magic.getTurnManaRegenModifierEnemy() > 0 ? "+" : ""
-			}${props.magic.getTurnManaRegenModifierEnemy()} mana per turn, `;
+				magic.getTurnManaRegenModifierEnemy() > 0 ? "+" : ""
+			}${magic.getTurnManaRegenModifierEnemy()} mana per turn, `;
 		}
 		if (
-			props.target instanceof player &&
-			props.magic.getBattleManaRegenModifierEnemy() != 0
+			target instanceof player &&
+			magic.getBattleManaRegenModifierEnemy() != 0
 		) {
-			props.target.modifyBattleManaRegen(
-				props.magic.getBattleManaRegenModifierEnemy()
+			target.modifyBattleManaRegen(
+				magic.getBattleManaRegenModifierEnemy()
 			);
 			outputText += `${
-				props.magic.getBattleManaRegenModifierEnemy() > 0 ? "+" : ""
-			}${props.magic.getBattleManaRegenModifierEnemy()} mana at end of battle, `;
+				magic.getBattleManaRegenModifierEnemy() > 0 ? "+" : ""
+			}${magic.getBattleManaRegenModifierEnemy()} mana at end of battle, `;
 		}
 		outputText = outputText.slice(0, -2);
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="manaModifiers">
 				{outputText}
@@ -1323,32 +1325,28 @@ function SpellHit(props: {
 		);
 	}
 	if (
-		props.magic.getPoisonResistModifierEnemy() != 0 ||
-		props.magic.getBleedResistModifierEnemy() != 0
+		magic.getPoisonResistModifierEnemy() != 0 ||
+		magic.getBleedResistModifierEnemy() != 0
 	) {
 		outputText = "";
-		if (props.magic.getPoisonResistModifierEnemy() != 0) {
-			props.target.modifyPoisonResist(
-				props.magic.getPoisonResistModifierEnemy()
-			);
+		if (magic.getPoisonResistModifierEnemy() != 0) {
+			target.modifyPoisonResist(magic.getPoisonResistModifierEnemy());
 			outputText += `${
-				props.magic.getPoisonResistModifierEnemy() > 0 ? "+" : ""
+				magic.getPoisonResistModifierEnemy() > 0 ? "+" : ""
 			}${Math.round(
-				100 * props.magic.getPoisonResistModifierEnemy()
+				100 * magic.getPoisonResistModifierEnemy()
 			)} poison resist, `;
 		}
-		if (props.magic.getBleedResistModifierEnemy() != 0) {
-			props.target.modifyBleedResist(
-				props.magic.getBleedResistModifierEnemy()
-			);
+		if (magic.getBleedResistModifierEnemy() != 0) {
+			target.modifyBleedResist(magic.getBleedResistModifierEnemy());
 			outputText += `${
-				props.magic.getBleedResistModifierEnemy() > 0 ? "+" : ""
+				magic.getBleedResistModifierEnemy() > 0 ? "+" : ""
 			}${Math.round(
-				100 * props.magic.getBleedResistModifierEnemy()
+				100 * magic.getBleedResistModifierEnemy()
 			)} bleed resist, `;
 		}
 		outputText = outputText.slice(0, -2);
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="resistModifiers">
 				{outputText}
@@ -1356,28 +1354,26 @@ function SpellHit(props: {
 		);
 	}
 	if (
-		props.magic.getFlatArmourModifierEnemy() != 0 ||
-		props.magic.getFlatMagicArmourModifierEnemy() != 0
+		magic.getFlatArmourModifierEnemy() != 0 ||
+		magic.getFlatMagicArmourModifierEnemy() != 0
 	) {
 		outputText = "";
-		if (props.magic.getFlatArmourModifierEnemy() != 0) {
-			props.target.modifyFlatArmour(
-				props.magic.getFlatArmourModifierEnemy()
-			);
+		if (magic.getFlatArmourModifierEnemy() != 0) {
+			target.modifyFlatArmour(magic.getFlatArmourModifierEnemy());
 			outputText += `${
-				props.magic.getFlatArmourModifierEnemy() > 0 ? "+" : ""
-			}${props.magic.getFlatArmourModifierEnemy()} physical armour, `;
+				magic.getFlatArmourModifierEnemy() > 0 ? "+" : ""
+			}${magic.getFlatArmourModifierEnemy()} physical armour, `;
 		}
-		if (props.magic.getFlatMagicArmourModifierEnemy() != 0) {
-			props.target.modifyFlatMagicArmour(
-				props.magic.getFlatMagicArmourModifierEnemy()
+		if (magic.getFlatMagicArmourModifierEnemy() != 0) {
+			target.modifyFlatMagicArmour(
+				magic.getFlatMagicArmourModifierEnemy()
 			);
 			outputText += `${
-				props.magic.getFlatMagicArmourModifierEnemy() > 0 ? "+" : ""
-			}${props.magic.getFlatMagicArmourModifierEnemy()} magic armour, `;
+				magic.getFlatMagicArmourModifierEnemy() > 0 ? "+" : ""
+			}${magic.getFlatMagicArmourModifierEnemy()} magic armour, `;
 		}
 		outputText = outputText.slice(0, -2);
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="flatArmourModifiers">
 				{outputText}
@@ -1385,32 +1381,30 @@ function SpellHit(props: {
 		);
 	}
 	if (
-		props.magic.getPropArmourModifierEnemy() != 0 ||
-		props.magic.getPropMagicArmourModifierEnemy() != 0
+		magic.getPropArmourModifierEnemy() != 0 ||
+		magic.getPropMagicArmourModifierEnemy() != 0
 	) {
 		outputText = "";
-		if (props.magic.getPropArmourModifierEnemy() != 0) {
-			props.target.modifyPropArmour(
-				props.magic.getPropArmourModifierEnemy()
-			);
+		if (magic.getPropArmourModifierEnemy() != 0) {
+			target.modifyPropArmour(magic.getPropArmourModifierEnemy());
 			outputText += `${
-				props.magic.getPropArmourModifierEnemy() > 0 ? "+" : ""
+				magic.getPropArmourModifierEnemy() > 0 ? "+" : ""
 			}${Math.round(
-				100 * props.magic.getPropArmourModifierEnemy()
+				100 * magic.getPropArmourModifierEnemy()
 			)}% physical damage received, `;
 		}
-		if (props.magic.getPropMagicArmourModifierEnemy() != 0) {
-			props.target.modifyPropMagicArmour(
-				props.magic.getPropMagicArmourModifierEnemy()
+		if (magic.getPropMagicArmourModifierEnemy() != 0) {
+			target.modifyPropMagicArmour(
+				magic.getPropMagicArmourModifierEnemy()
 			);
 			outputText += `${
-				props.magic.getPropMagicArmourModifierEnemy() > 0 ? "+" : ""
+				magic.getPropMagicArmourModifierEnemy() > 0 ? "+" : ""
 			}${Math.round(
-				100 * props.magic.getPropMagicArmourModifierEnemy()
+				100 * magic.getPropMagicArmourModifierEnemy()
 			)}% magic damage received, `;
 		}
 		outputText = outputText.slice(0, -2);
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="propArmourModifiers">
 				{outputText}
@@ -1418,39 +1412,35 @@ function SpellHit(props: {
 		);
 	}
 	if (
-		props.magic.getFlatDamageModifierEnemy() != 0 ||
-		props.magic.getFlatMagicDamageModifierEnemy() != 0 ||
-		props.magic.getFlatArmourPiercingDamageModifierEnemy() != 0
+		magic.getFlatDamageModifierEnemy() != 0 ||
+		magic.getFlatMagicDamageModifierEnemy() != 0 ||
+		magic.getFlatArmourPiercingDamageModifierEnemy() != 0
 	) {
 		outputText = "";
-		if (props.magic.getFlatDamageModifierEnemy() != 0) {
-			props.target.modifyFlatDamageModifier(
-				props.magic.getFlatDamageModifierEnemy()
-			);
+		if (magic.getFlatDamageModifierEnemy() != 0) {
+			target.modifyFlatDamageModifier(magic.getFlatDamageModifierEnemy());
 			outputText += `${
-				props.magic.getFlatDamageModifierEnemy() > 0 ? "+" : ""
-			}${props.magic.getFlatDamageModifierEnemy()} physical damage dealt, `;
+				magic.getFlatDamageModifierEnemy() > 0 ? "+" : ""
+			}${magic.getFlatDamageModifierEnemy()} physical damage dealt, `;
 		}
-		if (props.magic.getFlatMagicDamageModifierEnemy() != 0) {
-			props.target.modifyFlatMagicDamageModifier(
-				props.magic.getFlatMagicDamageModifierEnemy()
+		if (magic.getFlatMagicDamageModifierEnemy() != 0) {
+			target.modifyFlatMagicDamageModifier(
+				magic.getFlatMagicDamageModifierEnemy()
 			);
 			outputText += `${
-				props.magic.getFlatMagicDamageModifierEnemy() > 0 ? "+" : ""
-			}${props.magic.getFlatMagicDamageModifierEnemy()} magic damage dealt, `;
+				magic.getFlatMagicDamageModifierEnemy() > 0 ? "+" : ""
+			}${magic.getFlatMagicDamageModifierEnemy()} magic damage dealt, `;
 		}
-		if (props.magic.getFlatArmourPiercingDamageModifierEnemy() != 0) {
-			props.target.modifyFlatArmourPiercingDamageModifier(
-				props.magic.getFlatArmourPiercingDamageModifierEnemy()
+		if (magic.getFlatArmourPiercingDamageModifierEnemy() != 0) {
+			target.modifyFlatArmourPiercingDamageModifier(
+				magic.getFlatArmourPiercingDamageModifierEnemy()
 			);
 			outputText += `${
-				props.magic.getFlatArmourPiercingDamageModifierEnemy() > 0
-					? "+"
-					: ""
-			}${props.magic.getFlatArmourPiercingDamageModifierEnemy()} armour piercing damage dealt, `;
+				magic.getFlatArmourPiercingDamageModifierEnemy() > 0 ? "+" : ""
+			}${magic.getFlatArmourPiercingDamageModifierEnemy()} armour piercing damage dealt, `;
 		}
 		outputText = outputText.slice(0, -2);
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="flatDamageModifiers">
 				{outputText}
@@ -1458,45 +1448,41 @@ function SpellHit(props: {
 		);
 	}
 	if (
-		props.magic.getPropDamageModifierEnemy() != 0 ||
-		props.magic.getPropMagicDamageModifierEnemy() != 0 ||
-		props.magic.getPropArmourPiercingDamageModifierEnemy() != 0
+		magic.getPropDamageModifierEnemy() != 0 ||
+		magic.getPropMagicDamageModifierEnemy() != 0 ||
+		magic.getPropArmourPiercingDamageModifierEnemy() != 0
 	) {
 		outputText = "";
-		if (props.magic.getPropDamageModifierEnemy() != 0) {
-			props.target.modifyPropDamageModifier(
-				props.magic.getPropDamageModifierEnemy()
-			);
+		if (magic.getPropDamageModifierEnemy() != 0) {
+			target.modifyPropDamageModifier(magic.getPropDamageModifierEnemy());
 			outputText += `${
-				props.magic.getPropDamageModifierEnemy() > 0 ? "+" : ""
+				magic.getPropDamageModifierEnemy() > 0 ? "+" : ""
 			}${Math.round(
-				100 * props.magic.getPropDamageModifierEnemy()
+				100 * magic.getPropDamageModifierEnemy()
 			)}% physical damage dealt, `;
 		}
-		if (props.magic.getPropMagicDamageModifierEnemy() != 0) {
-			props.target.modifyPropMagicDamageModifier(
-				props.magic.getPropMagicDamageModifierEnemy()
+		if (magic.getPropMagicDamageModifierEnemy() != 0) {
+			target.modifyPropMagicDamageModifier(
+				magic.getPropMagicDamageModifierEnemy()
 			);
 			outputText += `${
-				props.magic.getPropMagicDamageModifierEnemy() > 0 ? "+" : ""
+				magic.getPropMagicDamageModifierEnemy() > 0 ? "+" : ""
 			}${Math.round(
-				100 * props.magic.getPropMagicDamageModifierEnemy()
+				100 * magic.getPropMagicDamageModifierEnemy()
 			)}% magic damage dealt, `;
 		}
-		if (props.magic.getPropArmourPiercingDamageModifierEnemy() != 0) {
-			props.target.modifyPropArmourPiercingDamageModifier(
-				props.magic.getPropArmourPiercingDamageModifierEnemy()
+		if (magic.getPropArmourPiercingDamageModifierEnemy() != 0) {
+			target.modifyPropArmourPiercingDamageModifier(
+				magic.getPropArmourPiercingDamageModifierEnemy()
 			);
 			outputText += `${
-				props.magic.getPropArmourPiercingDamageModifierEnemy() > 0
-					? "+"
-					: ""
+				magic.getPropArmourPiercingDamageModifierEnemy() > 0 ? "+" : ""
 			}${Math.round(
-				100 * props.magic.getPropArmourPiercingDamageModifierEnemy()
+				100 * magic.getPropArmourPiercingDamageModifierEnemy()
 			)}% armour piercing damage dealt, `;
 		}
 		outputText = outputText.slice(0, -2);
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="propDamageModifiers">
 				{outputText}
@@ -1504,46 +1490,42 @@ function SpellHit(props: {
 		);
 	}
 
-	if (props.magic.getEvadeChanceModifierEnemy() != 0) {
-		props.target.modifyEvadeChance(
-			props.magic.getEvadeChanceModifierEnemy()
-		);
+	if (magic.getEvadeChanceModifierEnemy() != 0) {
+		target.modifyEvadeChance(magic.getEvadeChanceModifierEnemy());
 		outputText = `${
-			props.magic.getEvadeChanceModifierEnemy() > 0 ? "+" : ""
+			magic.getEvadeChanceModifierEnemy() > 0 ? "+" : ""
 		}${Math.round(
-			100 * props.magic.getEvadeChanceModifierEnemy()
+			100 * magic.getEvadeChanceModifierEnemy()
 		)}% evade chance`;
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="evadeChanceModifier">
 				{outputText}
 			</div>
 		);
 	}
-	if (props.magic.getCounterAttackChanceModifierEnemy() != 0) {
-		props.target.modifyCounterAttackChance(
-			props.magic.getCounterAttackChanceModifierEnemy()
+	if (magic.getCounterAttackChanceModifierEnemy() != 0) {
+		target.modifyCounterAttackChance(
+			magic.getCounterAttackChanceModifierEnemy()
 		);
 		outputText = `${
-			props.magic.getCounterAttackChanceModifierEnemy() > 0 ? "+" : ""
+			magic.getCounterAttackChanceModifierEnemy() > 0 ? "+" : ""
 		}${Math.round(
-			100 * props.magic.getCounterAttackChanceModifierEnemy()
+			100 * magic.getCounterAttackChanceModifierEnemy()
 		)}% counter attack chance`;
-		props.battleLog.push(outputText);
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="counterAttackChanceModifier">
 				{outputText}
 			</div>
 		);
 	}
-	if (props.magic.getBonusActionsModifierEnemy() != 0) {
-		props.target.modifyBonusActions(
-			props.magic.getBonusActionsModifierEnemy()
-		);
+	if (magic.getBonusActionsModifierEnemy() != 0) {
+		target.modifyBonusActions(magic.getBonusActionsModifierEnemy());
 		outputText = `${
-			props.magic.getBonusActionsModifierEnemy() > 0 ? "+" : ""
-		}${props.magic.getBonusActionsModifierEnemy()} bonus actions`;
-		props.battleLog.push(outputText);
+			magic.getBonusActionsModifierEnemy() > 0 ? "+" : ""
+		}${magic.getBonusActionsModifierEnemy()} bonus actions`;
+		battleLog.push(outputText);
 		hitEffects.push(
 			<div className="ion-text-center" key="bonusActionModifier">
 				{outputText}

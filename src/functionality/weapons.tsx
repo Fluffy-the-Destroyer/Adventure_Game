@@ -848,7 +848,9 @@ export class weapon {
 	}
 }
 /**Displays weapon stats */
-export function DisplayWeaponStats(props: {
+export function DisplayWeaponStats({
+	weaponry
+}: {
 	/**The weapon */
 	weaponry: weapon;
 }): React.JSX.Element {
@@ -856,92 +858,89 @@ export function DisplayWeaponStats(props: {
 		healingMax: number = 0,
 		healingSelfMin: number = 0,
 		healingSelfMax: number = 0;
-	if (props.weaponry.getFlatDamageMax() <= 0) {
-		healingMin -= props.weaponry.getFlatDamageMax();
-		healingMax -= props.weaponry.getFlatDamageMin();
+	if (weaponry.getFlatDamageMax() <= 0) {
+		healingMin -= weaponry.getFlatDamageMax();
+		healingMax -= weaponry.getFlatDamageMin();
 	}
-	if (props.weaponry.getFlatMagicDamageMax() <= 0) {
-		healingMin -= props.weaponry.getFlatMagicDamageMax();
-		healingMax -= props.weaponry.getFlatMagicDamageMin();
+	if (weaponry.getFlatMagicDamageMax() <= 0) {
+		healingMin -= weaponry.getFlatMagicDamageMax();
+		healingMax -= weaponry.getFlatMagicDamageMin();
 	}
-	if (props.weaponry.getFlatArmourPiercingDamageMax() <= 0) {
-		healingMin -= props.weaponry.getFlatArmourPiercingDamageMax();
-		healingMax -= props.weaponry.getFlatArmourPiercingDamageMin();
+	if (weaponry.getFlatArmourPiercingDamageMax() <= 0) {
+		healingMin -= weaponry.getFlatArmourPiercingDamageMax();
+		healingMax -= weaponry.getFlatArmourPiercingDamageMin();
 	}
-	if (props.weaponry.getFlatSelfDamageMax() <= 0) {
-		healingSelfMin -= props.weaponry.getFlatSelfDamageMax();
-		healingSelfMax -= props.weaponry.getFlatSelfDamageMin();
+	if (weaponry.getFlatSelfDamageMax() <= 0) {
+		healingSelfMin -= weaponry.getFlatSelfDamageMax();
+		healingSelfMax -= weaponry.getFlatSelfDamageMin();
 	}
-	if (props.weaponry.getFlatSelfMagicDamageMax() <= 0) {
-		healingSelfMin -= props.weaponry.getFlatSelfMagicDamageMax();
-		healingSelfMax -= props.weaponry.getFlatSelfMagicDamageMin();
+	if (weaponry.getFlatSelfMagicDamageMax() <= 0) {
+		healingSelfMin -= weaponry.getFlatSelfMagicDamageMax();
+		healingSelfMax -= weaponry.getFlatSelfMagicDamageMin();
 	}
-	if (props.weaponry.getFlatSelfArmourPiercingDamageMax() <= 0) {
-		healingSelfMin -= props.weaponry.getFlatSelfArmourPiercingDamageMax();
-		healingSelfMax -= props.weaponry.getFlatSelfArmourPiercingDamageMin();
+	if (weaponry.getFlatSelfArmourPiercingDamageMax() <= 0) {
+		healingSelfMin -= weaponry.getFlatSelfArmourPiercingDamageMax();
+		healingSelfMax -= weaponry.getFlatSelfArmourPiercingDamageMin();
 	}
 	return (
 		<IonList>
-			<IonListHeader>{props.weaponry.getDescription()}</IonListHeader>
-			{props.weaponry.getFlatDamageMin() ==
-			props.weaponry.getFlatDamageMax() ? (
-				props.weaponry.getFlatDamageMax() > 0 ? (
+			<IonListHeader>{weaponry.getDescription()}</IonListHeader>
+			{weaponry.getFlatDamageMin() == weaponry.getFlatDamageMax() ? (
+				weaponry.getFlatDamageMax() > 0 ? (
 					<IonItem>
-						Deals {props.weaponry.getFlatDamageMax()} physical{" "}
-						damage
+						Deals {weaponry.getFlatDamageMax()} physical damage
 					</IonItem>
 				) : null
-			) : props.weaponry.getFlatDamageMin() >= 0 ? (
+			) : weaponry.getFlatDamageMin() >= 0 ? (
 				<IonItem>
-					Deals {props.weaponry.getFlatDamageMin()} to{" "}
-					{props.weaponry.getFlatDamageMax()} physical damage
+					Deals {weaponry.getFlatDamageMin()} to{" "}
+					{weaponry.getFlatDamageMax()} physical damage
 				</IonItem>
-			) : props.weaponry.getFlatDamageMax() > 0 ? (
+			) : weaponry.getFlatDamageMax() > 0 ? (
 				<IonItem>
-					Deals {props.weaponry.getFlatDamageMin()} to{" "}
-					{props.weaponry.getFlatDamageMax()} physical damage,{" "}
-					negative damage will heal the target
+					Deals {weaponry.getFlatDamageMin()} to{" "}
+					{weaponry.getFlatDamageMax()} physical damage, negative
+					damage will heal the target
 				</IonItem>
 			) : null}
-			{props.weaponry.getFlatMagicDamageMin() ==
-			props.weaponry.getFlatMagicDamageMax() ? (
-				props.weaponry.getFlatMagicDamageMax() > 0 ? (
+			{weaponry.getFlatMagicDamageMin() ==
+			weaponry.getFlatMagicDamageMax() ? (
+				weaponry.getFlatMagicDamageMax() > 0 ? (
 					<IonItem>
-						Deals {props.weaponry.getFlatMagicDamageMax()} magic{" "}
-						damage
+						Deals {weaponry.getFlatMagicDamageMax()} magic damage
 					</IonItem>
 				) : null
-			) : props.weaponry.getFlatMagicDamageMin() >= 0 ? (
+			) : weaponry.getFlatMagicDamageMin() >= 0 ? (
 				<IonItem>
-					Deals {props.weaponry.getFlatMagicDamageMin()} to{" "}
-					{props.weaponry.getFlatMagicDamageMax()} magic damage
+					Deals {weaponry.getFlatMagicDamageMin()} to{" "}
+					{weaponry.getFlatMagicDamageMax()} magic damage
 				</IonItem>
-			) : props.weaponry.getFlatMagicDamageMax() > 0 ? (
+			) : weaponry.getFlatMagicDamageMax() > 0 ? (
 				<IonItem>
-					Deals {props.weaponry.getFlatMagicDamageMin()} to{" "}
-					{props.weaponry.getFlatMagicDamageMax()} magic damage,{" "}
-					negative damage will heal the target
+					Deals {weaponry.getFlatMagicDamageMin()} to{" "}
+					{weaponry.getFlatMagicDamageMax()} magic damage, negative
+					damage will heal the target
 				</IonItem>
 			) : null}
-			{props.weaponry.getFlatArmourPiercingDamageMin() ==
-			props.weaponry.getFlatArmourPiercingDamageMax() ? (
-				props.weaponry.getFlatArmourPiercingDamageMax() > 0 ? (
+			{weaponry.getFlatArmourPiercingDamageMin() ==
+			weaponry.getFlatArmourPiercingDamageMax() ? (
+				weaponry.getFlatArmourPiercingDamageMax() > 0 ? (
 					<IonItem>
-						Deals {props.weaponry.getFlatArmourPiercingDamageMax()}{" "}
-						armour piercing damage
+						Deals {weaponry.getFlatArmourPiercingDamageMax()} armour
+						piercing damage
 					</IonItem>
 				) : null
-			) : props.weaponry.getFlatArmourPiercingDamageMin() >= 0 ? (
+			) : weaponry.getFlatArmourPiercingDamageMin() >= 0 ? (
 				<IonItem>
-					Deals {props.weaponry.getFlatArmourPiercingDamageMin()} to{" "}
-					{props.weaponry.getFlatArmourPiercingDamageMax()} armour{" "}
-					piercing damage
+					Deals {weaponry.getFlatArmourPiercingDamageMin()} to{" "}
+					{weaponry.getFlatArmourPiercingDamageMax()} armour piercing
+					damage
 				</IonItem>
-			) : props.weaponry.getFlatArmourPiercingDamageMax() > 0 ? (
+			) : weaponry.getFlatArmourPiercingDamageMax() > 0 ? (
 				<IonItem>
-					Deals {props.weaponry.getFlatArmourPiercingDamageMin()} to{" "}
-					{props.weaponry.getFlatArmourPiercingDamageMax()} armour{" "}
-					piercing damage, negative damage will heal the target
+					Deals {weaponry.getFlatArmourPiercingDamageMin()} to{" "}
+					{weaponry.getFlatArmourPiercingDamageMax()} armour piercing
+					damage, negative damage will heal the target
 				</IonItem>
 			) : null}
 			{healingMax > 0 ? (
@@ -950,84 +949,82 @@ export function DisplayWeaponStats(props: {
 					{healingMin != healingMax ? ` to ${healingMax}` : ""}
 				</IonItem>
 			) : null}
-			{props.weaponry.getTargetOverHeal() ? (
+			{weaponry.getTargetOverHeal() ? (
 				<IonItem>Attacks may over heal the target</IonItem>
 			) : null}
-			{props.weaponry.getPropDamage() > 0 ? (
+			{weaponry.getPropDamage() > 0 ? (
 				<IonItem>
 					Reduces target's health by{" "}
-					{Math.round(100 * props.weaponry.getPropDamage())}%
+					{Math.round(100 * weaponry.getPropDamage())}%
 				</IonItem>
-			) : props.weaponry.getPropDamage() < 0 ? (
+			) : weaponry.getPropDamage() < 0 ? (
 				<IonItem>
 					Heals target for{" "}
-					{Math.round(-100 * props.weaponry.getPropDamage())}% of{" "}
-					their maximum health
+					{Math.round(-100 * weaponry.getPropDamage())}% of their
+					maximum health
 				</IonItem>
 			) : null}
-			{props.weaponry.getFlatSelfDamageMin() ==
-			props.weaponry.getFlatSelfDamageMax() ? (
-				props.weaponry.getFlatSelfDamageMax() > 0 ? (
+			{weaponry.getFlatSelfDamageMin() ==
+			weaponry.getFlatSelfDamageMax() ? (
+				weaponry.getFlatSelfDamageMax() > 0 ? (
 					<IonItem>
-						Deals {props.weaponry.getFlatSelfDamageMax()} physical{" "}
+						Deals {weaponry.getFlatSelfDamageMax()} physical damage
+						to user on attack
+					</IonItem>
+				) : null
+			) : weaponry.getFlatSelfDamageMin() >= 0 ? (
+				<IonItem>
+					Deals {weaponry.getFlatSelfDamageMin()} to{" "}
+					{weaponry.getFlatSelfDamageMax()} physical damage to user on
+					attack
+				</IonItem>
+			) : weaponry.getFlatSelfDamageMax() > 0 ? (
+				<IonItem>
+					Deals {weaponry.getFlatSelfDamageMin()} to{" "}
+					{weaponry.getFlatSelfDamageMax()} physical damage to user on
+					attack, negative damage will heal
+				</IonItem>
+			) : null}
+			{weaponry.getFlatSelfMagicDamageMin() ==
+			weaponry.getFlatSelfMagicDamageMax() ? (
+				weaponry.getFlatSelfMagicDamageMax() > 0 ? (
+					<IonItem>
+						Deals {weaponry.getFlatSelfMagicDamageMax()} magic{" "}
 						damage to user on attack
 					</IonItem>
 				) : null
-			) : props.weaponry.getFlatSelfDamageMin() >= 0 ? (
+			) : weaponry.getFlatSelfMagicDamageMin() >= 0 ? (
 				<IonItem>
-					Deals {props.weaponry.getFlatSelfDamageMin()} to{" "}
-					{props.weaponry.getFlatSelfDamageMax()} physical damage to{" "}
-					user on attack
+					Deals {weaponry.getFlatSelfMagicDamageMin()} to{" "}
+					{weaponry.getFlatSelfMagicDamageMax()} magic damage to user
+					on attack
 				</IonItem>
-			) : props.weaponry.getFlatSelfDamageMax() > 0 ? (
+			) : weaponry.getFlatSelfMagicDamageMax() > 0 ? (
 				<IonItem>
-					Deals {props.weaponry.getFlatSelfDamageMin()} to{" "}
-					{props.weaponry.getFlatSelfDamageMax()} physical damage to{" "}
-					user on attack, negative damage will heal
-				</IonItem>
-			) : null}
-			{props.weaponry.getFlatSelfMagicDamageMin() ==
-			props.weaponry.getFlatSelfMagicDamageMax() ? (
-				props.weaponry.getFlatSelfMagicDamageMax() > 0 ? (
-					<IonItem>
-						Deals {props.weaponry.getFlatSelfMagicDamageMax()} magic{" "}
-						damage to user on attack
-					</IonItem>
-				) : null
-			) : props.weaponry.getFlatSelfMagicDamageMin() >= 0 ? (
-				<IonItem>
-					Deals {props.weaponry.getFlatSelfMagicDamageMin()} to{" "}
-					{props.weaponry.getFlatSelfMagicDamageMax()} magic damage to{" "}
-					user on attack
-				</IonItem>
-			) : props.weaponry.getFlatSelfMagicDamageMax() > 0 ? (
-				<IonItem>
-					Deals {props.weaponry.getFlatSelfMagicDamageMin()} to{" "}
-					{props.weaponry.getFlatSelfMagicDamageMax()} magic damage to{" "}
-					user on attack, negative damage will heal
+					Deals {weaponry.getFlatSelfMagicDamageMin()} to{" "}
+					{weaponry.getFlatSelfMagicDamageMax()} magic damage to user
+					on attack, negative damage will heal
 				</IonItem>
 			) : null}
-			{props.weaponry.getFlatSelfArmourPiercingDamageMin() ==
-			props.weaponry.getFlatSelfArmourPiercingDamageMax() ? (
-				props.weaponry.getFlatSelfArmourPiercingDamageMax() > 0 ? (
+			{weaponry.getFlatSelfArmourPiercingDamageMin() ==
+			weaponry.getFlatSelfArmourPiercingDamageMax() ? (
+				weaponry.getFlatSelfArmourPiercingDamageMax() > 0 ? (
 					<IonItem>
-						Deals{" "}
-						{props.weaponry.getFlatSelfArmourPiercingDamageMax()}{" "}
+						Deals {weaponry.getFlatSelfArmourPiercingDamageMax()}{" "}
 						armour piercing damage to user on attack
 					</IonItem>
 				) : null
-			) : props.weaponry.getFlatSelfArmourPiercingDamageMin() >= 0 ? (
+			) : weaponry.getFlatSelfArmourPiercingDamageMin() >= 0 ? (
 				<IonItem>
-					Deals {props.weaponry.getFlatSelfArmourPiercingDamageMin()}{" "}
-					to {props.weaponry.getFlatSelfArmourPiercingDamageMax()}{" "}
-					armour piercing damage to user on attack
+					Deals {weaponry.getFlatSelfArmourPiercingDamageMin()} to{" "}
+					{weaponry.getFlatSelfArmourPiercingDamageMax()} armour
+					piercing damage to user on attack
 				</IonItem>
-			) : props.weaponry.getFlatSelfArmourPiercingDamageMax() > 0 ? (
+			) : weaponry.getFlatSelfArmourPiercingDamageMax() > 0 ? (
 				<IonItem>
-					Deals {props.weaponry.getFlatSelfArmourPiercingDamageMin()}{" "}
-					to {props.weaponry.getFlatSelfArmourPiercingDamageMax()}{" "}
-					armour piercing damage to user on attack, negative damage{" "}
-					will heal
+					Deals {weaponry.getFlatSelfArmourPiercingDamageMin()} to{" "}
+					{weaponry.getFlatSelfArmourPiercingDamageMax()} armour
+					piercing damage to user on attack, negative damage will heal
 				</IonItem>
 			) : null}
 			{healingSelfMax > 0 ? (
@@ -1038,126 +1035,120 @@ export function DisplayWeaponStats(props: {
 						: ""}
 				</IonItem>
 			) : null}
-			{props.weaponry.getSelfOverHeal() ? (
+			{weaponry.getSelfOverHeal() ? (
 				<IonItem>May over heal user</IonItem>
 			) : null}
-			{props.weaponry.getPropSelfDamage() > 0 ? (
+			{weaponry.getPropSelfDamage() > 0 ? (
 				<IonItem>
 					Reduces user's health by{" "}
-					{Math.round(100 * props.weaponry.getPropSelfDamage())}%
+					{Math.round(100 * weaponry.getPropSelfDamage())}%
 				</IonItem>
-			) : props.weaponry.getPropSelfDamage() < 0 ? (
+			) : weaponry.getPropSelfDamage() < 0 ? (
 				<IonItem>
 					Heals user for{" "}
-					{Math.round(-100 * props.weaponry.getPropSelfDamage())}% of{" "}
-					their maximum health
+					{Math.round(-100 * weaponry.getPropSelfDamage())}% of their
+					maximum health
 				</IonItem>
 			) : null}
-			{props.weaponry.getHealthChange() > 0 ? (
+			{weaponry.getHealthChange() > 0 ? (
 				<IonItem>
-					User is healed for {props.weaponry.getHealthChange()}, even{" "}
-					if attack is shielded
+					User is healed for {weaponry.getHealthChange()}, even if
+					attack is shielded
 				</IonItem>
-			) : props.weaponry.getHealthChange() < 0 ? (
+			) : weaponry.getHealthChange() < 0 ? (
 				<IonItem>
-					Costs {-props.weaponry.getHealthChange()} health to attack{" "}
-					(even if shielded)
+					Costs {-weaponry.getHealthChange()} health to attack (even
+					if shielded)
 				</IonItem>
 			) : null}
-			{props.weaponry.getLifeLink() ? (
+			{weaponry.getLifeLink() ? (
 				<IonItem>
 					On dealing damage to target, heals the user by that much
 				</IonItem>
 			) : null}
-			{props.weaponry.getHitCount() <= 0 ? (
+			{weaponry.getHitCount() <= 0 ? (
 				<IonItem>Cannot be used for attacks</IonItem>
-			) : props.weaponry.getHitCount() == 2 ? (
+			) : weaponry.getHitCount() == 2 ? (
 				<IonItem>Hits twice per attack</IonItem>
-			) : props.weaponry.getHitCount() > 2 ? (
+			) : weaponry.getHitCount() > 2 ? (
 				<IonItem>
-					Hits {props.weaponry.getHitCount()} times per attack
+					Hits {weaponry.getHitCount()} times per attack
 				</IonItem>
 			) : null}
-			{props.weaponry.getCounterHits() == 1 ? (
+			{weaponry.getCounterHits() == 1 ? (
 				<IonItem>Usable for counter attacks, hits once</IonItem>
-			) : props.weaponry.getCounterHits() == 2 ? (
+			) : weaponry.getCounterHits() == 2 ? (
 				<IonItem>Usable for counter attacks, hits twice</IonItem>
-			) : props.weaponry.getCounterHits() > 2 ? (
+			) : weaponry.getCounterHits() > 2 ? (
 				<IonItem>
-					Usable for counter attacks, hits{" "}
-					{props.weaponry.getCounterHits()} times per attack
+					Usable for counter attacks, hits {weaponry.getCounterHits()}{" "}
+					times per attack
 				</IonItem>
 			) : null}
-			{props.weaponry.getDualWield() ? (
+			{weaponry.getDualWield() ? (
 				<IonItem>Can be dual wielded</IonItem>
 			) : null}
-			{props.weaponry.getNoEvade() ? (
-				<IonItem>Cannot be dodged</IonItem>
-			) : null}
-			{props.weaponry.getNoCounterAttack() ? (
+			{weaponry.getNoEvade() ? <IonItem>Cannot be dodged</IonItem> : null}
+			{weaponry.getNoCounterAttack() ? (
 				<IonItem>Does not allow counter attacks</IonItem>
 			) : null}
-			{props.weaponry.getCanCounter() ? (
+			{weaponry.getCanCounter() ? (
 				<IonItem>Effects can be shielded against by spells</IonItem>
 			) : null}
-			{props.weaponry.getManaChange() < 0 ? (
+			{weaponry.getManaChange() < 0 ? (
+				<IonItem>Costs {-weaponry.getManaChange()} to attack</IonItem>
+			) : weaponry.getManaChange() > 0 ? (
 				<IonItem>
-					Costs {-props.weaponry.getManaChange()} to attack
-				</IonItem>
-			) : props.weaponry.getManaChange() > 0 ? (
-				<IonItem>
-					Gain {props.weaponry.getManaChange()} mana on attack
+					Gain {weaponry.getManaChange()} mana on attack
 				</IonItem>
 			) : null}
-			{props.weaponry.getProjectileChange() == -1 ? (
+			{weaponry.getProjectileChange() == -1 ? (
 				<IonItem>Requires 1 arrow to attack</IonItem>
-			) : props.weaponry.getProjectileChange() < -1 ? (
+			) : weaponry.getProjectileChange() < -1 ? (
 				<IonItem>
-					Requires {-props.weaponry.getProjectileChange()} arrows to
-					attack
+					Requires {-weaponry.getProjectileChange()} arrows to attack
 				</IonItem>
-			) : props.weaponry.getProjectileChange() == 1 ? (
+			) : weaponry.getProjectileChange() == 1 ? (
 				<IonItem>Regain 1 arrow on attack</IonItem>
-			) : props.weaponry.getProjectileChange() > 1 ? (
+			) : weaponry.getProjectileChange() > 1 ? (
 				<IonItem>
-					Regain {props.weaponry.getProjectileChange()} arrows on
-					attack
+					Regain {weaponry.getProjectileChange()} arrows on attack
 				</IonItem>
 			) : null}
-			{props.weaponry.getPoison() > 0 ? (
+			{weaponry.getPoison() > 0 ? (
+				<IonItem>Applies {weaponry.getPoison()} poison on hit</IonItem>
+			) : null}
+			{weaponry.getSelfPoison() > 0 ? (
 				<IonItem>
-					Applies {props.weaponry.getPoison()} poison on hit
+					Applies {weaponry.getSelfPoison()} poison to user on attack
 				</IonItem>
 			) : null}
-			{props.weaponry.getSelfPoison() > 0 ? (
+			{weaponry.getBleed() > 0 ? (
+				<IonItem>Applies {weaponry.getBleed()} bleed on hit</IonItem>
+			) : null}
+			{weaponry.getSelfBleed() > 0 ? (
 				<IonItem>
-					Applies {props.weaponry.getSelfPoison()} poison to user on
-					attack
+					Applies {weaponry.getSelfBleed()} bleed to user on attack
 				</IonItem>
 			) : null}
-			{props.weaponry.getBleed() > 0 ? (
+			{weaponry.getFlatMagicDamageModifier() != 0 ? (
 				<IonItem>
-					Applies {props.weaponry.getBleed()} bleed on hit
-				</IonItem>
-			) : null}
-			{props.weaponry.getSelfBleed() > 0 ? (
-				<IonItem>
-					Applies {props.weaponry.getSelfBleed()} bleed to user on
-					attack
-				</IonItem>
-			) : null}
-			{props.weaponry.getFlatMagicDamageModifier() != 0 ? (
-				<IonItem>
-					{props.weaponry.getFlatMagicDamageModifier() > 0 ? "+" : ""}
-					{props.weaponry.getFlatMagicDamageModifier()} magic damage
-					dealt (passive effect)
+					{weaponry.getFlatMagicDamageModifier() > 0 ? "+" : ""}
+					{weaponry.getFlatMagicDamageModifier()} magic damage dealt
+					(passive effect)
 				</IonItem>
 			) : null}
 		</IonList>
 	);
 }
 /**Displays weapon panel in inventory or battle */
-export function DisplayWeaponName(props: {
+export function DisplayWeaponName({
+	weaponry,
+	inBattle,
+	selected,
+	canUse,
+	onToggle
+}: {
 	/**The weapon */
 	weaponry: weapon;
 	/**True if making a selection in battle */
@@ -1169,7 +1160,7 @@ export function DisplayWeaponName(props: {
 	/**A function to call on the weapon being toggled */
 	onToggle?: () => void;
 }): React.JSX.Element {
-	if (!props.weaponry.getReal()) {
+	if (!weaponry.getReal()) {
 		return (
 			<IonItem>
 				<IonLabel className="ion-text-center">None</IonLabel>
@@ -1179,45 +1170,40 @@ export function DisplayWeaponName(props: {
 	const [isOpen, setIsOpen] = useState<boolean>(false);
 	return (
 		<IonItem>
-			{props.inBattle && props.weaponry.getDualWield() ? (
+			{inBattle && weaponry.getDualWield() ? (
 				<IonBadge slot="start" mode="ios" className="ion-no-margin">
 					DW
 				</IonBadge>
 			) : null}{" "}
 			<IonLabel className="ion-text-center">
-				{props.weaponry.getName()}
-				{props.weaponry.getHealthChange() != 0 ||
-				props.weaponry.getManaChange() != 0 ||
-				props.weaponry.getProjectileChange() != 0 ? (
+				{weaponry.getName()}
+				{weaponry.getHealthChange() != 0 ||
+				weaponry.getManaChange() != 0 ||
+				weaponry.getProjectileChange() != 0 ? (
 					<IonLabel className="equipment-costs">
-						{props.weaponry.getHealthChange() != 0
+						{weaponry.getHealthChange() != 0
 							? ` ${
-									props.weaponry.getHealthChange() > 0
-										? "+"
-										: ""
-							  }${props.weaponry.getHealthChange()} health `
+									weaponry.getHealthChange() > 0 ? "+" : ""
+							  }${weaponry.getHealthChange()} health `
 							: null}
-						{props.weaponry.getManaChange() != 0
+						{weaponry.getManaChange() != 0
 							? ` ${
-									props.weaponry.getManaChange() > 0
-										? "+"
-										: ""
-							  }${props.weaponry.getManaChange()} mana `
+									weaponry.getManaChange() > 0 ? "+" : ""
+							  }${weaponry.getManaChange()} mana `
 							: null}
-						{props.weaponry.getHealthChange() != 0 &&
-						props.weaponry.getManaChange() != 0 &&
-						props.weaponry.getProjectileChange() != 0
+						{weaponry.getHealthChange() != 0 &&
+						weaponry.getManaChange() != 0 &&
+						weaponry.getProjectileChange() != 0
 							? "\n"
 							: null}
-						{props.weaponry.getProjectileChange() != 0
+						{weaponry.getProjectileChange() != 0
 							? ` ${
-									props.weaponry.getProjectileChange() > 0
+									weaponry.getProjectileChange() > 0
 										? "+"
 										: ""
-							  }${props.weaponry.getProjectileChange()} arrow${
-									Math.abs(
-										props.weaponry.getProjectileChange()
-									) != 1
+							  }${weaponry.getProjectileChange()} arrow${
+									Math.abs(weaponry.getProjectileChange()) !=
+									1
 										? "s"
 										: ""
 							  } `
@@ -1225,13 +1211,13 @@ export function DisplayWeaponName(props: {
 					</IonLabel>
 				) : null}
 			</IonLabel>
-			{props.inBattle ? (
+			{inBattle ? (
 				<IonToggle
 					aria-label="select weapon"
 					slot="end"
-					checked={props.selected}
-					disabled={!props.canUse}
-					onIonChange={props.onToggle}
+					checked={selected}
+					disabled={!canUse}
+					onIonChange={onToggle}
 				></IonToggle>
 			) : (
 				<IonButton
@@ -1262,16 +1248,14 @@ export function DisplayWeaponName(props: {
 									</IonButton>
 								</IonCol>
 								<IonCol size="10">
-									<IonTitle>
-										{props.weaponry.getName()}
-									</IonTitle>
+									<IonTitle>{weaponry.getName()}</IonTitle>
 								</IonCol>
 							</IonRow>
 						</IonGrid>
 					</IonToolbar>
 				</IonHeader>
 				<IonContent>
-					<DisplayWeaponStats weaponry={props.weaponry} />
+					<DisplayWeaponStats weaponry={weaponry} />
 				</IonContent>
 			</IonModal>
 		</IonItem>

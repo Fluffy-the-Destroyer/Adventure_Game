@@ -4,8 +4,8 @@ import {
 	POISON_MULTIPLIER,
 	BLEED_MULTIPLIER,
 	REGEN_MULTIPLIER
-} from "../components/battle";
-import {randomFloat, randomInt} from "./rng";
+} from "../pages/battlePage";
+import {randomInt} from "./rng";
 import enemyData from "../data/enemies.json";
 import {
 	actionChoice,
@@ -2177,13 +2177,13 @@ export class enemy {
 		switch (this.AIType) {
 			case 1:
 			case 4:
-				return randomFloat(0, 1) < Math.pow(healthProp, 4);
+				return Math.random() < Math.pow(healthProp, 4);
 			case 2:
 			case 5:
-				return randomFloat(0, 1) < Math.pow(healthProp, 3);
+				return Math.random() < Math.pow(healthProp, 3);
 			case 3:
 			case 6:
-				return randomFloat(0, 1) < Math.pow(healthProp, 2);
+				return Math.random() < Math.pow(healthProp, 2);
 		}
 		return false;
 	}
@@ -2194,13 +2194,13 @@ export class enemy {
 		switch (this.AIType) {
 			case 1:
 			case 4:
-				return randomFloat(0, 1) < 0.75;
+				return Math.random() < 0.75;
 			case 2:
 			case 5:
-				return randomFloat(0, 1) < 0.5;
+				return Math.random() < 0.5;
 			case 3:
 			case 6:
-				return randomFloat(0, 1) < 0.25;
+				return Math.random() < 0.25;
 		}
 		return true;
 	}
