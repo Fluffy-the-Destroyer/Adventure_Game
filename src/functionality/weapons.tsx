@@ -1,5 +1,10 @@
 import {useState} from "react";
-import {errorMessages, floatFromString, itemKey, numFromString} from "./data";
+import {
+	errorMessages,
+	floatFromString,
+	itemKeyGen,
+	numFromString
+} from "./data";
 import {randomInt} from "./rng";
 import weaponData from "../data/weapons.json";
 import {
@@ -617,7 +622,7 @@ export class weapon {
 	}
 	getKey(): number {
 		if (this.key == undefined) {
-			this.key = itemKey.gen();
+			this.key = itemKeyGen();
 		}
 		return this.key;
 	}
@@ -1141,7 +1146,9 @@ export function DisplayWeaponStats({
 		</IonList>
 	);
 }
-/**Displays weapon panel in inventory or battle */
+/**Displays weapon panel in inventory or battle
+ * @hook
+ */
 export function DisplayWeaponName({
 	weaponry,
 	inBattle,
@@ -1160,6 +1167,7 @@ export function DisplayWeaponName({
 	/**A function to call on the weapon being toggled */
 	onToggle?: () => void;
 }): React.JSX.Element {
+	const [isOpen, setIsOpen] = useState<boolean>(false);
 	if (!weaponry.getReal()) {
 		return (
 			<IonItem>
@@ -1167,7 +1175,6 @@ export function DisplayWeaponName({
 			</IonItem>
 		);
 	}
-	const [isOpen, setIsOpen] = useState<boolean>(false);
 	return (
 		<IonItem>
 			{inBattle && weaponry.getDualWield() ? (

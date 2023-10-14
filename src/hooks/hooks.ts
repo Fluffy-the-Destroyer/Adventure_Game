@@ -6,7 +6,7 @@ import {useEffect, useState} from "react";
  */
 export function useGenerator(
 	generator: Generator<
-		React.JSX.Element | null,
+		React.JSX.Element,
 		React.JSX.Element | null,
 		void | (() => void)
 	>
@@ -14,26 +14,21 @@ export function useGenerator(
 	const [iterator] =
 		useState<
 			Generator<
-				React.JSX.Element | null,
+				React.JSX.Element,
 				React.JSX.Element | null,
 				void | (() => void)
 			>
 		>(generator);
 	const [displayBuffer, setDisplayBuffer] =
 		useState<React.JSX.Element | null>(null);
-	useEffect(() => {
+	useEffect((): (() => void) => {
 		iterator.next();
 		setDisplayBuffer(
-			iterator.next(() => {
-				let newDisplay: React.JSX.Element | null =
-					iterator.next().value;
-				while (newDisplay == null) {
-					newDisplay = iterator.next().value;
-				}
-				setDisplayBuffer(newDisplay);
+			iterator.next((): void => {
+				setDisplayBuffer(iterator.next().value);
 			}).value
 		);
-		return () => {
+		return (): void => {
 			iterator.return(null);
 		};
 	}, [iterator, setDisplayBuffer]);

@@ -2,14 +2,10 @@ import {randomFloat, randomInt} from "./rng";
 
 export const errorMessages: string[] = [];
 
-export class itemKey {
-	private static value: number = 0;
-	static gen(): number {
-		this.value++;
-		//console.log(`keygen: ${this.value}`);
-		return this.value;
-	}
-}
+export const itemKeyGen = (function keyGen(): () => number {
+	var key: number = 0;
+	return () => ++key;
+})();
 interface noAction {
 	/**0 is no action, 1 is a weapon, 2 is a spell, 3 is dual weapons */
 	actionType: 0;

@@ -9,11 +9,7 @@ import {
 	armourTorso
 } from "./armour";
 import {randomInt} from "./rng";
-import {
-	POISON_MULTIPLIER,
-	BLEED_MULTIPLIER,
-	REGEN_MULTIPLIER
-} from "../pages/battlePage";
+import {BATTLE_VALUES} from "../pages/battlePage";
 import classData from "../data/classes.json";
 import {actionChoice, floatFromString, numFromString} from "./data";
 import {
@@ -34,8 +30,10 @@ import {
 } from "@ionic/react";
 import {close} from "ionicons/icons";
 
-export const PLAYER_OVERHEAL_DECAY = 5;
-export const MANA_DECAY = 5;
+const enum PLAYER_VALUES {
+	PLAYER_OVERHEAL_DECAY = 5,
+	MANA_DECAY = 5
+}
 
 export class player {
 	private className: string = "";
@@ -677,18 +675,26 @@ export class player {
 	/**Start of turn, decrements cooldowns, applies and then decrements dot/regen */
 	turnStart(): void {
 		this.modifyHealth(
-			-(POISON_MULTIPLIER * this.poison + BLEED_MULTIPLIER * this.bleed)
+			-(
+				BATTLE_VALUES.POISON_MULTIPLIER * this.poison +
+				BATTLE_VALUES.BLEED_MULTIPLIER * this.bleed
+			)
 		);
-		this.modifyHealth(this.turnRegen + REGEN_MULTIPLIER * this.tempRegen);
+		this.modifyHealth(
+			this.turnRegen + BATTLE_VALUES.REGEN_MULTIPLIER * this.tempRegen
+		);
 		if (this.health > this.maxHealth) {
 			this.health = Math.max(
 				this.maxHealth,
-				this.health - PLAYER_OVERHEAL_DECAY
+				this.health - PLAYER_VALUES.PLAYER_OVERHEAL_DECAY
 			);
 		}
 		this.modifyMana(this.turnManaRegen);
 		if (this.mana > this.maxMana) {
-			this.mana = Math.max(this.maxMana, this.mana - MANA_DECAY);
+			this.mana = Math.max(
+				this.maxMana,
+				this.mana - PLAYER_VALUES.MANA_DECAY
+			);
 		}
 		if (this.poison > 0) {
 			this.poison--;
@@ -1403,7 +1409,7 @@ export class player {
 				a *= 1 + this.propArmourPiercingDamageModifier;
 			}
 		}
-		return {p: p, m: m, a: a};
+		return {p, m, a};
 	}
 	getStatusEffect(): boolean {
 		return Boolean(this.poison || this.bleed || this.tempRegen);
@@ -1556,7 +1562,7 @@ export class player {
 				return false;
 			}
 		}
-		const totHealthChange: number =
+		var totHealthChange: number =
 				this.weapons[slot1].getHealthChange() +
 				this.weapons[slot2].getHealthChange(),
 			totManaChange: number =
@@ -1674,8 +1680,8 @@ export function ShowPlayerEquipment({
 	/**The player */
 	playerCharacter: player;
 }): React.JSX.Element {
-	const playerWeapons: weapon[] = [];
-	const playerSpells: spell[] = [];
+	var playerWeapons: weapon[] = [];
+	var playerSpells: spell[] = [];
 	var weaponCount: number = playerCharacter.getWeaponSlots();
 	var spellCount: number = playerCharacter.getSpellSlots();
 	for (let i: number = 0; i < weaponCount; i++) {
@@ -1718,20 +1724,27 @@ export function ShowPlayerEquipment({
 					<IonCol>
 						<IonList>
 							<IonListHeader>Weapons</IonListHeader>
-							{playerWeapons.map((w) => (
-								<DisplayWeaponName
-									weaponry={w}
-									key={w.getKey()}
-								/>
-							))}
+							{playerWeapons.map(
+								(w): React.JSX.Element => (
+									<DisplayWeaponName
+										weaponry={w}
+										key={w.getKey()}
+									/>
+								)
+							)}
 						</IonList>
 					</IonCol>
 					<IonCol>
 						<IonList>
 							<IonListHeader>Spells</IonListHeader>
-							{playerSpells.map((s) => (
-								<DisplaySpellName magic={s} key={s.getKey()} />
-							))}
+							{playerSpells.map(
+								(s): React.JSX.Element => (
+									<DisplaySpellName
+										magic={s}
+										key={s.getKey()}
+									/>
+								)
+							)}
 						</IonList>
 					</IonCol>
 				</IonRow>
@@ -1942,7 +1955,9 @@ export function DisplayPlayerStats({
 		</IonGrid>
 	);
 }
-/**Displays the player's inventory */
+/**Displays the player's inventory
+ * @hook
+ */
 export function ShowPlayerInventory({
 	playerCharacter,
 	closeInventory
@@ -2040,7 +2055,9 @@ export function ShowPlayerInventory({
 		</Fragment>
 	);
 }
-/**Allows the player to choose an action */
+/**Allows the player to choose an action
+ * @hook
+ */
 export function ChoosePlayerAction({
 	playerCharacter,
 	enemyName,
@@ -2061,11 +2078,108 @@ export function ChoosePlayerAction({
 	itemName1?: string;
 	/**Name of second item enemy is using */
 	itemName2?: string;
-}): React.JSX.Element | null {
+}): React.JSX.Element {
 	/**Tracks currently selected weapons/spells */
 	const [currentChoice, setCurrentChoice] = useState<actionChoice>({
 		actionType: 0
 	});
+	var weaponArray: boolean[] = Array(playerCharacter.getWeaponSlots()).fill(
+			false
+		),
+		spellArray: boolean[] = Array(playerCharacter.getSpellSlots()).fill(
+			false
+		);
+	switch (currentChoice.actionType) {
+		case 3:
+			weaponArray[currentChoice.slot2!] = true;
+		case 1:
+			weaponArray[currentChoice.slot1!] = true;
+			break;
+		case 2:
+			spellArray[currentChoice.slot1!] = true;
+	}
+	return (
+		<IonContent>
+			<div className="ion-text-center">
+				{timing == 0
+					? "Choose an action"
+					: (timing == 1
+							? `${enemyName} attacks with ${itemName1}`
+							: timing == 2
+							? `${enemyName} casts ${itemName1}`
+							: timing == 3
+							? "Counter attack opportunity"
+							: `${enemyName} attacks with ${itemName1} and ${itemName2}`) +
+					  ", choose an action"}
+			</div>
+			<IonGrid>
+				<IonRow>
+					<IonCol>
+						<IonList>
+							<IonListHeader>Weapons</IonListHeader>
+							{weaponArray.map(
+								(v, i): React.JSX.Element => (
+									<DisplayWeaponName
+										key={playerCharacter
+											.getWeapon(i)
+											.getKey()}
+										weaponry={playerCharacter.getWeapon(i)}
+										inBattle
+										selected={v}
+										canUse={playerCharacter.check(
+											false,
+											timing,
+											i
+										)}
+										onToggle={() => selectHandler(false, i)}
+									/>
+								)
+							)}
+						</IonList>
+					</IonCol>
+					<IonCol>
+						<IonList>
+							<IonListHeader>Spells</IonListHeader>
+							{spellArray.map(
+								(v, i): React.JSX.Element => (
+									<DisplaySpellName
+										key={playerCharacter
+											.getSpell(i)
+											.getKey()}
+										magic={playerCharacter.getSpell(i)}
+										inBattle
+										selected={v}
+										canUse={playerCharacter.check(
+											true,
+											timing,
+											i
+										)}
+										onToggle={() => selectHandler(true, i)}
+									/>
+								)
+							)}
+						</IonList>
+					</IonCol>
+				</IonRow>
+			</IonGrid>
+			<IonButton
+				mode="ios"
+				onClick={(): void => {
+					if (currentChoice.actionType != 0) {
+						if (currentChoice.actionType == 3) {
+							playerCharacter.decBonusActions();
+						}
+						if (timing != 0) {
+							playerCharacter.decBonusActions();
+						}
+					}
+					submitChoice(currentChoice);
+				}}
+			>
+				Submit
+			</IonButton>
+		</IonContent>
+	);
 	/**Handles the toggling of a weapon/spell
 	 * @param action - false is a weapon, true is a spell
 	 * @param slot - the weapon or spell slot toggled
@@ -2121,93 +2235,4 @@ export function ChoosePlayerAction({
 		setCurrentChoice({actionType: 1, slot1: slot});
 		return;
 	}
-	const weaponArray: boolean[] = Array(playerCharacter.getWeaponSlots()).fill(
-			false
-		),
-		spellArray: boolean[] = Array(playerCharacter.getSpellSlots()).fill(
-			false
-		);
-	switch (currentChoice.actionType) {
-		case 3:
-			weaponArray[currentChoice.slot2!] = true;
-		case 1:
-			weaponArray[currentChoice.slot1!] = true;
-			break;
-		case 2:
-			spellArray[currentChoice.slot1!] = true;
-	}
-	return (
-		<IonContent>
-			<div className="ion-text-center">
-				{timing == 0
-					? "Choose an action"
-					: (timing == 1
-							? `${enemyName} attacks with ${itemName1}`
-							: timing == 2
-							? `${enemyName} casts ${itemName1}`
-							: timing == 3
-							? "Counter attack opportunity"
-							: `${enemyName} attacks with ${itemName1} and ${itemName2}`) +
-					  ", choose an action"}
-			</div>
-			<IonGrid>
-				<IonRow>
-					<IonCol>
-						<IonList>
-							<IonListHeader>Weapons</IonListHeader>
-							{weaponArray.map((v, i) => (
-								<DisplayWeaponName
-									key={playerCharacter.getWeapon(i).getKey()}
-									weaponry={playerCharacter.getWeapon(i)}
-									inBattle
-									selected={v}
-									canUse={playerCharacter.check(
-										false,
-										timing,
-										i
-									)}
-									onToggle={() => selectHandler(false, i)}
-								/>
-							))}
-						</IonList>
-					</IonCol>
-					<IonCol>
-						<IonList>
-							<IonListHeader>Spells</IonListHeader>
-							{spellArray.map((v, i) => (
-								<DisplaySpellName
-									key={playerCharacter.getSpell(i).getKey()}
-									magic={playerCharacter.getSpell(i)}
-									inBattle
-									selected={v}
-									canUse={playerCharacter.check(
-										true,
-										timing,
-										i
-									)}
-									onToggle={() => selectHandler(true, i)}
-								/>
-							))}
-						</IonList>
-					</IonCol>
-				</IonRow>
-			</IonGrid>
-			<IonButton
-				mode="ios"
-				onClick={() => {
-					if (currentChoice.actionType != 0) {
-						if (currentChoice.actionType == 3) {
-							playerCharacter.decBonusActions();
-						}
-						if (timing != 0) {
-							playerCharacter.decBonusActions();
-						}
-					}
-					submitChoice(currentChoice);
-				}}
-			>
-				Submit
-			</IonButton>
-		</IonContent>
-	);
 }

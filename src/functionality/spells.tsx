@@ -1,5 +1,10 @@
 import {useState} from "react";
-import {errorMessages, floatFromString, itemKey, numFromString} from "./data";
+import {
+	errorMessages,
+	floatFromString,
+	itemKeyGen,
+	numFromString
+} from "./data";
 import {randomInt} from "./rng";
 import spellData from "../data/spells.json";
 import {
@@ -20,11 +25,13 @@ import {
 	IonToolbar
 } from "@ionic/react";
 import {close} from "ionicons/icons";
-export const SPELL_TYPES_NO = 5;
-export const ATTACK_SPELL_FLAT_CUTOFF = 10;
-export const ATTACK_SPELL_PROP_CUTOFF = 0.2;
-export const HEALING_SPELL_FLAT_CUTOFF = -10;
-export const HEALING_SPELL_PROP_CUTOFF = -0.2;
+const enum SPELL_VALUES {
+	SPELL_TYPES_NO = 5,
+	ATTACK_SPELL_FLAT_CUTOFF = 10,
+	ATTACK_SPELL_PROP_CUTOFF = 0.2,
+	HEALING_SPELL_FLAT_CUTOFF = -10,
+	HEALING_SPELL_PROP_CUTOFF = -0.2
+}
 
 export class spell {
 	private key: number | undefined;
@@ -1348,7 +1355,10 @@ export class spell {
 						selectedSpell.spellType
 					).value;
 			}
-			if (this.spellType < 0 || this.spellType > SPELL_TYPES_NO) {
+			if (
+				this.spellType < 0 ||
+				this.spellType > SPELL_VALUES.SPELL_TYPES_NO
+			) {
 				this.spellType = 0;
 			}
 			switch (typeof selectedSpell.timing) {
@@ -1522,7 +1532,7 @@ export class spell {
 	}
 	getKey(): number {
 		if (this.key == undefined) {
-			this.key = itemKey.gen();
+			this.key = itemKeyGen();
 		}
 		return this.key;
 	}
@@ -1870,8 +1880,8 @@ export class spell {
 					  2;
 		}
 		if (
-			workingTotal >= ATTACK_SPELL_FLAT_CUTOFF ||
-			(this.propDamage ?? 0) >= ATTACK_SPELL_PROP_CUTOFF
+			workingTotal >= SPELL_VALUES.ATTACK_SPELL_FLAT_CUTOFF ||
+			(this.propDamage ?? 0) >= SPELL_VALUES.ATTACK_SPELL_PROP_CUTOFF
 		) {
 			if (this.flatSelfDamageMin == undefined) {
 				workingTotal = this.flatSelfDamageMax ?? 0;
@@ -1902,8 +1912,9 @@ export class spell {
 						  2;
 			}
 			if (
-				workingTotal <= HEALING_SPELL_FLAT_CUTOFF ||
-				(this.propSelfDamage ?? 0) <= HEALING_SPELL_PROP_CUTOFF
+				workingTotal <= SPELL_VALUES.HEALING_SPELL_FLAT_CUTOFF ||
+				(this.propSelfDamage ?? 0) <=
+					SPELL_VALUES.HEALING_SPELL_PROP_CUTOFF
 			) {
 				this.spellType = 4;
 				return;
@@ -1940,8 +1951,8 @@ export class spell {
 					  2;
 		}
 		if (
-			workingTotal <= HEALING_SPELL_FLAT_CUTOFF ||
-			(this.propSelfDamage ?? 0) <= HEALING_SPELL_PROP_CUTOFF
+			workingTotal <= SPELL_VALUES.HEALING_SPELL_FLAT_CUTOFF ||
+			(this.propSelfDamage ?? 0) <= SPELL_VALUES.HEALING_SPELL_PROP_CUTOFF
 		) {
 			this.spellType = 2;
 			return;
@@ -2075,7 +2086,9 @@ export class spell {
 		return this.name ?? "None";
 	}
 }
-/**Displays a spell panel in the inventory or in battle */
+/**Displays a spell panel in the inventory or in battle
+ * @hook
+ */
 export function DisplaySpellName({
 	magic,
 	inBattle,
@@ -2094,6 +2107,7 @@ export function DisplaySpellName({
 	/**A function to be run on selection being toggled */
 	onToggle?: () => void;
 }): React.JSX.Element {
+	const [isOpen, setIsOpen] = useState<boolean>(false);
 	if (!magic.getReal()) {
 		return (
 			<IonItem>
@@ -2101,7 +2115,6 @@ export function DisplaySpellName({
 			</IonItem>
 		);
 	}
-	const [isOpen, setIsOpen] = useState<boolean>(false);
 	return (
 		<IonItem>
 			<IonLabel className="ion-text-center">

@@ -1,10 +1,6 @@
 import {weapon} from "./weapons";
 import {spell} from "./spells";
-import {
-	POISON_MULTIPLIER,
-	BLEED_MULTIPLIER,
-	REGEN_MULTIPLIER
-} from "../pages/battlePage";
+import {BATTLE_VALUES} from "../pages/battlePage";
 import {randomInt} from "./rng";
 import enemyData from "../data/enemies.json";
 import {
@@ -13,10 +9,12 @@ import {
 	floatFromString,
 	numFromString
 } from "./data";
-export const AI_TYPES_NO = 7;
-export const AI_HEALING_THRESHOLD = 0.8;
-export const ENEMY_OVERHEAL_DECAY = 5;
-export const ENEMY_MANA_DECAY = 5;
+const enum AI_VALUES {
+	AI_TYPES_NO = 7,
+	AI_HEALING_THRESHOLD = 0.8,
+	ENEMY_OVERHEAL_DECAY = 5,
+	ENEMY_MANA_DECAY = 5
+}
 
 //Enemy AI types:
 // All weapons are considered attacking, also enemies will always use specified initial spell (as long as they can afford it, and even if it kills them)
@@ -495,18 +493,26 @@ export class enemy {
 	} /**Start of turn, decrements cooldowns, applies and then decrements dot/regen */
 	turnStart(): void {
 		this.modifyHealth(
-			-(POISON_MULTIPLIER * this.poison + BLEED_MULTIPLIER * this.bleed)
+			-(
+				BATTLE_VALUES.POISON_MULTIPLIER * this.poison +
+				BATTLE_VALUES.BLEED_MULTIPLIER * this.bleed
+			)
 		);
-		this.modifyHealth(this.turnRegen + REGEN_MULTIPLIER * this.tempRegen);
+		this.modifyHealth(
+			this.turnRegen + BATTLE_VALUES.REGEN_MULTIPLIER * this.tempRegen
+		);
 		if (this.health > this.maxHealth) {
 			this.health = Math.max(
 				this.maxHealth,
-				this.health - ENEMY_OVERHEAL_DECAY
+				this.health - AI_VALUES.ENEMY_OVERHEAL_DECAY
 			);
 		}
 		this.modifyMana(this.turnManaRegen);
 		if (this.mana > this.maxMana) {
-			this.mana = Math.max(this.maxMana, this.mana - ENEMY_MANA_DECAY);
+			this.mana = Math.max(
+				this.maxMana,
+				this.mana - AI_VALUES.ENEMY_MANA_DECAY
+			);
 		}
 		if (this.poison > 0) {
 			this.poison--;
@@ -968,7 +974,7 @@ export class enemy {
 				case "string":
 					this.AIType = numFromString(selectedEnemy.AIType).value;
 			}
-			if (this.AIType < 1 || this.AIType > AI_TYPES_NO) {
+			if (this.AIType < 1 || this.AIType > AI_VALUES.AI_TYPES_NO) {
 				this.AIType = 2;
 			}
 			switch (typeof selectedEnemy.initiative) {
@@ -1892,18 +1898,26 @@ export class enemy {
 	/**Simulates a turn of dot/regen */
 	simulateTurn(): void {
 		this.modifyHealth(
-			-(POISON_MULTIPLIER * this.poison + BLEED_MULTIPLIER * this.bleed)
+			-(
+				BATTLE_VALUES.POISON_MULTIPLIER * this.poison +
+				BATTLE_VALUES.BLEED_MULTIPLIER * this.bleed
+			)
 		);
-		this.modifyHealth(this.turnRegen + REGEN_MULTIPLIER * this.tempRegen);
+		this.modifyHealth(
+			this.turnRegen + BATTLE_VALUES.REGEN_MULTIPLIER * this.tempRegen
+		);
 		if (this.health > this.maxHealth) {
 			this.health = Math.max(
 				this.maxHealth,
-				this.health - ENEMY_OVERHEAL_DECAY
+				this.health - AI_VALUES.ENEMY_OVERHEAL_DECAY
 			);
 		}
 		this.modifyMana(this.turnManaRegen);
 		if (this.mana > this.maxMana) {
-			this.mana = Math.max(this.maxMana, this.mana - ENEMY_MANA_DECAY);
+			this.mana = Math.max(
+				this.maxMana,
+				this.mana - AI_VALUES.ENEMY_MANA_DECAY
+			);
 		}
 	}
 	/**Chooses a spell
@@ -2171,7 +2185,7 @@ export class enemy {
 	 */
 	healingCheck(): boolean {
 		var healthProp: number = this.health / this.maxHealth;
-		if (healthProp >= AI_HEALING_THRESHOLD) {
+		if (healthProp >= AI_VALUES.AI_HEALING_THRESHOLD) {
 			return false;
 		}
 		switch (this.AIType) {
@@ -2440,7 +2454,7 @@ export class enemy {
 				a *= 1 + this.propArmourPiercingDamageModifier;
 			}
 		}
-		return {p: p, m: m, a: a};
+		return {p, m, a};
 	}
 	/**Resets cooldowns, only for debugging */
 	reset(): void {

@@ -91,38 +91,38 @@ export function WeaponAttack({
 	battleLog: string[];
 }): React.JSX.Element {
 	//If dual wielding, ensure weapon1 hits at least as many times as weapon2
-	if (weapon2 != undefined) {
-		if (counter) {
-			if (weapon2.getCounterHits() > weapon1.getCounterHits()) {
-				return (
-					//@ts-expect-error
-					<WeaponAttack
-						weapon1={weapon2}
-						weapon2={weapon1}
-						attacker={attacker}
-						target={target}
-						battleLog={battleLog}
-						counter
-					/>
-				);
-			}
-		} else {
-			if (weapon2.getHitCount() > weapon1.getHitCount()) {
-				return (
-					//@ts-expect-error
-					<WeaponAttack
-						weapon1={weapon2}
-						weapon2={weapon1}
-						attacker={attacker}
-						target={target}
-						battleLog={battleLog}
-					/>
-				);
-			}
+	if (counter) {
+		//@ts-expect-error
+		if (weapon2?.getCounterHits() > weapon1.getCounterHits()) {
+			return (
+				//@ts-expect-error
+				WeaponAttack({
+					weapon1,
+					weapon2,
+					attacker,
+					target,
+					battleLog,
+					counter
+				})
+			);
+		}
+	} else {
+		//@ts-expect-error
+		if (weapon2?.getHitCount() > weapon1.getHitCount()) {
+			return (
+				//@ts-expect-error
+				WeaponAttack({
+					weapon1,
+					weapon2,
+					attacker,
+					target,
+					battleLog
+				})
+			);
 		}
 	}
 	/**An array of divs displaying effects on the attacker */
-	const attackerEffects: React.JSX.Element[] = [];
+	var attackerEffects: React.JSX.Element[] = [];
 	var outputText: string;
 	/**For holding damage values */
 	var damageBuffer: number;
@@ -136,8 +136,7 @@ export function WeaponAttack({
 		weapon2?.getEffectType()[0] == 1 ||
 		weapon2?.getEffectType()[0] == 2
 	) {
-		outputText = "Attacker effects:";
-		battleLog.push(outputText);
+		battleLog.push((outputText = "Attacker effects:"));
 		attackerEffects.push(
 			<div className="ion-text-center" key="attacker-effects">
 				{outputText}
@@ -153,8 +152,9 @@ export function WeaponAttack({
 				weapon2!.getPropSelfDamage() -
 				weapon1.getPropSelfDamage() * weapon2!.getPropSelfDamage();
 			attacker.propDamage(damageBuffer);
-			outputText = `${-Math.round(100 * damageBuffer)}% health`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${-Math.round(100 * damageBuffer)}% health`)
+			);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
@@ -164,12 +164,13 @@ export function WeaponAttack({
 		} else if (weapon2?.getPropSelfDamage() < 0) {
 			attacker.propDamage(weapon1.getPropSelfDamage());
 			attacker.propDamage(weapon2!.getPropSelfDamage());
-			outputText = `${-Math.round(
-				100 * weapon1.getPropSelfDamage()
-			)}% health, then ${-Math.round(
-				100 * weapon2!.getPropSelfDamage()
-			)}% of health recovered`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${-Math.round(
+					100 * weapon1.getPropSelfDamage()
+				)}% health, then ${-Math.round(
+					100 * weapon2!.getPropSelfDamage()
+				)}% of health recovered`)
+			);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
@@ -177,10 +178,11 @@ export function WeaponAttack({
 			);
 		} else {
 			attacker.propDamage(weapon1.getPropSelfDamage());
-			outputText = `${-Math.round(
-				100 * weapon1.getPropSelfDamage()
-			)}% health`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${-Math.round(
+					100 * weapon1.getPropSelfDamage()
+				)}% health`)
+			);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
@@ -192,12 +194,13 @@ export function WeaponAttack({
 		if (weapon2?.getPropSelfDamage() > 0) {
 			attacker.propDamage(weapon2!.getPropSelfDamage());
 			attacker.propDamage(weapon1.getPropSelfDamage());
-			outputText = `${-Math.round(
-				100 * weapon2!.getPropSelfDamage()
-			)}% health, then ${-Math.round(
-				100 * weapon1.getPropSelfDamage()
-			)}% of health recovered`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${-Math.round(
+					100 * weapon2!.getPropSelfDamage()
+				)}% health, then ${-Math.round(
+					100 * weapon1.getPropSelfDamage()
+				)}% of health recovered`)
+			);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
@@ -210,10 +213,11 @@ export function WeaponAttack({
 				weapon1.getPropSelfDamage() + weapon2!.getPropSelfDamage()
 			);
 			attacker.propDamage(damageBuffer);
-			outputText = `${-Math.round(
-				100 * damageBuffer
-			)}% of health recovered`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${-Math.round(
+					100 * damageBuffer
+				)}% of health recovered`)
+			);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
@@ -221,10 +225,11 @@ export function WeaponAttack({
 			);
 		} else {
 			attacker.propDamage(weapon1.getPropSelfDamage());
-			outputText = `${-Math.round(
-				100 * weapon1.getPropSelfDamage()
-			)}% of health recovered`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${-Math.round(
+					100 * weapon1.getPropSelfDamage()
+				)}% of health recovered`)
+			);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
@@ -235,10 +240,11 @@ export function WeaponAttack({
 		//@ts-expect-error
 		if (weapon2?.getPropSelfDamage() > 0) {
 			attacker.propDamage(weapon2!.getPropSelfDamage());
-			outputText = `${-Math.round(
-				100 * weapon2!.getPropSelfDamage()
-			)}% health`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${-Math.round(
+					100 * weapon2!.getPropSelfDamage()
+				)}% health`)
+			);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
@@ -247,10 +253,11 @@ export function WeaponAttack({
 			//@ts-expect-error
 		} else if (weapon2?.getPropSelfDamage() < 0) {
 			attacker.propDamage(weapon2!.getPropSelfDamage());
-			outputText = `${-Math.round(
-				100 * weapon2!.getPropSelfDamage()
-			)}% of health recovered`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${-Math.round(
+					100 * weapon2!.getPropSelfDamage()
+				)}% of health recovered`)
+			);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
@@ -331,7 +338,7 @@ export function WeaponAttack({
 		);
 	}
 	{
-		const selfPoison =
+		let selfPoison =
 				weapon1.getSelfPoison() + (weapon2?.getSelfPoison() ?? 0),
 			selfBleed = weapon1.getSelfBleed() + (weapon2?.getSelfBleed() ?? 0);
 		if (selfPoison > 0 || selfBleed > 0) {
@@ -350,8 +357,7 @@ export function WeaponAttack({
 					dotEffects += "Bleed resisted, ";
 				}
 			}
-			outputText = dotEffects.slice(0, -2);
-			battleLog.push(outputText);
+			battleLog.push((outputText = dotEffects.slice(0, -2)));
 			attackerEffects.push(
 				<div className="ion-text-center" key="dotSelf">
 					{outputText}
@@ -367,7 +373,7 @@ export function WeaponAttack({
 	) {
 		return <Fragment>{attackerEffects}</Fragment>;
 	}
-	const targetEffects: React.JSX.Element[] = [
+	var targetEffects: React.JSX.Element[] = [
 		<div className="ion-text-center" key="target-effects">
 			Target effects:
 		</div>
@@ -470,7 +476,7 @@ export function WeaponHit({
 		);
 	}
 	battleLog.push("Hit!");
-	const hitEffects: React.JSX.Element[] = [
+	var hitEffects: React.JSX.Element[] = [
 		<div className="ion-text-center" key="hit">
 			Hit!
 		</div>
@@ -478,18 +484,22 @@ export function WeaponHit({
 	var outputText: string;
 	target.propDamage(weaponry.getPropDamage());
 	if (weaponry.getPropDamage() > 0) {
-		outputText = `${-Math.round(100 * weaponry.getPropDamage())}% health`;
-		battleLog.push(outputText);
+		battleLog.push(
+			(outputText = `${-Math.round(
+				100 * weaponry.getPropDamage()
+			)}% health`)
+		);
 		hitEffects.push(
 			<div className="ion-text-center" key="propDamage">
 				{outputText}
 			</div>
 		);
 	} else if (weaponry.getPropDamage() < 0) {
-		outputText = `${-Math.round(
-			100 * weaponry.getPropDamage()
-		)} % of health recovered`;
-		battleLog.push(outputText);
+		battleLog.push(
+			(outputText = `${-Math.round(
+				100 * weaponry.getPropDamage()
+			)} % of health recovered`)
+		);
 		hitEffects.push(
 			<div className="ion-text-center" key="propDamage">
 				{outputText}
@@ -550,8 +560,7 @@ export function WeaponHit({
 				outputText += "Bleed resisted, ";
 			}
 		}
-		outputText = outputText.slice(0, -2);
-		battleLog.push(outputText);
+		battleLog.push((outputText = outputText.slice(0, -2)));
 		hitEffects.push(
 			<div className="ion-text-center" key="dot">
 				{outputText}
@@ -629,7 +638,7 @@ export function SpellCast({
 	/**The battle log */
 	battleLog: string[];
 }): React.JSX.Element {
-	const attackerEffects: React.JSX.Element[] = [];
+	var attackerEffects: React.JSX.Element[] = [];
 	var outputText: string;
 	if (caster != undefined) {
 		if (
@@ -638,8 +647,7 @@ export function SpellCast({
 			magic.getEffectType()[0] == 1 ||
 			magic.getEffectType()[0] == 2
 		) {
-			outputText = "Caster effects:";
-			battleLog.push(outputText);
+			battleLog.push((outputText = "Caster effects:"));
 			attackerEffects.push(
 				<div className="ion-text-center" key="caster-effects">
 					{outputText}
@@ -648,20 +656,22 @@ export function SpellCast({
 		}
 		caster.propDamage(magic.getPropSelfDamage());
 		if (magic.getPropSelfDamage() > 0) {
-			outputText = `${-Math.round(
-				100 * magic.getPropSelfDamage()
-			)}% health`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${-Math.round(
+					100 * magic.getPropSelfDamage()
+				)}% health`)
+			);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
 				</div>
 			);
 		} else if (magic.getPropSelfDamage() < 0) {
-			outputText = `${-Math.round(
-				100 * magic.getPropSelfDamage()
-			)}% of health recovered`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${-Math.round(
+					100 * magic.getPropSelfDamage()
+				)}% of health recovered`)
+			);
 			attackerEffects.push(
 				<div className="ion-text-center" key="propSelfDamage">
 					{outputText}
@@ -726,8 +736,7 @@ export function SpellCast({
 						magic.getTempRegenSelf() > 0 ? "+" : ""
 					}${magic.getTempRegenSelf()} regeneration, `;
 				}
-				outputText = outputText.slice(0, -2);
-				battleLog.push(outputText);
+				battleLog.push((outputText = outputText.slice(0, -2)));
 				attackerEffects.push(
 					<div className="ion-text-center" key="dotSelf">
 						{outputText}
@@ -757,8 +766,7 @@ export function SpellCast({
 						100 * magic.getBleedResistModifier()
 					)}% bleed resist, `;
 				}
-				outputText = outputText.slice(0, -2);
-				battleLog.push(outputText);
+				battleLog.push((outputText = outputText.slice(0, -2)));
 				attackerEffects.push(
 					<div className="ion-text-center" key="selfResistModifiers">
 						{outputText}
@@ -793,8 +801,7 @@ export function SpellCast({
 						magic.getBattleRegenModifier() > 0 ? "+" : ""
 					}${magic.getBattleRegenModifier()} health at end of battle, `;
 				}
-				outputText = outputText.slice(0, -2);
-				battleLog.push(outputText);
+				battleLog.push((outputText = outputText.slice(0, -2)));
 				attackerEffects.push(
 					<div className="ion-text-center" key="selfHealthModifiers">
 						{outputText}
@@ -833,8 +840,7 @@ export function SpellCast({
 						magic.getBattleManaRegenModifier() > 0 ? "+" : ""
 					}${magic.getBattleManaRegenModifier()} mana at end of battle, `;
 				}
-				outputText = outputText.slice(0, -2);
-				battleLog.push(outputText);
+				battleLog.push((outputText = outputText.slice(0, -2)));
 				attackerEffects.push(
 					<div className="ion-text-center" key="selfManaModifiers">
 						{outputText}
@@ -860,8 +866,7 @@ export function SpellCast({
 						magic.getFlatMagicArmourModifier() > 0 ? "+" : ""
 					}${magic.getFlatMagicArmourModifier()} magic armour, `;
 				}
-				outputText = outputText.slice(0, -2);
-				battleLog.push(outputText);
+				battleLog.push((outputText = outputText.slice(0, -2)));
 				attackerEffects.push(
 					<div
 						className="ion-text-center"
@@ -894,8 +899,7 @@ export function SpellCast({
 						100 * magic.getPropMagicArmourModifier()
 					)}% magic damage received, `;
 				}
-				outputText = outputText.slice(0, -2);
-				battleLog.push(outputText);
+				battleLog.push((outputText = outputText.slice(0, -2)));
 				attackerEffects.push(
 					<div
 						className="ion-text-center"
@@ -937,8 +941,7 @@ export function SpellCast({
 							: ""
 					}${magic.getFlatArmourPiercingDamageModifier()} armour piercing damage dealt, `;
 				}
-				outputText = outputText.slice(0, -2);
-				battleLog.push(outputText);
+				battleLog.push((outputText = outputText.slice(0, -2)));
 				attackerEffects.push(
 					<div
 						className="ion-text-center"
@@ -986,8 +989,7 @@ export function SpellCast({
 						100 * magic.getPropArmourPiercingDamageModifier()
 					)}% armour piercing damage dealt, `;
 				}
-				outputText = outputText.slice(0, -2);
-				battleLog.push(outputText);
+				battleLog.push((outputText = outputText.slice(0, -2)));
 				attackerEffects.push(
 					<div
 						className="ion-text-center"
@@ -1000,10 +1002,13 @@ export function SpellCast({
 		}
 		if (magic.getEvadeChanceModifier() != 0) {
 			caster.modifyEvadeChance(magic.getEvadeChanceModifier());
-			outputText = `${
-				magic.getEvadeChanceModifier() > 0 ? "+" : ""
-			}${Math.round(100 * magic.getEvadeChanceModifier())}% evade chance`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${
+					magic.getEvadeChanceModifier() > 0 ? "+" : ""
+				}${Math.round(
+					100 * magic.getEvadeChanceModifier()
+				)}% evade chance`)
+			);
 			attackerEffects.push(
 				<div className="ion-text-center" key="selfEvadeChanceModifier">
 					{outputText}
@@ -1014,12 +1019,13 @@ export function SpellCast({
 			caster.modifyCounterAttackChance(
 				magic.getCounterAttackChanceModifier()
 			);
-			outputText = `${
-				magic.getCounterAttackChanceModifier() > 0 ? "+" : ""
-			}${Math.round(
-				100 * magic.getCounterAttackChanceModifier()
-			)}% counter attack chance`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${
+					magic.getCounterAttackChanceModifier() > 0 ? "+" : ""
+				}${Math.round(
+					100 * magic.getCounterAttackChanceModifier()
+				)}% counter attack chance`)
+			);
 			attackerEffects.push(
 				<div
 					className="ion-text-center"
@@ -1031,10 +1037,11 @@ export function SpellCast({
 		}
 		if (magic.getBonusActionsModifier() != 0) {
 			caster.modifyBonusActions(magic.getBonusActionsModifier());
-			outputText = `${
-				magic.getBonusActionsModifier() > 0 ? "+" : ""
-			}${magic.getBonusActionsModifier()} bonus actions`;
-			battleLog.push(outputText);
+			battleLog.push(
+				(outputText = `${
+					magic.getBonusActionsModifier() > 0 ? "+" : ""
+				}${magic.getBonusActionsModifier()} bonus actions`)
+			);
 			attackerEffects.push(
 				<div className="ion-text-center" key="selfBonusActionModifier">
 					{outputText}
@@ -1045,7 +1052,7 @@ export function SpellCast({
 	if (magic.getEffectType()[0] < 2 || magic.getEffectType()[1] < 2) {
 		return <Fragment>{attackerEffects}</Fragment>;
 	}
-	const targetEffects: React.JSX.Element[] = [
+	var targetEffects: React.JSX.Element[] = [
 		<div className="ion-text-center" key="target-effects">
 			Target effects:
 		</div>
@@ -1130,19 +1137,17 @@ function SpellHit({
 	/**The battle log */
 	battleLog: string[];
 }): React.JSX.Element {
-	var outputText: string = "";
-	const hitEffects: React.JSX.Element[] = [];
+	var outputText: string;
+	var hitEffects: React.JSX.Element[] = [];
 	if (!magic.getNoEvade() && Math.random() < target.getEvadeChance()) {
-		outputText = "Evade!";
-		battleLog.push(outputText);
+		battleLog.push((outputText = "Evade!"));
 		hitEffects.push(
 			<div className="ion-text-center" key="hit">
 				{outputText}
 			</div>
 		);
 	}
-	outputText = "Hit!";
-	battleLog.push(outputText);
+	battleLog.push((outputText = "Hit!"));
 	hitEffects.push(
 		<div className="ion-text-center" key="hit">
 			{outputText}
@@ -1150,18 +1155,20 @@ function SpellHit({
 	);
 	target.propDamage(magic.getPropDamage());
 	if (magic.getPropDamage() > 0) {
-		outputText = `${-Math.round(100 * magic.getPropDamage())}% health`;
-		battleLog.push(outputText);
+		battleLog.push(
+			(outputText = `${-Math.round(100 * magic.getPropDamage())}% health`)
+		);
 		hitEffects.push(
 			<div className="ion-text-center" key="propDamage">
 				{outputText}
 			</div>
 		);
 	} else if (magic.getPropDamage() < 0) {
-		outputText = `${-Math.round(
-			100 * magic.getPropDamage()
-		)}% of health recovered`;
-		battleLog.push(outputText);
+		battleLog.push(
+			(outputText = `${-Math.round(
+				100 * magic.getPropDamage()
+			)}% of health recovered`)
+		);
 		hitEffects.push(
 			<div className="ion-text-center" key="propDamage">
 				{outputText}
@@ -1236,8 +1243,7 @@ function SpellHit({
 				magic.getTempRegen() > 0 ? "+" : ""
 			}${magic.getTempRegen()} regeneration, `;
 		}
-		outputText = outputText.slice(0, -2);
-		battleLog.push(outputText);
+		battleLog.push((outputText = outputText.slice(0, -2)));
 		hitEffects.push(
 			<div className="ion-text-center" key="dot">
 				{outputText}
@@ -1271,8 +1277,7 @@ function SpellHit({
 				magic.getBattleRegenModifierEnemy() > 0 ? "+" : ""
 			}${magic.getBattleRegenModifierEnemy()} health at end of battle, `;
 		}
-		outputText = outputText.slice(0, -2);
-		battleLog.push(outputText);
+		battleLog.push((outputText = outputText.slice(0, -2)));
 		hitEffects.push(
 			<div className="ion-text-center" key="healthModifiers">
 				{outputText}
@@ -1316,8 +1321,7 @@ function SpellHit({
 				magic.getBattleManaRegenModifierEnemy() > 0 ? "+" : ""
 			}${magic.getBattleManaRegenModifierEnemy()} mana at end of battle, `;
 		}
-		outputText = outputText.slice(0, -2);
-		battleLog.push(outputText);
+		battleLog.push((outputText = outputText.slice(0, -2)));
 		hitEffects.push(
 			<div className="ion-text-center" key="manaModifiers">
 				{outputText}
@@ -1345,8 +1349,7 @@ function SpellHit({
 				100 * magic.getBleedResistModifierEnemy()
 			)} bleed resist, `;
 		}
-		outputText = outputText.slice(0, -2);
-		battleLog.push(outputText);
+		battleLog.push((outputText = outputText.slice(0, -2)));
 		hitEffects.push(
 			<div className="ion-text-center" key="resistModifiers">
 				{outputText}
@@ -1372,8 +1375,7 @@ function SpellHit({
 				magic.getFlatMagicArmourModifierEnemy() > 0 ? "+" : ""
 			}${magic.getFlatMagicArmourModifierEnemy()} magic armour, `;
 		}
-		outputText = outputText.slice(0, -2);
-		battleLog.push(outputText);
+		battleLog.push((outputText = outputText.slice(0, -2)));
 		hitEffects.push(
 			<div className="ion-text-center" key="flatArmourModifiers">
 				{outputText}
@@ -1403,8 +1405,7 @@ function SpellHit({
 				100 * magic.getPropMagicArmourModifierEnemy()
 			)}% magic damage received, `;
 		}
-		outputText = outputText.slice(0, -2);
-		battleLog.push(outputText);
+		battleLog.push((outputText = outputText.slice(0, -2)));
 		hitEffects.push(
 			<div className="ion-text-center" key="propArmourModifiers">
 				{outputText}
@@ -1439,8 +1440,7 @@ function SpellHit({
 				magic.getFlatArmourPiercingDamageModifierEnemy() > 0 ? "+" : ""
 			}${magic.getFlatArmourPiercingDamageModifierEnemy()} armour piercing damage dealt, `;
 		}
-		outputText = outputText.slice(0, -2);
-		battleLog.push(outputText);
+		battleLog.push((outputText = outputText.slice(0, -2)));
 		hitEffects.push(
 			<div className="ion-text-center" key="flatDamageModifiers">
 				{outputText}
@@ -1481,8 +1481,7 @@ function SpellHit({
 				100 * magic.getPropArmourPiercingDamageModifierEnemy()
 			)}% armour piercing damage dealt, `;
 		}
-		outputText = outputText.slice(0, -2);
-		battleLog.push(outputText);
+		battleLog.push((outputText = outputText.slice(0, -2)));
 		hitEffects.push(
 			<div className="ion-text-center" key="propDamageModifiers">
 				{outputText}
@@ -1492,12 +1491,13 @@ function SpellHit({
 
 	if (magic.getEvadeChanceModifierEnemy() != 0) {
 		target.modifyEvadeChance(magic.getEvadeChanceModifierEnemy());
-		outputText = `${
-			magic.getEvadeChanceModifierEnemy() > 0 ? "+" : ""
-		}${Math.round(
-			100 * magic.getEvadeChanceModifierEnemy()
-		)}% evade chance`;
-		battleLog.push(outputText);
+		battleLog.push(
+			(outputText = `${
+				magic.getEvadeChanceModifierEnemy() > 0 ? "+" : ""
+			}${Math.round(
+				100 * magic.getEvadeChanceModifierEnemy()
+			)}% evade chance`)
+		);
 		hitEffects.push(
 			<div className="ion-text-center" key="evadeChanceModifier">
 				{outputText}
@@ -1508,12 +1508,13 @@ function SpellHit({
 		target.modifyCounterAttackChance(
 			magic.getCounterAttackChanceModifierEnemy()
 		);
-		outputText = `${
-			magic.getCounterAttackChanceModifierEnemy() > 0 ? "+" : ""
-		}${Math.round(
-			100 * magic.getCounterAttackChanceModifierEnemy()
-		)}% counter attack chance`;
-		battleLog.push(outputText);
+		battleLog.push(
+			(outputText = `${
+				magic.getCounterAttackChanceModifierEnemy() > 0 ? "+" : ""
+			}${Math.round(
+				100 * magic.getCounterAttackChanceModifierEnemy()
+			)}% counter attack chance`)
+		);
 		hitEffects.push(
 			<div className="ion-text-center" key="counterAttackChanceModifier">
 				{outputText}
@@ -1522,10 +1523,11 @@ function SpellHit({
 	}
 	if (magic.getBonusActionsModifierEnemy() != 0) {
 		target.modifyBonusActions(magic.getBonusActionsModifierEnemy());
-		outputText = `${
-			magic.getBonusActionsModifierEnemy() > 0 ? "+" : ""
-		}${magic.getBonusActionsModifierEnemy()} bonus actions`;
-		battleLog.push(outputText);
+		battleLog.push(
+			(outputText = `${
+				magic.getBonusActionsModifierEnemy() > 0 ? "+" : ""
+			}${magic.getBonusActionsModifierEnemy()} bonus actions`)
+		);
 		hitEffects.push(
 			<div className="ion-text-center" key="bonusActionModifier">
 				{outputText}

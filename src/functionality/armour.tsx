@@ -1,6 +1,11 @@
 import {useState} from "react";
 import {Fragment} from "react";
-import {errorMessages, floatFromString, itemKey, numFromString} from "./data";
+import {
+	errorMessages,
+	floatFromString,
+	itemKeyGen,
+	numFromString
+} from "./data";
 import armourData from "../data/armour.json";
 import {randomInt} from "./rng";
 import {
@@ -51,7 +56,7 @@ export class armour {
 	protected upgrade: string | undefined;
 	getKey(): number {
 		if (this.key == undefined) {
-			this.key = itemKey.gen();
+			this.key = itemKeyGen();
 		}
 		return this.key;
 	}
@@ -255,7 +260,7 @@ export class armour {
 		if (blueprint == "EMPTY") {
 			return;
 		}
-		const type: string = this.armourType();
+		var type: string = this.armourType();
 		try {
 			//@ts-expect-error
 			let selectedArmour = armourData[type][blueprint];
@@ -615,7 +620,9 @@ export class armour {
 		return this.name ?? "None";
 	}
 }
-/**Displays the armour's inventory panel */
+/**Displays the armour's inventory panel
+ * @hook
+ */
 export function DisplayArmourName({
 	armourPiece
 }: {
