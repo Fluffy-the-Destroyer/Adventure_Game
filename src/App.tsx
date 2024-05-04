@@ -38,21 +38,21 @@ import {DebugPage} from "./pages/debugPage";
 
 setupIonicReact();
 function App(): React.JSX.Element {
-	return (
-		<IonApp>
-			<IonReactRouter>
-				<IonRouterOutlet>
-					<Route path="/main_menu">
-						<MainMenuPage />
-					</Route>
-					<Route path="/debug_mode">
-						<DebugPage />
-					</Route>
-					<Redirect exact from="/" to="/main_menu" />
-				</IonRouterOutlet>
-			</IonReactRouter>
-		</IonApp>
-	);
+  return (
+    <IonApp>
+      <IonReactRouter>
+        <IonRouterOutlet>
+          <Route path="/main_menu">
+            <MainMenuPage />
+          </Route>
+          <Route path="/debug_mode">
+            <DebugPage />
+          </Route>
+          <Redirect exact from="/" to="/main_menu" />
+        </IonRouterOutlet>
+      </IonReactRouter>
+    </IonApp>
+  );
 }
 
 export default App;

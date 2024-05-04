@@ -1,64 +1,35 @@
-type AsyncFunc<argTypes extends any[], returnType> = (
-	...args: argTypes
-) => Promise<returnType>;
+type asyncFn<T extends any[] = [], U = void> = (...args: T) => Promise<U>;
 
-export function requestHandlerCreator<returnType>(
-	fn: () => Promise<returnType>
-): () => Promise<returnType> {
-	var requestInProgress: boolean = false;
-	var dataBuffer: Promise<returnType>;
-	return function requestHandler(): Promise<returnType> {
-		if (!requestInProgress) {
-			requestInProgress = true;
-			dataBuffer = new Promise<returnType>((resolve, reject): void => {
-				fn()
-					.then(resolve, reject)
-					.finally(() => void (requestInProgress = false));
-			});
-		}
-		return dataBuffer;
-	};
+export function requestHandlerCreator<T>(fn: asyncFn<[], T>): () => Promise<T> {
+  let dataBuffer: Promise<T> | null;
+  return function requestHandler(): Promise<T> {
+    return (dataBuffer ??= new Promise<T>((fulfill, reject) =>
+      fn()
+        .then(fulfill, reject)
+        .finally(() => (dataBuffer = null))
+    ));
+  };
 }
 
-export function queueManagerCreator<argTypes extends any[], returnType>(
-	fn: AsyncFunc<argTypes, returnType>
-): AsyncFunc<argTypes, returnType> {
-	var counter: number = 0;
-	var dataBuffer: Promise<returnType>;
-	return function queueManager(...args: argTypes): Promise<returnType> {
-		var ticket: number = counter++;
-		if (counter == 1) {
-			dataBuffer = fn(...args);
-		}
-		return new Promise<returnType>((resolve, reject): void => {
-			(function queue(): void {
-				dataBuffer.then(
-					(value): void => {
-						switch (ticket--) {
-							case 0:
-								counter--;
-								resolve(value);
-								break;
-							case 1:
-								dataBuffer = fn(...args);
-							default:
-								setTimeout(queue);
-						}
-					},
-					(reason): void => {
-						switch (ticket--) {
-							case 0:
-								counter--;
-								reject(reason);
-								break;
-							case 1:
-								dataBuffer = fn(...args);
-							default:
-								setTimeout(queue);
-						}
-					}
-				);
-			})();
-		});
-	};
+export function queueManagerCreator<T extends any[], U>(fn: asyncFn<T, U>): asyncFn<T, U> {
+  let it: AsyncGenerator<PromiseSettledResult<U>, never, T> = queue(fn);
+  it.next();
+  return async function queueManager(...args: T): Promise<U> {
+    let res: PromiseSettledResult<U> = (await it.next(args)).value;
+    if (res.status == "fulfilled") {
+      return res.value;
+    } else {
+      throw res.reason;
+    }
+  };
+}
+async function* queue<T extends any[], U>(fn: asyncFn<T, U>): AsyncGenerator<PromiseSettledResult<U>, never, T> {
+  let res: PromiseSettledResult<U>;
+  while (true) {
+    try {
+      res = {status: "fulfilled", value: await fn(...(yield res!))};
+    } catch (err) {
+      res = {status: "rejected", reason: err};
+    }
+  }
 }

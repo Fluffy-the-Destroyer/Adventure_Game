@@ -5,32 +5,17 @@ import {useEffect, useState} from "react";
  * @returns JSX (or null) held in state
  */
 export function useGenerator(
-	generator: Generator<
-		React.JSX.Element,
-		React.JSX.Element | null,
-		void | (() => void)
-	>
-): React.JSX.Element | null {
-	const [iterator] =
-		useState<
-			Generator<
-				React.JSX.Element,
-				React.JSX.Element | null,
-				void | (() => void)
-			>
-		>(generator);
-	const [displayBuffer, setDisplayBuffer] =
-		useState<React.JSX.Element | null>(null);
-	useEffect((): (() => void) => {
-		iterator.next();
-		setDisplayBuffer(
-			iterator.next((): void => {
-				setDisplayBuffer(iterator.next().value);
-			}).value
-		);
-		return (): void => {
-			iterator.return(null);
-		};
-	}, [iterator, setDisplayBuffer]);
-	return displayBuffer;
+  generator: Generator<React.ReactNode, React.ReactNode, void | (() => void)>
+): React.ReactNode {
+  const [iterator] = useState<Generator<React.ReactNode, React.ReactNode, void | (() => void)>>(generator);
+  const [displayBuffer, setDisplayBuffer] = useState<React.ReactNode>(null);
+  useEffect(
+    function (): () => void {
+      iterator.next();
+      setDisplayBuffer(iterator.next(() => setDisplayBuffer(iterator.next().value)).value);
+      return () => iterator.return(null);
+    },
+    [iterator, setDisplayBuffer]
+  );
+  return displayBuffer;
 }
