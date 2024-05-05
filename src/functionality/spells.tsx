@@ -1,6 +1,6 @@
-import {useState} from "react";
-import {errorMessages, floatFromString, itemKeyGen, numFromString} from "./data";
-import {randomInt} from "./rng";
+import { useState } from "react";
+import { errorMessages, floatFromString, itemKeyGen, numFromString } from "./data";
+import { randomInt } from "./rng";
 import spellData from "../data/spells.json";
 import {
   IonButton,
@@ -19,7 +19,8 @@ import {
   IonToggle,
   IonToolbar,
 } from "@ionic/react";
-import {close} from "ionicons/icons";
+import { close } from "ionicons/icons";
+import { fn } from "./interfaces";
 const enum SPELL_VALUES {
   SPELL_TYPES_NO = 5,
   ATTACK_SPELL_FLAT_CUTOFF = 10,
@@ -1670,6 +1671,7 @@ export class spell {
     return this.name ?? "None";
   }
 }
+type DisplaySpellNameProps = { magic: spell; inBattle?: boolean; selected?: boolean; canUse?: boolean; onToggle?: fn };
 /**Displays a spell panel in the inventory or in battle
  * @hook
  */
@@ -1679,18 +1681,7 @@ export function DisplaySpellName({
   selected,
   canUse,
   onToggle,
-}: {
-  /**The spell */
-  magic: spell;
-  /**True if displaying for selection in battle */
-  inBattle?: boolean;
-  /**Is it currently selected */
-  selected?: boolean;
-  /**Is the player allowed to use it */
-  canUse?: boolean;
-  /**A function to be run on selection being toggled */
-  onToggle?: () => void;
-}): React.ReactNode {
+}: DisplaySpellNameProps): React.ReactNode {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   if (!magic.getReal()) {
     return (
@@ -1756,13 +1747,9 @@ export function DisplaySpellName({
     </IonItem>
   );
 }
+type DisplaySpellStatsProps = { magic: spell };
 /**Displays spell stats */
-export function DisplaySpellStats({
-  magic,
-}: {
-  /**The spell */
-  magic: spell;
-}): React.ReactNode {
+export function DisplaySpellStats({ magic }: DisplaySpellStatsProps): React.ReactNode {
   let healingMin: number = 0;
   let healingMax: number = 0;
   let healingSelfMin: number = 0;

@@ -1,8 +1,8 @@
-import {useState} from "react";
-import {Fragment} from "react";
-import {errorMessages, floatFromString, itemKeyGen, numFromString} from "./data";
+import { useState } from "react";
+import { Fragment } from "react";
+import { errorMessages, floatFromString, itemKeyGen, numFromString } from "./data";
 import armourData from "../data/armour.json";
-import {randomInt} from "./rng";
+import { randomInt } from "./rng";
 import {
   IonButton,
   IonCardSubtitle,
@@ -20,7 +20,7 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import {close} from "ionicons/icons";
+import { close } from "ionicons/icons";
 export class armour {
   protected key: number | undefined;
   protected real: boolean = false;
@@ -445,15 +445,12 @@ export class armour {
     return this.name ?? "None";
   }
 }
+
+type DisplayArmourNameProps = { armourPiece: armour };
 /**Displays the armour's inventory panel
  * @hook
  */
-export function DisplayArmourName({
-  armourPiece,
-}: {
-  /**The piece of armour */
-  armourPiece: armour;
-}): React.ReactNode {
+export function DisplayArmourName({ armourPiece }: DisplayArmourNameProps): React.ReactNode {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   let type: string;
   switch (armourPiece.armourType()) {
@@ -509,13 +506,10 @@ export function DisplayArmourName({
     </Fragment>
   );
 }
+
+type DisplayArmourStatsProps = { armourPiece: armour };
 /**Displays armour's stats */
-export function DisplayArmourStats({
-  armourPiece,
-}: {
-  /**The armour piece */
-  armourPiece: armour;
-}): React.ReactNode {
+export function DisplayArmourStats({ armourPiece }: DisplayArmourStatsProps): React.ReactNode {
   return (
     <IonList className="ion-text-center">
       <IonListHeader>{armourPiece.getDescription()}</IonListHeader>

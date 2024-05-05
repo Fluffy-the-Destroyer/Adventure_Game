@@ -1,4 +1,4 @@
-import {IonButton, IonContent, IonFooter, IonHeader, IonPage, IonTitle} from "@ionic/react";
+import { IonButton, IonContent, IonFooter, IonHeader, IonPage, IonTitle } from "@ionic/react";
 
 export function MainMenuPage(): React.ReactNode {
   return (

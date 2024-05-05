@@ -10,12 +10,12 @@ import {
   IonToolbar,
   useIonToast,
 } from "@ionic/react";
-import {Fragment, useState} from "react";
-import {ShowPlayerInventory, player} from "../functionality/player";
-import {errorMessages} from "../functionality/data";
-import {enemy} from "../functionality/enemies";
-import {BattlePage} from "./battlePage";
-import {deleteStoredPlayer, getStoredPlayer, storePlayer} from "../data/localStorage";
+import { Fragment, useState } from "react";
+import { ShowPlayerInventory, player } from "../functionality/player";
+import { errorMessages } from "../functionality/data";
+import { enemy } from "../functionality/enemies";
+import { BattlePage } from "./battlePage";
+import { deleteStoredPlayer, getStoredPlayer, storePlayer } from "../data/localStorage";
 
 /**Debugging page
  * @hook

@@ -1,7 +1,7 @@
-import {IonApp, IonRouterOutlet, setupIonicReact} from "@ionic/react";
-import {IonReactRouter} from "@ionic/react-router";
-import {MainMenuPage} from "./pages/mainMenuPage";
-import {Redirect, Route} from "react-router";
+import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
+import { IonReactRouter } from "@ionic/react-router";
+import { MainMenuPage } from "./pages/mainMenuPage";
+import { Redirect, Route } from "react-router";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -22,7 +22,7 @@ import "@ionic/react/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 import "./theme/main.css";
-import {DebugPage} from "./pages/debugPage";
+import { DebugPage } from "./pages/debugPage";
 
 /*Error codes:
 	0: Unspecified, no further error messages should be shown

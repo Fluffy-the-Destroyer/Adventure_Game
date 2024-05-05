@@ -9,36 +9,26 @@ import {
   IonPage,
   IonToolbar,
 } from "@ionic/react";
-import {enemy} from "../functionality/enemies";
-import {ChoosePlayerAction, ShowPlayerInventory, player} from "../functionality/player";
-import {useState} from "react";
-import {actionChoice} from "../functionality/data";
-import {close} from "ionicons/icons";
-import {SpellCast, WeaponAttack, spellDeclare, weaponDeclare} from "../components/attacks";
-import {useGenerator} from "../hooks/hooks";
-import {weapon} from "../functionality/weapons";
-import {spell} from "../functionality/spells";
+import { enemy } from "../functionality/enemies";
+import { ChoosePlayerAction, ShowPlayerInventory, player } from "../functionality/player";
+import { useState } from "react";
+import { actionChoice, fn } from "../functionality/interfaces";
+import { close } from "ionicons/icons";
+import { SpellCast, WeaponAttack, spellDeclare, weaponDeclare } from "../components/attacks";
+import { useGenerator } from "../hooks/hooks";
+import { weapon } from "../functionality/weapons";
+import { spell } from "../functionality/spells";
 export const enum BATTLE_VALUES {
   POISON_MULTIPLIER = 1,
   BLEED_MULTIPLIER = 1,
   REGEN_MULTIPLIER = 1,
 }
 
+type BattlePageProps = { playerCharacter: player; opponent: enemy; endBattle: fn };
 /**Displays the Battle page
  * @hook
  */
-export function BattlePage({
-  playerCharacter,
-  opponent,
-  endBattle,
-}: {
-  /**The player */
-  playerCharacter: player;
-  /**The enemy */
-  opponent: enemy;
-  /**Ends the battle (will cause parent component to stop displaying battle) */
-  endBattle: () => void;
-}): React.ReactNode {
+export function BattlePage({ playerCharacter, opponent, endBattle }: BattlePageProps): React.ReactNode {
   /**Holds the battle log */
   const [battleLog] = useState<string[]>([]);
   /**Tracks whether the battle log is open */
@@ -103,12 +93,12 @@ export function BattlePage({
 function* battleHandler(
   playerCharacter: player,
   opponent: enemy,
-  endBattle: () => void,
+  endBattle: fn,
   battleLog: string[]
-): Generator<React.ReactNode, React.ReactNode, void | (() => void)> {
+): Generator<React.ReactNode, React.ReactNode, void | fn> {
   let playerTurn: boolean = playerCharacter.rollInitiative() > opponent.rollInitiative();
   let firstTurn: boolean = true;
-  const advanceCombat: () => void =
+  const advanceCombat: fn =
     (yield null) ??
     function () {
       console.log("No function to advance combat provided, ending battle");
@@ -627,7 +617,7 @@ function* battleHandler(
               />
             );
           } else {
-            playerSelection = {actionType: 0};
+            playerSelection = { actionType: 0 };
           }
           if (playerSelection!.actionType == 2) {
             responseSpellBuffer = playerCharacter.getSpell(playerSelection!.slot1);
@@ -690,7 +680,7 @@ function* battleHandler(
                 />
               );
             } else {
-              playerSelection = {actionType: 0};
+              playerSelection = { actionType: 0 };
             }
             switch (playerSelection!.actionType) {
               case 1:
@@ -779,7 +769,7 @@ function* battleHandler(
               />
             );
           } else {
-            playerSelection = {actionType: 0};
+            playerSelection = { actionType: 0 };
           }
           responseAndAttackEnemyTurn: {
             if (playerSelection!.actionType == 2) {
@@ -893,7 +883,7 @@ function* battleHandler(
                 />
               );
             } else {
-              playerSelection = {actionType: 0};
+              playerSelection = { actionType: 0 };
             }
             switch (playerSelection!.actionType) {
               case 1:
@@ -980,7 +970,7 @@ function* battleHandler(
               />
             );
           } else {
-            playerSelection = {actionType: 0};
+            playerSelection = { actionType: 0 };
           }
           if (playerSelection!.actionType == 2) {
             responseSpellBuffer = playerCharacter.getSpell(playerSelection!.slot1);
@@ -1042,7 +1032,7 @@ function* battleHandler(
                 />
               );
             } else {
-              playerSelection = {actionType: 0};
+              playerSelection = { actionType: 0 };
             }
             switch (playerSelection!.actionType) {
               case 1:

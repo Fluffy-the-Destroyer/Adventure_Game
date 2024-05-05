@@ -1,6 +1,6 @@
-import {useState} from "react";
-import {errorMessages, floatFromString, itemKeyGen, numFromString} from "./data";
-import {randomInt} from "./rng";
+import { useState } from "react";
+import { errorMessages, floatFromString, itemKeyGen, numFromString } from "./data";
+import { randomInt } from "./rng";
 import weaponData from "../data/weapons.json";
 import {
   IonBadge,
@@ -20,7 +20,8 @@ import {
   IonToggle,
   IonToolbar,
 } from "@ionic/react";
-import {close} from "ionicons/icons";
+import { close } from "ionicons/icons";
+import { fn } from "./interfaces";
 export class weapon {
   private key: number | undefined;
   private real: boolean = false;
@@ -719,13 +720,9 @@ export class weapon {
     );
   }
 }
+type DisplayWeaponStatsProps = { weaponry: weapon };
 /**Displays weapon stats */
-export function DisplayWeaponStats({
-  weaponry,
-}: {
-  /**The weapon */
-  weaponry: weapon;
-}): React.ReactNode {
+export function DisplayWeaponStats({ weaponry }: DisplayWeaponStatsProps): React.ReactNode {
   let healingMin: number = 0;
   let healingMax: number = 0;
   let healingSelfMin: number = 0;
@@ -923,6 +920,13 @@ export function DisplayWeaponStats({
     </IonList>
   );
 }
+type DisplayWeaponNameProps = {
+  weaponry: weapon;
+  inBattle?: boolean;
+  selected?: boolean;
+  canUse?: boolean;
+  onToggle?: fn;
+};
 /**Displays weapon panel in inventory or battle
  * @hook
  */
@@ -932,18 +936,7 @@ export function DisplayWeaponName({
   selected,
   canUse,
   onToggle,
-}: {
-  /**The weapon */
-  weaponry: weapon;
-  /**True if making a selection in battle */
-  inBattle?: boolean;
-  /**Is it currently selected */
-  selected?: boolean;
-  /**Is the player allowed to select it */
-  canUse?: boolean;
-  /**A function to call on the weapon being toggled */
-  onToggle?: () => void;
-}): React.ReactNode {
+}: DisplayWeaponNameProps): React.ReactNode {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   if (!weaponry.getReal()) {
     return (

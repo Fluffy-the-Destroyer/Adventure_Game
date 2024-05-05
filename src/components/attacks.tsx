@@ -1,7 +1,7 @@
-import {enemy} from "../functionality/enemies";
-import {player} from "../functionality/player";
-import {weapon} from "../functionality/weapons";
-import {spell} from "../functionality/spells";
+import { enemy } from "../functionality/enemies";
+import { player } from "../functionality/player";
+import { weapon } from "../functionality/weapons";
+import { spell } from "../functionality/spells";
 
 /**Weapon declare
  * @param attacker - The attacker
@@ -19,6 +19,9 @@ export function weaponDeclare(attacker: player | enemy, weapon1: weapon, weapon2
   }
 }
 
+type WeaponAttackProps =
+  | { weapon1: weapon; weapon2?: weapon; attacker: player; target: enemy; counter?: boolean; battleLog: string[] }
+  | { weapon1: weapon; weapon2?: weapon; attacker: enemy; target: player; counter?: boolean; battleLog: string[] };
 /**Weapon attack */
 export function WeaponAttack({
   weapon1,
@@ -27,71 +30,14 @@ export function WeaponAttack({
   target,
   counter,
   battleLog,
-}: {
-  /**First weapon */
-  weapon1: weapon;
-  /**Second weapon (if present) */
-  weapon2?: weapon;
-  /**Attacker */
-  attacker: player;
-  /**Target */
-  target: enemy;
-  /**Is it a counter attack */
-  counter?: boolean;
-  /**The battle log */
-  battleLog: string[];
-}): React.ReactNode;
-/**Weapon attack */
-export function WeaponAttack({
-  weapon1,
-  weapon2,
-  attacker,
-  target,
-  counter,
-  battleLog,
-}: {
-  /**First weapon */
-  weapon1: weapon;
-  /**Second weapon (if present) */
-  weapon2?: weapon;
-  /**Attacker */
-  attacker: enemy;
-  /**Target */
-  target: player;
-  /**Is it a counter attack */
-  counter?: boolean;
-  /**The battle log */
-  battleLog: string[];
-}): React.ReactNode;
-/**Weapon attack */
-export function WeaponAttack({
-  weapon1,
-  weapon2,
-  attacker,
-  target,
-  counter,
-  battleLog,
-}: {
-  /**First weapon */
-  weapon1: weapon;
-  /**Second weapon (if present) */
-  weapon2?: weapon;
-  /**Attacker */
-  attacker: player | enemy;
-  /**Target */
-  target: player | enemy;
-  /**Is it a counter attack */
-  counter?: boolean;
-  /**The battle log */
-  battleLog: string[];
-}): React.ReactNode {
+}: WeaponAttackProps): React.ReactNode {
   //If dual wielding, ensure weapon1 hits at least as many times as weapon2
   if (counter) {
     //@ts-expect-error
     if (weapon2?.getCounterHits() > weapon1.getCounterHits()) {
       return (
         //@ts-expect-error
-        WeaponAttack({weapon1, weapon2, attacker, target, battleLog, counter})
+        WeaponAttack({ weapon1, weapon2, attacker, target, battleLog, counter })
       );
     }
   } else {
@@ -99,7 +45,7 @@ export function WeaponAttack({
     if (weapon2?.getHitCount() > weapon1.getHitCount()) {
       return (
         //@ts-expect-error
-        WeaponAttack({weapon1, weapon2, attacker, target, battleLog})
+        WeaponAttack({ weapon1, weapon2, attacker, target, battleLog })
       );
     }
   }
@@ -357,54 +303,11 @@ export function WeaponAttack({
   return attackerEffects.concat(targetEffects);
 }
 
+type WeaponHitProps =
+  | { weaponry: weapon; attacker: player; target: enemy; battleLog: string[] }
+  | { weaponry: weapon; attacker: enemy; target: player; battleLog: string[] };
 /**Weapon hit */
-export function WeaponHit({
-  weaponry,
-  attacker,
-  target,
-  battleLog,
-}: {
-  /**The weapon */
-  weaponry: weapon;
-  /**The attacker */
-  attacker: player;
-  /**The target */
-  target: enemy;
-  /**The battle log */
-  battleLog: string[];
-}): React.ReactNode;
-/**Weapon hit */
-export function WeaponHit({
-  weaponry,
-  attacker,
-  target,
-  battleLog,
-}: {
-  /**The weapon */
-  weaponry: weapon;
-  /**The attacker */
-  attacker: enemy;
-  /**The target */
-  target: player;
-  /**The battle log */
-  battleLog: string[];
-}): React.ReactNode;
-/**Weapon hit */
-export function WeaponHit({
-  weaponry,
-  attacker,
-  target,
-  battleLog,
-}: {
-  /**The weapon */
-  weaponry: weapon;
-  /**The attacker */
-  attacker: player | enemy;
-  /**The target */
-  target: player | enemy;
-  /**The battle log */
-  battleLog: string[];
-}): React.ReactNode {
+export function WeaponHit({ weaponry, attacker, target, battleLog }: WeaponHitProps): React.ReactNode {
   if (!weaponry.getNoEvade() && Math.random() < target.getEvadeChance()) {
     battleLog.push("Evade!");
     return (
@@ -438,7 +341,7 @@ export function WeaponHit({
   }
   if (weaponry.getEffectType()[1] > 1) {
     let healthSteal: number = Math.max(0, target.getHealth());
-    let {p, m, a}: {p: number; m: number; a: number} = attacker.applyDamageModifiers(
+    let { p, m, a }: { p: number; m: number; a: number } = attacker.applyDamageModifiers(
       weaponry.getFlatDamage(),
       weaponry.getFlatMagicDamage(),
       weaponry.getFlatArmourPiercingDamage()
@@ -502,63 +405,11 @@ export function spellDeclare(magic: spell, caster: player | enemy): void {
   caster.modifyProjectiles(magic.getProjectileChange());
 }
 
+type SpellCastProps =
+  | { magic: spell; caster: player; target: enemy; timing?: 0 | 1 | 2 | 3 | 4; battleLog: string[] }
+  | { magic: spell; caster?: enemy; target: player; timing?: 0 | 1 | 2 | 3 | 4; battleLog: string[] };
 /**Spell cast */
-export function SpellCast({
-  magic,
-  caster,
-  target,
-  timing,
-  battleLog,
-}: {
-  /**The spell */
-  magic: spell;
-  /**The caster */
-  caster: player;
-  /**The target */
-  target: enemy;
-  /**Spell timing, 0 is sorcery speed, 3 is counter attack, anything else is a response */
-  timing?: 0 | 1 | 2 | 3 | 4;
-  /**The battle log */
-  battleLog: string[];
-}): React.ReactNode;
-/**Spell cast */
-export function SpellCast({
-  magic,
-  caster,
-  target,
-  timing,
-  battleLog,
-}: {
-  /**The spell */
-  magic: spell;
-  /**The caster */
-  caster?: enemy;
-  /**The target */
-  target: player;
-  /**Spell timing, 0 is sorcery speed, 3 is counter attack, anything else is a response */
-  timing?: 0 | 1 | 2 | 3 | 4;
-  /**The battle log */
-  battleLog: string[];
-}): React.ReactNode;
-/**Spell cast */
-export function SpellCast({
-  magic,
-  caster,
-  target,
-  timing,
-  battleLog,
-}: {
-  /**The spell */
-  magic: spell;
-  /**The caster */
-  caster?: player | enemy;
-  /**The target */
-  target: player | enemy;
-  /**Spell timing, 0 is sorcery speed, 3 is counter attack, anything else is a response */
-  timing?: 0 | 1 | 2 | 3 | 4;
-  /**The battle log */
-  battleLog: string[];
-}): React.ReactNode {
+export function SpellCast({ magic, caster, target, timing, battleLog }: SpellCastProps): React.ReactNode {
   let attackerEffects: React.ReactNode[] = [];
   let outputText: string;
   if (caster != undefined) {
@@ -901,54 +752,10 @@ export function SpellCast({
   return attackerEffects.concat(targetEffects);
 }
 
-/**Spell hit */
-function SpellHit({
-  magic,
-  caster,
-  target,
-  battleLog,
-}: {
-  /**The spell */
-  magic: spell;
-  /**The caster */
-  caster: player;
-  /**The target */
-  target: enemy;
-  /**The battle log */
-  battleLog: string[];
-}): React.ReactNode;
-/**Spell hit */
-function SpellHit({
-  magic,
-  caster,
-  target,
-  battleLog,
-}: {
-  /**The spell */
-  magic: spell;
-  /**The caster */
-  caster?: enemy;
-  /**The target */
-  target: player;
-  /**The battle log */
-  battleLog: string[];
-}): React.ReactNode;
-/**Spell hit */
-function SpellHit({
-  magic,
-  caster,
-  target,
-  battleLog,
-}: {
-  /**The spell */
-  magic: spell;
-  /**The caster */
-  caster?: player | enemy;
-  /**The target */
-  target: player | enemy;
-  /**The battle log */
-  battleLog: string[];
-}): React.ReactNode {
+type SpellHitProps =
+  | { magic: spell; caster: player; target: enemy; battleLog: string[] }
+  | { magic: spell; caster?: enemy; target: player; battleLog: string[] };
+function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.ReactNode {
   let outputText: string;
   let hitEffects: React.ReactNode[] = [];
   if (!magic.getNoEvade() && Math.random() < target.getEvadeChance()) {
@@ -987,7 +794,7 @@ function SpellHit({
     let m: number = magic.getFlatMagicDamage();
     let a: number = magic.getFlatArmourPiercingDamage();
     if (caster != undefined) {
-      ({p, m, a} = caster.applyDamageModifiers(p, m, m));
+      ({ p, m, a } = caster.applyDamageModifiers(p, m, m));
     }
     let healthLoss: number = target.flatDamage(p, m, a, magic.getTargetOverHeal());
     if (healthLoss > 0) {

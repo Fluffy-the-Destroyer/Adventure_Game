@@ -1,11 +1,12 @@
-import {Fragment, useState} from "react";
-import {DisplayWeaponName, weapon} from "./weapons";
-import {DisplaySpellName, spell} from "./spells";
-import {DisplayArmourName, armourFeet, armourHead, armourLegs, armourTorso} from "./armour";
-import {randomInt} from "./rng";
-import {BATTLE_VALUES} from "../pages/battlePage";
+import { Fragment, useState } from "react";
+import { DisplayWeaponName, weapon } from "./weapons";
+import { DisplaySpellName, spell } from "./spells";
+import { DisplayArmourName, armourFeet, armourHead, armourLegs, armourTorso } from "./armour";
+import { randomInt } from "./rng";
+import { BATTLE_VALUES } from "../pages/battlePage";
 import classData from "../data/classes.json";
-import {actionChoice, floatFromString, numFromString} from "./data";
+import { floatFromString, numFromString } from "./data";
+import { actionChoice, fn } from "./interfaces";
 import {
   IonButton,
   IonCol,
@@ -22,7 +23,7 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import {close} from "ionicons/icons";
+import { close } from "ionicons/icons";
 
 const enum PLAYER_VALUES {
   PLAYER_OVERHEAL_DECAY = 5,
@@ -1235,7 +1236,7 @@ export class player {
    * @param a - ap damage
    * @returns an object containing the modified damage
    */
-  applyDamageModifiers(p: number, m: number, a: number): {p: number; m: number; a: number} {
+  applyDamageModifiers(p: number, m: number, a: number): { p: number; m: number; a: number } {
     if (p > 0) {
       p += this.flatDamageModifier;
       if (p < 0) {
@@ -1260,7 +1261,7 @@ export class player {
         a *= 1 + this.propArmourPiercingDamageModifier;
       }
     }
-    return {p, m, a};
+    return { p, m, a };
   }
   getStatusEffect(): boolean {
     return Boolean(this.poison || this.bleed || this.tempRegen);
@@ -1408,85 +1409,39 @@ export class player {
     }
   }
 }
+type EquipWeaponProps = { playerCharacter: player; weaponry: weapon };
 /**Equips a weapon */
-export function EquipWeapon({
-  playerCharacter,
-  weaponry,
-}: {
-  /**The player */
-  playerCharacter: player;
-  /**The weapon to equip */
-  weaponry: weapon;
-}): React.ReactNode {
+export function EquipWeapon({ playerCharacter, weaponry }: EquipWeaponProps): React.ReactNode {
   return <Fragment></Fragment>;
 }
+type EquipSpellProps = { playerCharacter: player; magic: spell };
 /**Equips a spell */
-export function EquipSpell({
-  playerCharacter,
-  magic,
-}: {
-  /**The player */
-  playerCharacter: player;
-  /**The spell to equip */
-  magic: spell;
-}): React.ReactNode {
+export function EquipSpell({ playerCharacter, magic }: EquipSpellProps): React.ReactNode {
   return <Fragment></Fragment>;
 }
+type EquipHelmetProps = { playerCharacter: player; helmet: armourHead };
 /**Equips a helmet */
-export function EquipHelmet({
-  playerCharacter,
-  helmet,
-}: {
-  /**The player */
-  playerCharacter: player;
-  /**The helmet to equip */
-  helmet: armourHead;
-}): React.ReactNode {
+export function EquipHelmet({ playerCharacter, helmet }: EquipHelmetProps): React.ReactNode {
   return <Fragment></Fragment>;
 }
+type EquipChestPlateProps = { playerCharacter: player; chestPlate: armourTorso };
 /**Equips a chestplate */
-export function EquipChestPlate({
-  playerCharacter,
-  chestPlate,
-}: {
-  /**The player */
-  playerCharacter: player;
-  /**The chestplate to equip */
-  chestPlate: armourTorso;
-}): React.ReactNode {
+export function EquipChestPlate({ playerCharacter, chestPlate }: EquipChestPlateProps): React.ReactNode {
   return <Fragment></Fragment>;
 }
+type EquipGreavesProps = { playerCharacter: player; greaves: armourLegs };
 /**Equips greaves */
-export function EquipGreaves({
-  playerCharacter,
-  greaves,
-}: {
-  /**The player */
-  playerCharacter: player;
-  /**The greaves to equip */
-  greaves: armourLegs;
-}): React.ReactNode {
+export function EquipGreaves({ playerCharacter, greaves }: EquipGreavesProps): React.ReactNode {
   return <Fragment></Fragment>;
 }
+type EquipBootsProps = { playerCharacter: player; boots: armourFeet };
 /**Equips boots */
-export function EquipBoots({
-  playerCharacter,
-  boots,
-}: {
-  /**The player */
-  playerCharacter: player;
-  /**The boots to equip */
-  boots: armourFeet;
-}): React.ReactNode {
+export function EquipBoots({ playerCharacter, boots }: EquipBootsProps): React.ReactNode {
   return <Fragment></Fragment>;
 }
+type ShowPlayerEquipmentProps = { playerCharacter: player };
 /**Displays the player's equipment */
-export function ShowPlayerEquipment({
-  playerCharacter,
-}: {
-  /**The player */
-  playerCharacter: player;
-}): React.ReactNode {
+export function ShowPlayerEquipment({ playerCharacter }: ShowPlayerEquipmentProps): React.ReactNode {
   let playerWeapons: weapon[] = [];
   let playerSpells: spell[] = [];
   let weaponCount: number = playerCharacter.getWeaponSlots();
@@ -1541,13 +1496,9 @@ export function ShowPlayerEquipment({
     </Fragment>
   );
 }
+type DisplayPlayerStatsProps = { playerCharacter: player };
 /**Displays the player's stats */
-export function DisplayPlayerStats({
-  playerCharacter,
-}: {
-  /**The player */
-  playerCharacter: player;
-}): React.ReactNode {
+export function DisplayPlayerStats({ playerCharacter }: DisplayPlayerStatsProps): React.ReactNode {
   return (
     <IonGrid className="ion-text-center ion-no-padding">
       <IonRow className="player-stats-row">
@@ -1674,18 +1625,11 @@ export function DisplayPlayerStats({
     </IonGrid>
   );
 }
+type ShowPlayerInventoryProps = { playerCharacter: player; closeInventory: fn };
 /**Displays the player's inventory
  * @hook
  */
-export function ShowPlayerInventory({
-  playerCharacter,
-  closeInventory,
-}: {
-  /**The player */
-  playerCharacter: player;
-  /**A function which closes the inventory */
-  closeInventory: () => void;
-}): React.ReactNode {
+export function ShowPlayerInventory({ playerCharacter, closeInventory }: ShowPlayerInventoryProps): React.ReactNode {
   /**True is inventory, false is stats */
   const [segment, setSegment] = useState<boolean>(true);
   return (
@@ -1751,6 +1695,14 @@ export function ShowPlayerInventory({
     </Fragment>
   );
 }
+type ChoosePlayerActionProps = {
+  playerCharacter: player;
+  enemyName: string;
+  timing: 0 | 1 | 2 | 3 | 4;
+  submitChoice: fn<[actionChoice]>;
+  itemName1?: string;
+  itemName2?: string;
+};
 /**Allows the player to choose an action
  * @hook
  */
@@ -1761,22 +1713,9 @@ export function ChoosePlayerAction({
   submitChoice,
   itemName1,
   itemName2,
-}: {
-  /**The player */
-  playerCharacter: player;
-  /**The name of the enemy */
-  enemyName: string;
-  /**Action timing */
-  timing: 0 | 1 | 2 | 3 | 4;
-  /**A function which takes a choice and proceeds to next battle phase */
-  submitChoice: (choice: actionChoice) => void;
-  /**Name of first item enemy is using */
-  itemName1?: string;
-  /**Name of second item enemy is using */
-  itemName2?: string;
-}): React.ReactNode {
+}: ChoosePlayerActionProps): React.ReactNode {
   /**Tracks currently selected weapons/spells */
-  const [currentChoice, setCurrentChoice] = useState<actionChoice>({actionType: 0});
+  const [currentChoice, setCurrentChoice] = useState<actionChoice>({ actionType: 0 });
   let weaponArray: boolean[] = Array(playerCharacter.getWeaponSlots()).fill(false);
   let spellArray: boolean[] = Array(playerCharacter.getSpellSlots()).fill(false);
   switch (currentChoice.actionType) {
@@ -1861,26 +1800,26 @@ export function ChoosePlayerAction({
     if (action) {
       if (currentChoice.actionType == 2 && currentChoice.slot1 == slot) {
         //Deselecting
-        setCurrentChoice({actionType: 0});
+        setCurrentChoice({ actionType: 0 });
         return;
       }
-      setCurrentChoice({actionType: 2, slot1: slot});
+      setCurrentChoice({ actionType: 2, slot1: slot });
       return;
     }
     if (currentChoice.actionType == 1 && currentChoice.slot1 == slot) {
       //Deselecting
-      setCurrentChoice({actionType: 0});
+      setCurrentChoice({ actionType: 0 });
       return;
     }
     if (currentChoice.actionType == 3) {
       if (currentChoice.slot1 == slot) {
         //Deselecting
-        setCurrentChoice({actionType: 1, slot1: currentChoice.slot2});
+        setCurrentChoice({ actionType: 1, slot1: currentChoice.slot2 });
         return;
       }
       if (currentChoice.slot2 == slot) {
         //Deselecting
-        setCurrentChoice({actionType: 1, slot1: currentChoice.slot1});
+        setCurrentChoice({ actionType: 1, slot1: currentChoice.slot1 });
         return;
       }
     }
@@ -1889,13 +1828,13 @@ export function ChoosePlayerAction({
       if (currentChoice.actionType == 1) {
         if (currentChoice.slot1 != undefined) {
           if (playerCharacter.checkDualWeapons(timing, currentChoice.slot1, slot)) {
-            setCurrentChoice({actionType: 3, slot1: currentChoice.slot1, slot2: slot});
+            setCurrentChoice({ actionType: 3, slot1: currentChoice.slot1, slot2: slot });
             return;
           }
         }
       }
     }
-    setCurrentChoice({actionType: 1, slot1: slot});
+    setCurrentChoice({ actionType: 1, slot1: slot });
     return;
   }
 }

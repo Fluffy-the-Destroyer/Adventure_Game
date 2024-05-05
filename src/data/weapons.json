@@ -7,7 +7,7 @@
     "flatDamageMax": "rng(25,35)",
     "noCounterAttack": true
   },
-  "SWORD_ENEMY": {"name": "Sword", "flatDamageMin": 5, "flatDamageMax": 20, "hitCount": 2, "counterHits": 1},
+  "SWORD_ENEMY": { "name": "Sword", "flatDamageMin": 5, "flatDamageMax": 20, "hitCount": 2, "counterHits": 1 },
   "DUAL_DAGGER": {
     "name": "Dagger",
     "description": "A small dagger, it is quick to attack with and can be used with one hand.",

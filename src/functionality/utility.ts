@@ -1,6 +1,6 @@
-type asyncFn<T extends any[] = [], U = void> = (...args: T) => Promise<U>;
+import { asyncFn } from "./interfaces";
 
-export function requestHandlerCreator<T>(fn: asyncFn<[], T>): () => Promise<T> {
+export function requestHandlerCreator<T>(fn: asyncFn<[], T>): asyncFn<[], T> {
   let dataBuffer: Promise<T> | null;
   return function requestHandler(): Promise<T> {
     return (dataBuffer ??= new Promise<T>((fulfill, reject) =>
@@ -27,9 +27,9 @@ async function* queue<T extends any[], U>(fn: asyncFn<T, U>): AsyncGenerator<Pro
   let res: PromiseSettledResult<U>;
   while (true) {
     try {
-      res = {status: "fulfilled", value: await fn(...(yield res!))};
+      res = { status: "fulfilled", value: await fn(...(yield res!)) };
     } catch (err) {
-      res = {status: "rejected", reason: err};
+      res = { status: "rejected", reason: err };
     }
   }
 }
