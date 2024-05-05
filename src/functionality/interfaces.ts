@@ -28,3 +28,21 @@ export type actionChoice = noAction | weaponAction | dualWeaponAction | spellAct
 
 export type fn<T extends any[] = [], U = void> = (...args: T) => U;
 export type asyncFn<T extends any[] = [], U = void> = (...args: T) => Promise<U>;
+
+export type command =
+  | { command: "victory" }
+  | { command: "defeat" }
+  | { command: "text"; text: string }
+  | { command: "event"; event: string }
+  | { command: "var"; var: string; operation: "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "++" | "--" | "display" }
+  | {
+      command: "if";
+      cond: string;
+      commands: command[];
+      elseif: { cond: string; commands: command[] }[];
+      else: command[];
+    }
+  | { command: "while"; cond: string; commands: command[] }
+  | { command: "break" }
+  | { command: "continue" }
+  | { command: "save" };

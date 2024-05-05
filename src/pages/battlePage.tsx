@@ -68,7 +68,7 @@ export function BattlePage({ playerCharacter, opponent, endBattle }: BattlePageP
                 <IonToolbar>
                   <IonButtons slot="start">
                     <IonButton fill="clear" color="dark" onClick={() => setIsBattleLogOpen(false)}>
-                      <IonIcon slot="icon-only" icon={close}></IonIcon>
+                      <IonIcon slot="icon-only" icon={close} />
                     </IonButton>
                   </IonButtons>
                 </IonToolbar>
@@ -99,7 +99,7 @@ function* battleHandler(
   let playerTurn: boolean = playerCharacter.rollInitiative() > opponent.rollInitiative();
   let firstTurn: boolean = true;
   const advanceCombat: fn =
-    (yield null) ??
+    (yield) ??
     function () {
       console.log("No function to advance combat provided, ending battle");
       endBattle();
@@ -116,7 +116,7 @@ function* battleHandler(
   );
   //Check if enemy dies immediately
   if (deathCheck()) {
-    return endOfCombat();
+    return <EndOfCombat />;
   }
   //Reset bonus actions
   playerCharacter.resetBonusActions();
@@ -133,7 +133,7 @@ function* battleHandler(
     if (playerTurn) {
       playerCharacter.turnStart();
       if (deathCheck()) {
-        return endOfCombat();
+        return <EndOfCombat />;
       }
       yield (
         <ChoosePlayerAction
@@ -146,14 +146,14 @@ function* battleHandler(
       playerTurn: switch (playerSelection!.actionType) {
         case 0:
           battleLog.push("You do nothing");
-          yield ContinuePage();
+          yield <ContinuePage />;
           break playerTurn;
         case 1:
           weaponBuffer1 = playerCharacter.getWeapon(playerSelection!.slot1);
           battleLog.push(`You attack with ${weaponBuffer1}`);
           weaponDeclare(playerCharacter, weaponBuffer1);
           health = playerCharacter.getHealth();
-          yield ContinuePage();
+          yield <ContinuePage />;
           enemySelection = opponent.chooseAction(1, firstTurn, weaponBuffer1.getName());
           if (enemySelection.actionType == 2) {
             responseSpellBuffer = opponent.getSpell(enemySelection.slot1);
@@ -173,20 +173,20 @@ function* battleHandler(
               </IonContent>
             );
             if ((responseSpellBuffer.getPropDamage() > 0 || playerCharacter.getHealth() < health) && deathCheck()) {
-              return endOfCombat();
+              return <EndOfCombat />;
             }
             if (responseSpellBuffer.getCounterSpell() >= 2) {
               if (weaponBuffer1.getCanCounter()) {
                 battleLog.push(`The effects of ${weaponBuffer1} are countered!`);
                 if (deathCheck()) {
-                  return endOfCombat(battleLog.at(-1));
+                  return <EndOfCombat message={battleLog.at(-1)} />;
                 }
-                yield ContinuePage();
+                yield <ContinuePage />;
                 break playerTurn;
               }
               opponent.addNoCounter(false, weaponBuffer1.getName());
               battleLog.push(`${weaponBuffer1} cannot be countered!`);
-              yield ContinuePage();
+              yield <ContinuePage />;
             }
           }
           yield (
@@ -201,7 +201,7 @@ function* battleHandler(
             </IonContent>
           );
           if (deathCheck()) {
-            return endOfCombat();
+            return <EndOfCombat />;
           }
           if (weaponBuffer1.getNoCounterAttack()) {
             break playerTurn;
@@ -212,7 +212,7 @@ function* battleHandler(
               case 1:
                 weaponBuffer1 = opponent.getWeapon(enemySelection.slot1);
                 battleLog.push(`${opponent} counter attacks with ${weaponBuffer1}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 weaponDeclare(opponent, weaponBuffer1);
                 yield (
                   <IonContent>
@@ -227,14 +227,14 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
                 break playerTurn;
               case 3:
                 weaponBuffer1 = opponent.getWeapon(enemySelection.slot1);
                 weaponBuffer2 = opponent.getWeapon(enemySelection.slot2);
                 battleLog.push(`${opponent} counter attacks with ${weaponBuffer1} and ${weaponBuffer2}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 weaponDeclare(opponent, weaponBuffer1, weaponBuffer2);
                 yield (
                   <IonContent>
@@ -250,13 +250,13 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
                 break playerTurn;
               case 2:
                 spellBuffer = opponent.getSpell(enemySelection.slot1);
                 battleLog.push(`${opponent} counter attacks by casting ${spellBuffer}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 spellDeclare(spellBuffer, opponent);
                 yield (
                   <IonContent>
@@ -271,7 +271,7 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
             }
           }
@@ -282,7 +282,7 @@ function* battleHandler(
           battleLog.push(`You attack with ${weaponBuffer1} and ${weaponBuffer2}`);
           weaponDeclare(playerCharacter, weaponBuffer1, weaponBuffer2);
           health = playerCharacter.getHealth();
-          yield ContinuePage();
+          yield <ContinuePage />;
           enemySelection = opponent.chooseAction(4, firstTurn, weaponBuffer1.getName(), weaponBuffer2.getName());
           responseAndAttackPlayerTurn: {
             if (enemySelection.actionType == 2) {
@@ -303,23 +303,23 @@ function* battleHandler(
                 </IonContent>
               );
               if ((responseSpellBuffer.getPropDamage() > 0 || playerCharacter.getHealth() < health) && deathCheck()) {
-                return endOfCombat();
+                return <EndOfCombat />;
               }
               if (responseSpellBuffer.getCounterSpell() >= 2) {
                 if (weaponBuffer1.getCanCounter()) {
                   if (weaponBuffer2.getCanCounter()) {
                     battleLog.push(`The effects of ${weaponBuffer1} and ${weaponBuffer2} are countered!`);
                     if (deathCheck()) {
-                      return endOfCombat(battleLog.at(-1));
+                      return <EndOfCombat message={battleLog.at(-1)} />;
                     }
-                    yield ContinuePage();
+                    yield <ContinuePage />;
                     break playerTurn;
                   }
                   opponent.addNoCounter(false, weaponBuffer2.getName());
                   battleLog.push(
                     `The effects of ${weaponBuffer1} are countered, but ${weaponBuffer2} cannot be countered!`
                   );
-                  yield ContinuePage();
+                  yield <ContinuePage />;
                   yield (
                     <IonContent>
                       <WeaponAttack
@@ -332,7 +332,7 @@ function* battleHandler(
                     </IonContent>
                   );
                   if (deathCheck()) {
-                    return endOfCombat();
+                    return <EndOfCombat />;
                   }
                   if (weaponBuffer2.getNoCounterAttack()) {
                     break playerTurn;
@@ -344,7 +344,7 @@ function* battleHandler(
                   battleLog.push(
                     `The effects of ${weaponBuffer2} are countered, but ${weaponBuffer1} cannot be countered!`
                   );
-                  yield ContinuePage();
+                  yield <ContinuePage />;
                   yield (
                     <IonContent>
                       <WeaponAttack
@@ -357,7 +357,7 @@ function* battleHandler(
                     </IonContent>
                   );
                   if (deathCheck()) {
-                    return endOfCombat();
+                    return <EndOfCombat />;
                   }
                   if (weaponBuffer1.getNoCounterAttack()) {
                     break playerTurn;
@@ -366,7 +366,7 @@ function* battleHandler(
                 }
                 opponent.addNoCounter(false, weaponBuffer2.getName());
                 battleLog.push(`${weaponBuffer1} and ${weaponBuffer2} cannot be countered!`);
-                yield ContinuePage();
+                yield <ContinuePage />;
               }
             }
             yield (
@@ -382,7 +382,7 @@ function* battleHandler(
               </IonContent>
             );
             if (deathCheck()) {
-              return endOfCombat();
+              return <EndOfCombat />;
             }
             if (weaponBuffer1.getNoCounterAttack() && weaponBuffer2.getNoCounterAttack()) {
               break playerTurn;
@@ -394,7 +394,7 @@ function* battleHandler(
               case 1:
                 weaponBuffer1 = opponent.getWeapon(enemySelection.slot1);
                 battleLog.push(`${opponent} counter attacks with ${weaponBuffer1}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 weaponDeclare(opponent, weaponBuffer1);
                 yield (
                   <IonContent>
@@ -409,14 +409,14 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
                 break playerTurn;
               case 3:
                 weaponBuffer1 = opponent.getWeapon(enemySelection.slot1);
                 weaponBuffer2 = opponent.getWeapon(enemySelection.slot2);
                 battleLog.push(`${opponent} counter attacks with ${weaponBuffer1} and ${weaponBuffer2}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 weaponDeclare(opponent, weaponBuffer1, weaponBuffer2);
                 yield (
                   <IonContent>
@@ -432,13 +432,13 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
                 break playerTurn;
               case 2:
                 spellBuffer = opponent.getSpell(enemySelection.slot1);
                 battleLog.push(`${opponent} counter attacks by casting ${spellBuffer}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 spellDeclare(spellBuffer, opponent);
                 yield (
                   <IonContent>
@@ -453,7 +453,7 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
             }
           }
@@ -463,7 +463,7 @@ function* battleHandler(
           battleLog.push(`You cast ${spellBuffer}`);
           spellDeclare(spellBuffer, playerCharacter);
           health = playerCharacter.getHealth();
-          yield ContinuePage();
+          yield <ContinuePage />;
           enemySelection = opponent.chooseAction(2, firstTurn, spellBuffer.getName());
           if (enemySelection.actionType == 2) {
             responseSpellBuffer = opponent.getSpell(enemySelection.slot1);
@@ -483,7 +483,7 @@ function* battleHandler(
               </IonContent>
             );
             if ((responseSpellBuffer.getPropDamage() > 0 || playerCharacter.getHealth() < health) && deathCheck()) {
-              return endOfCombat();
+              return <EndOfCombat />;
             }
             if (responseSpellBuffer.getCounterSpell() == 1 || responseSpellBuffer.getCounterSpell() == 3) {
               if (spellBuffer.getNoCounter()) {
@@ -493,9 +493,9 @@ function* battleHandler(
               } else {
                 battleLog.push(`The effects of ${spellBuffer} are countered!`);
                 if (deathCheck()) {
-                  return endOfCombat(battleLog.at(-1));
+                  return <EndOfCombat message={battleLog.at(-1)} />;
                 }
-                yield ContinuePage();
+                yield <ContinuePage />;
                 break playerTurn;
               }
             }
@@ -513,7 +513,7 @@ function* battleHandler(
             </IonContent>
           );
           if (deathCheck()) {
-            return endOfCombat();
+            return <EndOfCombat />;
           }
           if (!spellBuffer.getCanCounterAttack()) {
             break playerTurn;
@@ -524,7 +524,7 @@ function* battleHandler(
               case 1:
                 weaponBuffer1 = opponent.getWeapon(enemySelection.slot1);
                 battleLog.push(`${opponent} counter attacks with ${weaponBuffer1}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 weaponDeclare(opponent, weaponBuffer1);
                 yield (
                   <IonContent>
@@ -539,14 +539,14 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
                 break playerTurn;
               case 3:
                 weaponBuffer1 = opponent.getWeapon(enemySelection.slot1);
                 weaponBuffer2 = opponent.getWeapon(enemySelection.slot2);
                 battleLog.push(`${opponent} counter attacks with ${weaponBuffer1} and ${weaponBuffer2}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 weaponDeclare(opponent, weaponBuffer1, weaponBuffer2);
                 yield (
                   <IonContent>
@@ -562,13 +562,13 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
                 break playerTurn;
               case 2:
                 spellBuffer = opponent.getSpell(enemySelection.slot1);
                 battleLog.push(`${opponent} counter attacks by casting ${spellBuffer}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 spellDeclare(spellBuffer, opponent);
                 yield (
                   <IonContent>
@@ -583,7 +583,7 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
             }
           }
@@ -592,20 +592,20 @@ function* battleHandler(
     } else {
       opponent.turnStart();
       if (deathCheck()) {
-        return endOfCombat();
+        return <EndOfCombat />;
       }
       enemySelection = opponent.chooseAction(0, firstTurn);
       enemyTurn: switch (enemySelection.actionType) {
         case 0:
           battleLog.push(`${opponent} does nothing`);
-          yield ContinuePage();
+          yield <ContinuePage />;
           break enemyTurn;
         case 1:
           weaponBuffer1 = opponent.getWeapon(enemySelection.slot1);
           battleLog.push(`${opponent} attacks with ${weaponBuffer1}`);
           weaponDeclare(opponent, weaponBuffer1);
           health = opponent.getHealth();
-          yield ContinuePage();
+          yield <ContinuePage />;
           if (playerCharacter.checkPlayerActions(1)) {
             yield (
               <ChoosePlayerAction
@@ -637,19 +637,19 @@ function* battleHandler(
               </IonContent>
             );
             if ((responseSpellBuffer.getPropDamage() > 0 || opponent.getHealth() < health) && deathCheck()) {
-              return endOfCombat();
+              return <EndOfCombat />;
             }
             if (responseSpellBuffer.getCounterSpell() >= 2) {
               if (weaponBuffer1.getCanCounter()) {
                 battleLog.push(`The effects of ${weaponBuffer1} are countered!`);
                 if (deathCheck()) {
-                  return endOfCombat(battleLog.at(-1));
+                  return <EndOfCombat message={battleLog.at(-1)} />;
                 }
-                yield ContinuePage();
+                yield <ContinuePage />;
                 break enemyTurn;
               }
               battleLog.push(`${weaponBuffer1} cannot be countered!`);
-              yield ContinuePage();
+              yield <ContinuePage />;
             }
           }
           yield (
@@ -664,7 +664,7 @@ function* battleHandler(
             </IonContent>
           );
           if (deathCheck()) {
-            return endOfCombat();
+            return <EndOfCombat />;
           }
           if (weaponBuffer1.getNoCounterAttack()) {
             break enemyTurn;
@@ -686,7 +686,7 @@ function* battleHandler(
               case 1:
                 weaponBuffer1 = playerCharacter.getWeapon(playerSelection!.slot1);
                 battleLog.push(`You counter attack with ${weaponBuffer1}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 weaponDeclare(playerCharacter, weaponBuffer1);
                 yield (
                   <IonContent>
@@ -701,14 +701,14 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
                 break enemyTurn;
               case 3:
                 weaponBuffer1 = playerCharacter.getWeapon(playerSelection!.slot1);
                 weaponBuffer2 = playerCharacter.getWeapon(playerSelection!.slot2);
                 battleLog.push(`You counter attack with ${weaponBuffer1} and ${weaponBuffer2}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 weaponDeclare(playerCharacter, weaponBuffer1, weaponBuffer2);
                 yield (
                   <IonContent>
@@ -724,13 +724,13 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
                 break enemyTurn;
               case 2:
                 spellBuffer = playerCharacter.getSpell(playerSelection!.slot1);
                 battleLog.push(`You counter attack by casting ${spellBuffer}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 spellDeclare(spellBuffer, playerCharacter);
                 yield (
                   <IonContent>
@@ -745,7 +745,7 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
             }
           }
@@ -756,7 +756,7 @@ function* battleHandler(
           battleLog.push(`${opponent} attacks with ${weaponBuffer1} and ${weaponBuffer2}`);
           weaponDeclare(opponent, weaponBuffer1, weaponBuffer2);
           health = opponent.getHealth();
-          yield ContinuePage();
+          yield <ContinuePage />;
           if (playerCharacter.checkPlayerActions(4)) {
             yield (
               <ChoosePlayerAction
@@ -790,22 +790,22 @@ function* battleHandler(
                 </IonContent>
               );
               if ((responseSpellBuffer.getPropDamage() > 0 || opponent.getHealth() < health) && deathCheck()) {
-                return endOfCombat();
+                return <EndOfCombat />;
               }
               if (responseSpellBuffer.getCounterSpell() >= 2) {
                 if (weaponBuffer1.getCanCounter()) {
                   if (weaponBuffer2.getCanCounter()) {
                     battleLog.push(`The effects of ${weaponBuffer1} and ${weaponBuffer2} are counterd!`);
                     if (deathCheck()) {
-                      return endOfCombat(battleLog.at(-1));
+                      return <EndOfCombat message={battleLog.at(-1)} />;
                     }
-                    yield ContinuePage();
+                    yield <ContinuePage />;
                     break enemyTurn;
                   }
                   battleLog.push(
                     `The effects of ${weaponBuffer1} are countered, but ${weaponBuffer2} cannot be countered!`
                   );
-                  yield ContinuePage();
+                  yield <ContinuePage />;
                   yield (
                     <IonContent>
                       <WeaponAttack
@@ -818,7 +818,7 @@ function* battleHandler(
                     </IonContent>
                   );
                   if (deathCheck()) {
-                    return endOfCombat();
+                    return <EndOfCombat />;
                   }
                   if (weaponBuffer2.getNoCounterAttack()) {
                     break enemyTurn;
@@ -829,7 +829,7 @@ function* battleHandler(
                   battleLog.push(
                     `The effects of ${weaponBuffer2} are countered, but ${weaponBuffer1} cannot be countered!`
                   );
-                  yield ContinuePage();
+                  yield <ContinuePage />;
                   yield (
                     <IonContent>
                       <WeaponAttack
@@ -842,7 +842,7 @@ function* battleHandler(
                     </IonContent>
                   );
                   if (deathCheck()) {
-                    return endOfCombat();
+                    return <EndOfCombat />;
                   }
                   if (weaponBuffer1.getNoCounterAttack()) {
                     break enemyTurn;
@@ -850,7 +850,7 @@ function* battleHandler(
                   break responseAndAttackEnemyTurn;
                 }
                 battleLog.push(`${weaponBuffer1} and ${weaponBuffer2} cannot be countered!`);
-                yield ContinuePage();
+                yield <ContinuePage />;
               }
             }
             yield (
@@ -866,7 +866,7 @@ function* battleHandler(
               </IonContent>
             );
             if (deathCheck()) {
-              return endOfCombat();
+              return <EndOfCombat />;
             }
             if (weaponBuffer1.getNoCounterAttack() && weaponBuffer2.getNoCounterAttack()) {
               break enemyTurn;
@@ -889,7 +889,7 @@ function* battleHandler(
               case 1:
                 weaponBuffer1 = playerCharacter.getWeapon(playerSelection!.slot1);
                 battleLog.push(`You counter attack with ${weaponBuffer1}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 weaponDeclare(playerCharacter, weaponBuffer1);
                 yield (
                   <IonContent>
@@ -904,14 +904,14 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
                 break enemyTurn;
               case 3:
                 weaponBuffer1 = playerCharacter.getWeapon(playerSelection!.slot1);
                 weaponBuffer2 = playerCharacter.getWeapon(playerSelection!.slot2);
                 battleLog.push(`You counter attack with ${weaponBuffer1} and ${weaponBuffer2}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 weaponDeclare(playerCharacter, weaponBuffer1, weaponBuffer2);
                 yield (
                   <IonContent>
@@ -927,13 +927,13 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
                 break enemyTurn;
               case 2:
                 spellBuffer = playerCharacter.getSpell(playerSelection!.slot1);
                 battleLog.push(`You counter attack by casting ${spellBuffer}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 spellDeclare(spellBuffer, playerCharacter);
                 yield (
                   <IonContent>
@@ -948,7 +948,7 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
             }
           }
@@ -958,7 +958,7 @@ function* battleHandler(
           battleLog.push(`${opponent} casts ${spellBuffer}`);
           spellDeclare(spellBuffer, opponent);
           health = opponent.getHealth();
-          yield ContinuePage();
+          yield <ContinuePage />;
           if (playerCharacter.checkPlayerActions(2)) {
             yield (
               <ChoosePlayerAction
@@ -992,13 +992,13 @@ function* battleHandler(
             if (responseSpellBuffer.getCounterSpell() == 1 || responseSpellBuffer.getCounterSpell() == 3) {
               if (spellBuffer.getNoCounter()) {
                 battleLog.push(`${spellBuffer} cannot be countered!`);
-                yield ContinuePage();
+                yield <ContinuePage />;
               } else {
                 battleLog.push(`The effects of ${spellBuffer} are countered!`);
                 if (deathCheck()) {
-                  return endOfCombat(battleLog.at(-1));
+                  return <EndOfCombat message={battleLog.at(-1)} />;
                 }
-                yield ContinuePage();
+                yield <ContinuePage />;
                 break enemyTurn;
               }
             }
@@ -1016,7 +1016,7 @@ function* battleHandler(
             </IonContent>
           );
           if (deathCheck()) {
-            return endOfCombat();
+            return <EndOfCombat />;
           }
           if (!spellBuffer.getCanCounterAttack()) {
             break enemyTurn;
@@ -1038,7 +1038,7 @@ function* battleHandler(
               case 1:
                 weaponBuffer1 = playerCharacter.getWeapon(playerSelection!.slot1);
                 battleLog.push(`You counter attack with ${weaponBuffer1}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 weaponDeclare(playerCharacter, weaponBuffer1);
                 yield (
                   <IonContent>
@@ -1053,14 +1053,14 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
                 break enemyTurn;
               case 3:
                 weaponBuffer1 = playerCharacter.getWeapon(playerSelection!.slot1);
                 weaponBuffer2 = playerCharacter.getWeapon(playerSelection!.slot2);
                 battleLog.push(`You counter attack with ${weaponBuffer1} and ${weaponBuffer2}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 weaponDeclare(playerCharacter, weaponBuffer1, weaponBuffer2);
                 yield (
                   <IonContent>
@@ -1076,13 +1076,13 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
                 break enemyTurn;
               case 2:
                 spellBuffer = playerCharacter.getSpell(playerSelection!.slot1);
                 battleLog.push(`You counter attack by casting ${spellBuffer}`);
-                yield ContinuePage();
+                yield <ContinuePage />;
                 spellDeclare(spellBuffer, playerCharacter);
                 yield (
                   <IonContent>
@@ -1097,7 +1097,7 @@ function* battleHandler(
                   </IonContent>
                 );
                 if (deathCheck()) {
-                  return endOfCombat();
+                  return <EndOfCombat />;
                 }
             }
           }
@@ -1120,7 +1120,7 @@ function* battleHandler(
   /**Handles end of battle, UNFINISHED
    * @param message - A message to be displayed along with the end of combat stuff
    */
-  function endOfCombat(message?: string): React.ReactNode {
+  function EndOfCombat({ message }: { message?: string }): React.ReactNode {
     if (opponent.getHealth() <= 0) {
       if (opponent.getDeathSpell()?.getReal()) {
         battleLog.push(`${opponent} is dead. On death, it casts ${opponent.getDeathSpell()}`);

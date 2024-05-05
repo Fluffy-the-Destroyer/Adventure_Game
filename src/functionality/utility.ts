@@ -33,3 +33,9 @@ async function* queue<T extends any[], U>(fn: asyncFn<T, U>): AsyncGenerator<Pro
     }
   }
 }
+
+if (!Object.hasOwn) {
+  Object.hasOwn = function (o: object, v: PropertyKey): boolean {
+    return Object.prototype.hasOwnProperty.call(o, v);
+  };
+}

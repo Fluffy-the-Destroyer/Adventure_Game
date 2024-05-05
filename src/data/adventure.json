@@ -1,0 +1,16 @@
+[
+  { "command": "victory" },
+  { "command": "defeat" },
+  { "command": "text", "text": "Something" },
+  { "command": "event", "event": "EVENT_BLUEPRINT" },
+  { "command": "var", "var": "variable_name", "operation": "++", "value": 1 },
+  {
+    "command": "if",
+    "cond": "condition",
+    "commands": [],
+    "elseif": [{ "cond": "condition", "commands": [] }],
+    "else": []
+  },
+  { "command": "while", "cond": "condition", "commands": [] },
+  { "command": "save" }
+]
