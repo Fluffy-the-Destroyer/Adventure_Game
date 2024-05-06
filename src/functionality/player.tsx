@@ -710,7 +710,7 @@ export class player {
   }
   getWeapon(i: number): weapon {
     if (i >= this.weapons.length || i < 0) {
-      throw 6;
+      throw RangeError("Trying to access weapon outside weapon slots");
     }
     return this.weapons[i];
   }
@@ -719,7 +719,7 @@ export class player {
   }
   getSpell(i: number): spell {
     if (i >= this.spells.length || i < 0) {
-      throw 6;
+      throw RangeError("Tryinf to access spell outside spell slots");
     }
     return this.spells[i];
   }
@@ -949,23 +949,23 @@ export class player {
     //@ts-expect-error
     let selectedClass = classData[playerClass];
     if (selectedClass == undefined) {
-      throw 2;
+      throw Error(`Unable to find class blueprint ${playerClass}`);
     }
     for (let i = 0; Array.isArray(selectedClass); i++) {
       if (i == 10) {
-        throw 9;
+        throw Error(`Exceeded maximum list depth trying to load class blueprint ${playerClass}`);
       }
       if (selectedClass.length == 0) {
-        throw 5;
+        throw Error(`Encountered empty list trying to load class blueprint ${playerClass}`);
       }
-      playerClass = selectedClass[randomInt(0, selectedClass.length)];
-      if (typeof playerClass != "string") {
-        throw 1;
+      let listPlayerClass = selectedClass[randomInt(0, selectedClass.length)];
+      if (typeof listPlayerClass != "string") {
+        throw Error(`Unable to parse JSON trying to load class blueprint ${playerClass}`);
       }
       //@ts-expect-error
-      selectedClass = classData[playerClass];
+      selectedClass = classData[listPlayerClass];
       if (selectedClass == undefined) {
-        throw 2;
+        throw Error(`Unable to find class blueprint ${listPlayerClass} trying to load class blueprint ${playerClass}`);
       }
     }
     if (typeof selectedClass.className == "string") {
@@ -1050,7 +1050,7 @@ export class player {
       for (let i = 0; i < weaponCount; i++) {
         weaponBlueprint = weapons[i];
         if (typeof weaponBlueprint != "string") {
-          throw 1;
+          throw Error(`Unable to parse JSON trying to load class blueprint ${playerClass}`);
         }
         this.weapons.push(new weapon(weaponBlueprint));
       }
@@ -1062,7 +1062,7 @@ export class player {
       for (let i = 0; i < spellCount; i++) {
         spellBlueprint = spells[i];
         if (typeof spellBlueprint != "string") {
-          throw 1;
+          throw Error(`Unable to parse JSON trying to load class blueprint ${playerClass}`);
         }
         this.spells.push(new spell(spellBlueprint));
       }

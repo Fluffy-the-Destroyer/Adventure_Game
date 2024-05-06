@@ -150,324 +150,308 @@ export class weapon {
     if (blueprint == "EMPTY") {
       return;
     }
-    try {
+    //@ts-expect-error
+    let selectedWeapon = weaponData[blueprint];
+    if (selectedWeapon == undefined) {
+      errorMessages.push(`Unable to find weapon blueprint ${blueprint}`);
+      return;
+    }
+    for (let i = 0; Array.isArray(selectedWeapon); i++) {
+      if (i == 10) {
+        errorMessages.push(`Exceeded maximum list depth loading weapon blueprint ${blueprint}`);
+        return;
+      }
+      if (selectedWeapon.length == 0) {
+        errorMessages.push(`Weapon blueprint list ${blueprint} is empty`);
+        return;
+      }
+      blueprint = selectedWeapon[randomInt(0, selectedWeapon.length)];
+      if (blueprint == "EMPTY") {
+        return;
+      } else if (typeof blueprint != "string") {
+        errorMessages.push(`Unable to parse weapon blueprint ${blueprint}`);
+        return;
+      }
       //@ts-expect-error
-      let selectedWeapon = weaponData[blueprint];
+      selectedWeapon = weaponData[blueprint];
       if (selectedWeapon == undefined) {
-        throw 2;
+        errorMessages.push(`Unable to find weapon blueprint ${blueprint}`);
+        return;
       }
-      for (let i = 0; Array.isArray(selectedWeapon); i++) {
-        if (i == 10) {
-          throw 9;
-        }
-        if (selectedWeapon.length == 0) {
-          throw 5;
-        }
-        blueprint = selectedWeapon[randomInt(0, selectedWeapon.length)];
-        if (blueprint == "EMPTY") {
-          return;
-        } else if (typeof blueprint != "string") {
-          throw 1;
-        }
-        //@ts-expect-error
-        selectedWeapon = weaponData[blueprint];
-        if (selectedWeapon == undefined) {
-          throw 2;
-        }
+    }
+    this.real = true;
+    if (typeof selectedWeapon.name == "string") {
+      this.name = selectedWeapon.name || undefined;
+    }
+    if (typeof selectedWeapon.description == "string") {
+      this.description = selectedWeapon.description || undefined;
+    }
+    switch (typeof selectedWeapon.flatDamage) {
+      case "number":
+        this.flatDamageMin = this.flatDamageMax = Math.trunc(selectedWeapon.flatDamage) || undefined;
+        break;
+      case "string":
+        this.flatDamageMin = this.flatDamageMax = numFromString(selectedWeapon.flatDamage).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatDamageMin) {
+      case "number":
+        this.flatDamageMin = Math.trunc(selectedWeapon.flatDamageMin) || undefined;
+        break;
+      case "string":
+        this.flatDamageMin = numFromString(selectedWeapon.flatDamageMin).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatDamageMax) {
+      case "number":
+        this.flatDamageMax = Math.trunc(selectedWeapon.flatDamageMax) || undefined;
+        break;
+      case "string":
+        this.flatDamageMax = numFromString(selectedWeapon.flatDamageMax).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatMagicDamage) {
+      case "number":
+        this.flatMagicDamageMin = this.flatMagicDamageMax = Math.trunc(selectedWeapon.flatMagicDamage) || undefined;
+        break;
+      case "string":
+        this.flatMagicDamageMin = this.flatMagicDamageMax =
+          numFromString(selectedWeapon.flatMagicDamage).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatMagicDamageMin) {
+      case "number":
+        this.flatMagicDamageMin = Math.trunc(selectedWeapon.flatMagicDamageMin) || undefined;
+        break;
+      case "string":
+        this.flatMagicDamageMin = numFromString(selectedWeapon.flatMagicDamageMin).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatMagicDamageMax) {
+      case "number":
+        this.flatMagicDamageMax = Math.trunc(selectedWeapon.flatMagicDamageMax) || undefined;
+        break;
+      case "string":
+        this.flatMagicDamageMax = numFromString(selectedWeapon.flatMagicDamageMax).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatArmourPiercingDamage) {
+      case "number":
+        this.flatArmourPiercingDamageMin = this.flatArmourPiercingDamageMax =
+          Math.trunc(selectedWeapon.flatArmourPiercingDamage) || undefined;
+        break;
+      case "string":
+        this.flatArmourPiercingDamageMin = this.flatArmourPiercingDamageMax =
+          numFromString(selectedWeapon.flatArmourPiercingDamage).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatArmourPiercingDamageMin) {
+      case "number":
+        this.flatArmourPiercingDamageMin = Math.trunc(selectedWeapon.flatArmourPiercingDamageMin) || undefined;
+        break;
+      case "string":
+        this.flatArmourPiercingDamageMin = numFromString(selectedWeapon.flatArmourPiercingDamageMin).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatArmourPiercingDamageMax) {
+      case "number":
+        this.flatArmourPiercingDamageMax = Math.trunc(selectedWeapon.flatArmourPiercingDamageMax) || undefined;
+        break;
+      case "string":
+        this.flatArmourPiercingDamageMax = numFromString(selectedWeapon.flatArmourPiercingDamageMax).value || undefined;
+    }
+    switch (typeof selectedWeapon.propDamage) {
+      case "number":
+        this.propDamage = selectedWeapon.propDamage || undefined;
+        break;
+      case "string":
+        this.propDamage = floatFromString(selectedWeapon.propDamage).value || undefined;
+    }
+    if (this.propDamage != undefined) {
+      if (this.propDamage < -1) {
+        this.propDamage = -1;
+      } else if (this.propDamage > 1) {
+        this.propDamage = 1;
       }
-      this.real = true;
-      if (typeof selectedWeapon.name == "string") {
-        this.name = selectedWeapon.name || undefined;
+    }
+    switch (typeof selectedWeapon.flatSelfDamage) {
+      case "number":
+        this.flatSelfDamageMin = this.flatSelfDamageMax = Math.trunc(selectedWeapon.flatSelfDamage) || undefined;
+        break;
+      case "string":
+        this.flatSelfDamageMin = this.flatSelfDamageMax =
+          numFromString(selectedWeapon.flatSelfDamage).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatSelfDamageMin) {
+      case "number":
+        this.flatSelfDamageMin = Math.trunc(selectedWeapon.flatSelfDamageMin) || undefined;
+        break;
+      case "string":
+        this.flatSelfDamageMin = numFromString(selectedWeapon.flatSelfDamageMin).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatSelfDamageMax) {
+      case "number":
+        this.flatSelfDamageMax = Math.trunc(selectedWeapon.flatSelfDamageMax) || undefined;
+        break;
+      case "string":
+        this.flatSelfDamageMax = numFromString(selectedWeapon.flatSelfDamageMax).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatSelfMagicDamage) {
+      case "number":
+        this.flatSelfMagicDamageMin = this.flatSelfMagicDamageMax =
+          Math.trunc(selectedWeapon.flatSelfMagicDamage) || undefined;
+        break;
+      case "string":
+        this.flatSelfMagicDamageMin = this.flatSelfMagicDamageMax =
+          numFromString(selectedWeapon.flatSelfMagicDamage).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatSelfMagicDamageMin) {
+      case "number":
+        this.flatSelfMagicDamageMin = Math.trunc(selectedWeapon.flatSelfMagicDamageMin) || undefined;
+        break;
+      case "string":
+        this.flatSelfMagicDamageMin = numFromString(selectedWeapon.flatSelfMagicDamageMin).value || undefined;
+    }
+    switch (typeof selectedWeapon.flatSelfMagicDamageMax) {
+      case "number":
+        this.flatSelfMagicDamageMax = Math.trunc(selectedWeapon.flatSelfMagicDamageMax) || undefined;
+        break;
+      case "string":
+        this.flatSelfMagicDamageMax = numFromString(selectedWeapon.flatSelfMagicDamageMax).value || undefined;
+    }
+    switch (typeof selectedWeapon.propSelfDamage) {
+      case "number":
+        this.propSelfDamage = selectedWeapon.propSelfDamage || undefined;
+        break;
+      case "string":
+        this.propSelfDamage = floatFromString(selectedWeapon.propSelfDamage).value || undefined;
+    }
+    if (this.propSelfDamage != undefined) {
+      if (this.propSelfDamage < -1) {
+        this.propSelfDamage = -1;
+      } else if (this.propSelfDamage > 1) {
+        this.propSelfDamage = 1;
       }
-      if (typeof selectedWeapon.description == "string") {
-        this.description = selectedWeapon.description || undefined;
+    }
+    switch (typeof selectedWeapon.healthChange) {
+      case "number":
+        this.healthChange = Math.trunc(selectedWeapon.healthChange) || undefined;
+        break;
+      case "string":
+        this.healthChange = numFromString(selectedWeapon.healthChange).value || undefined;
+    }
+    switch (typeof selectedWeapon.hitCount) {
+      case "number":
+        this.hitCount = Math.trunc(selectedWeapon.hitCount);
+        break;
+      case "string":
+        this.hitCount = numFromString(selectedWeapon.hitCount).value;
+    }
+    if (this.hitCount < 0) {
+      this.hitCount = 0;
+    }
+    switch (typeof selectedWeapon.counterHits) {
+      case "number":
+        this.counterHits = Math.trunc(selectedWeapon.counterHits) || undefined;
+        break;
+      case "string":
+        this.counterHits = numFromString(selectedWeapon.counterHits).value || undefined;
+    }
+    if (this.counterHits != undefined && this.counterHits < 0) {
+      this.counterHits = 0;
+    }
+    if (typeof selectedWeapon.noEvade == "boolean") {
+      this.noEvade = selectedWeapon.noEvade || undefined;
+    }
+    if (typeof selectedWeapon.canCounter == "boolean") {
+      this.canCounter = selectedWeapon.canCounter || undefined;
+    }
+    if (typeof selectedWeapon.noCounterAttack == "boolean") {
+      this.noCounterAttack = selectedWeapon.noCounterAttack || undefined;
+    }
+    switch (typeof selectedWeapon.manaChange) {
+      case "number":
+        this.manaChange = Math.trunc(selectedWeapon.manaChange) || undefined;
+        break;
+      case "string":
+        this.manaChange = numFromString(selectedWeapon.manaChange).value || undefined;
+    }
+    switch (typeof selectedWeapon.projectileChange) {
+      case "number":
+        this.projectileChange = Math.trunc(selectedWeapon.projectileChange) || undefined;
+        break;
+      case "string":
+        this.projectileChange = numFromString(selectedWeapon.projectileChange).value || undefined;
+    }
+    switch (typeof selectedWeapon.poison) {
+      case "number":
+        this.poison = Math.trunc(selectedWeapon.poison) || undefined;
+        break;
+      case "string":
+        this.poison = numFromString(selectedWeapon.poison).value || undefined;
+    }
+    if (this.poison != undefined) {
+      if (this.poison < 0) {
+        this.poison = 0;
+      } else if (this.poison > 255) {
+        this.poison = 255;
       }
-      switch (typeof selectedWeapon.flatDamage) {
-        case "number":
-          this.flatDamageMin = this.flatDamageMax = Math.trunc(selectedWeapon.flatDamage) || undefined;
-          break;
-        case "string":
-          this.flatDamageMin = this.flatDamageMax = numFromString(selectedWeapon.flatDamage).value || undefined;
+    }
+    switch (typeof selectedWeapon.selfPoison) {
+      case "number":
+        this.selfPoison = Math.trunc(selectedWeapon.selfPoison) || undefined;
+        break;
+      case "string":
+        this.selfPoison = numFromString(selectedWeapon.selfPoison).value || undefined;
+    }
+    if (this.selfPoison != undefined) {
+      if (this.selfPoison < 0) {
+        this.selfPoison = 0;
+      } else if (this.selfPoison > 255) {
+        this.selfPoison = 255;
       }
-      switch (typeof selectedWeapon.flatDamageMin) {
-        case "number":
-          this.flatDamageMin = Math.trunc(selectedWeapon.flatDamageMin) || undefined;
-          break;
-        case "string":
-          this.flatDamageMin = numFromString(selectedWeapon.flatDamageMin).value || undefined;
+    }
+    switch (typeof selectedWeapon.bleed) {
+      case "number":
+        this.bleed = Math.trunc(selectedWeapon.bleed) || undefined;
+        break;
+      case "string":
+        this.bleed = numFromString(selectedWeapon.bleed).value || undefined;
+    }
+    if (this.bleed != undefined) {
+      if (this.bleed < 0) {
+        this.bleed = 0;
+      } else if (this.bleed > 255) {
+        this.bleed = 255;
       }
-      switch (typeof selectedWeapon.flatDamageMax) {
-        case "number":
-          this.flatDamageMax = Math.trunc(selectedWeapon.flatDamageMax) || undefined;
-          break;
-        case "string":
-          this.flatDamageMax = numFromString(selectedWeapon.flatDamageMax).value || undefined;
+    }
+    switch (typeof selectedWeapon.selfBleed) {
+      case "number":
+        this.selfBleed = Math.trunc(selectedWeapon.selfBleed) || undefined;
+        break;
+      case "string":
+        this.selfBleed = numFromString(selectedWeapon.selfBleed).value || undefined;
+    }
+    if (this.selfBleed != undefined) {
+      if (this.selfBleed < 0) {
+        this.selfBleed = 0;
+      } else if (this.selfBleed > 255) {
+        this.selfBleed = 255;
       }
-      switch (typeof selectedWeapon.flatMagicDamage) {
-        case "number":
-          this.flatMagicDamageMin = this.flatMagicDamageMax = Math.trunc(selectedWeapon.flatMagicDamage) || undefined;
-          break;
-        case "string":
-          this.flatMagicDamageMin = this.flatMagicDamageMax =
-            numFromString(selectedWeapon.flatMagicDamage).value || undefined;
-      }
-      switch (typeof selectedWeapon.flatMagicDamageMin) {
-        case "number":
-          this.flatMagicDamageMin = Math.trunc(selectedWeapon.flatMagicDamageMin) || undefined;
-          break;
-        case "string":
-          this.flatMagicDamageMin = numFromString(selectedWeapon.flatMagicDamageMin).value || undefined;
-      }
-      switch (typeof selectedWeapon.flatMagicDamageMax) {
-        case "number":
-          this.flatMagicDamageMax = Math.trunc(selectedWeapon.flatMagicDamageMax) || undefined;
-          break;
-        case "string":
-          this.flatMagicDamageMax = numFromString(selectedWeapon.flatMagicDamageMax).value || undefined;
-      }
-      switch (typeof selectedWeapon.flatArmourPiercingDamage) {
-        case "number":
-          this.flatArmourPiercingDamageMin = this.flatArmourPiercingDamageMax =
-            Math.trunc(selectedWeapon.flatArmourPiercingDamage) || undefined;
-          break;
-        case "string":
-          this.flatArmourPiercingDamageMin = this.flatArmourPiercingDamageMax =
-            numFromString(selectedWeapon.flatArmourPiercingDamage).value || undefined;
-      }
-      switch (typeof selectedWeapon.flatArmourPiercingDamageMin) {
-        case "number":
-          this.flatArmourPiercingDamageMin = Math.trunc(selectedWeapon.flatArmourPiercingDamageMin) || undefined;
-          break;
-        case "string":
-          this.flatArmourPiercingDamageMin =
-            numFromString(selectedWeapon.flatArmourPiercingDamageMin).value || undefined;
-      }
-      switch (typeof selectedWeapon.flatArmourPiercingDamageMax) {
-        case "number":
-          this.flatArmourPiercingDamageMax = Math.trunc(selectedWeapon.flatArmourPiercingDamageMax) || undefined;
-          break;
-        case "string":
-          this.flatArmourPiercingDamageMax =
-            numFromString(selectedWeapon.flatArmourPiercingDamageMax).value || undefined;
-      }
-      switch (typeof selectedWeapon.propDamage) {
-        case "number":
-          this.propDamage = selectedWeapon.propDamage || undefined;
-          break;
-        case "string":
-          this.propDamage = floatFromString(selectedWeapon.propDamage).value || undefined;
-      }
-      if (this.propDamage != undefined) {
-        if (this.propDamage < -1) {
-          this.propDamage = -1;
-        } else if (this.propDamage > 1) {
-          this.propDamage = 1;
-        }
-      }
-      switch (typeof selectedWeapon.flatSelfDamage) {
-        case "number":
-          this.flatSelfDamageMin = this.flatSelfDamageMax = Math.trunc(selectedWeapon.flatSelfDamage) || undefined;
-          break;
-        case "string":
-          this.flatSelfDamageMin = this.flatSelfDamageMax =
-            numFromString(selectedWeapon.flatSelfDamage).value || undefined;
-      }
-      switch (typeof selectedWeapon.flatSelfDamageMin) {
-        case "number":
-          this.flatSelfDamageMin = Math.trunc(selectedWeapon.flatSelfDamageMin) || undefined;
-          break;
-        case "string":
-          this.flatSelfDamageMin = numFromString(selectedWeapon.flatSelfDamageMin).value || undefined;
-      }
-      switch (typeof selectedWeapon.flatSelfDamageMax) {
-        case "number":
-          this.flatSelfDamageMax = Math.trunc(selectedWeapon.flatSelfDamageMax) || undefined;
-          break;
-        case "string":
-          this.flatSelfDamageMax = numFromString(selectedWeapon.flatSelfDamageMax).value || undefined;
-      }
-      switch (typeof selectedWeapon.flatSelfMagicDamage) {
-        case "number":
-          this.flatSelfMagicDamageMin = this.flatSelfMagicDamageMax =
-            Math.trunc(selectedWeapon.flatSelfMagicDamage) || undefined;
-          break;
-        case "string":
-          this.flatSelfMagicDamageMin = this.flatSelfMagicDamageMax =
-            numFromString(selectedWeapon.flatSelfMagicDamage).value || undefined;
-      }
-      switch (typeof selectedWeapon.flatSelfMagicDamageMin) {
-        case "number":
-          this.flatSelfMagicDamageMin = Math.trunc(selectedWeapon.flatSelfMagicDamageMin) || undefined;
-          break;
-        case "string":
-          this.flatSelfMagicDamageMin = numFromString(selectedWeapon.flatSelfMagicDamageMin).value || undefined;
-      }
-      switch (typeof selectedWeapon.flatSelfMagicDamageMax) {
-        case "number":
-          this.flatSelfMagicDamageMax = Math.trunc(selectedWeapon.flatSelfMagicDamageMax) || undefined;
-          break;
-        case "string":
-          this.flatSelfMagicDamageMax = numFromString(selectedWeapon.flatSelfMagicDamageMax).value || undefined;
-      }
-      switch (typeof selectedWeapon.propSelfDamage) {
-        case "number":
-          this.propSelfDamage = selectedWeapon.propSelfDamage || undefined;
-          break;
-        case "string":
-          this.propSelfDamage = floatFromString(selectedWeapon.propSelfDamage).value || undefined;
-      }
-      if (this.propSelfDamage != undefined) {
-        if (this.propSelfDamage < -1) {
-          this.propSelfDamage = -1;
-        } else if (this.propSelfDamage > 1) {
-          this.propSelfDamage = 1;
-        }
-      }
-      switch (typeof selectedWeapon.healthChange) {
-        case "number":
-          this.healthChange = Math.trunc(selectedWeapon.healthChange) || undefined;
-          break;
-        case "string":
-          this.healthChange = numFromString(selectedWeapon.healthChange).value || undefined;
-      }
-      switch (typeof selectedWeapon.hitCount) {
-        case "number":
-          this.hitCount = Math.trunc(selectedWeapon.hitCount);
-          break;
-        case "string":
-          this.hitCount = numFromString(selectedWeapon.hitCount).value;
-      }
-      if (this.hitCount < 0) {
-        this.hitCount = 0;
-      }
-      switch (typeof selectedWeapon.counterHits) {
-        case "number":
-          this.counterHits = Math.trunc(selectedWeapon.counterHits) || undefined;
-          break;
-        case "string":
-          this.counterHits = numFromString(selectedWeapon.counterHits).value || undefined;
-      }
-      if (this.counterHits != undefined && this.counterHits < 0) {
-        this.counterHits = 0;
-      }
-      if (typeof selectedWeapon.noEvade == "boolean") {
-        this.noEvade = selectedWeapon.noEvade || undefined;
-      }
-      if (typeof selectedWeapon.canCounter == "boolean") {
-        this.canCounter = selectedWeapon.canCounter || undefined;
-      }
-      if (typeof selectedWeapon.noCounterAttack == "boolean") {
-        this.noCounterAttack = selectedWeapon.noCounterAttack || undefined;
-      }
-      switch (typeof selectedWeapon.manaChange) {
-        case "number":
-          this.manaChange = Math.trunc(selectedWeapon.manaChange) || undefined;
-          break;
-        case "string":
-          this.manaChange = numFromString(selectedWeapon.manaChange).value || undefined;
-      }
-      switch (typeof selectedWeapon.projectileChange) {
-        case "number":
-          this.projectileChange = Math.trunc(selectedWeapon.projectileChange) || undefined;
-          break;
-        case "string":
-          this.projectileChange = numFromString(selectedWeapon.projectileChange).value || undefined;
-      }
-      switch (typeof selectedWeapon.poison) {
-        case "number":
-          this.poison = Math.trunc(selectedWeapon.poison) || undefined;
-          break;
-        case "string":
-          this.poison = numFromString(selectedWeapon.poison).value || undefined;
-      }
-      if (this.poison != undefined) {
-        if (this.poison < 0) {
-          this.poison = 0;
-        } else if (this.poison > 255) {
-          this.poison = 255;
-        }
-      }
-      switch (typeof selectedWeapon.selfPoison) {
-        case "number":
-          this.selfPoison = Math.trunc(selectedWeapon.selfPoison) || undefined;
-          break;
-        case "string":
-          this.selfPoison = numFromString(selectedWeapon.selfPoison).value || undefined;
-      }
-      if (this.selfPoison != undefined) {
-        if (this.selfPoison < 0) {
-          this.selfPoison = 0;
-        } else if (this.selfPoison > 255) {
-          this.selfPoison = 255;
-        }
-      }
-      switch (typeof selectedWeapon.bleed) {
-        case "number":
-          this.bleed = Math.trunc(selectedWeapon.bleed) || undefined;
-          break;
-        case "string":
-          this.bleed = numFromString(selectedWeapon.bleed).value || undefined;
-      }
-      if (this.bleed != undefined) {
-        if (this.bleed < 0) {
-          this.bleed = 0;
-        } else if (this.bleed > 255) {
-          this.bleed = 255;
-        }
-      }
-      switch (typeof selectedWeapon.selfBleed) {
-        case "number":
-          this.selfBleed = Math.trunc(selectedWeapon.selfBleed) || undefined;
-          break;
-        case "string":
-          this.selfBleed = numFromString(selectedWeapon.selfBleed).value || undefined;
-      }
-      if (this.selfBleed != undefined) {
-        if (this.selfBleed < 0) {
-          this.selfBleed = 0;
-        } else if (this.selfBleed > 255) {
-          this.selfBleed = 255;
-        }
-      }
-      if (typeof selectedWeapon.lifeLink == "boolean") {
-        this.lifeLink = selectedWeapon.lifeLink || undefined;
-      }
-      if (typeof selectedWeapon.dualWield == "boolean") {
-        this.dualWield = selectedWeapon.dualWield || undefined;
-      }
-      if (typeof selectedWeapon.selfOverHeal == "boolean") {
-        this.selfOverHeal = selectedWeapon.selfOverHeal || undefined;
-      }
-      if (typeof selectedWeapon.targetOverHeal == "boolean") {
-        this.targetOverHeal = selectedWeapon.targetOverHeal || undefined;
-      }
-      if (typeof selectedWeapon.upgrade == "string") {
-        this.upgrade = selectedWeapon.upgrade || undefined;
-      }
-      switch (typeof selectedWeapon.flatMagicDamageModifier) {
-        case "number":
-          this.flatMagicDamageModifier = Math.trunc(selectedWeapon.flatMagicDamageModifier) || undefined;
-          break;
-        case "string":
-          this.flatMagicDamageModifier = numFromString(selectedWeapon.flatMagicDamageModifier).value || undefined;
-      }
-    } catch (err) {
-      switch (err) {
-        case 1:
-          errorMessages.push(`Unable to parse weapon blueprint ${blueprint}`);
-          break;
-        case 2:
-          errorMessages.push(`Unable to find weapon blueprint ${blueprint}`);
-          break;
-        case 5:
-          errorMessages.push(`Weapon blueprint list ${blueprint} is empty`);
-          break;
-        case 9:
-          errorMessages.push(`Exceeded maximum list depth loading weapon blueprint ${blueprint}`);
-          break;
-        default:
-          throw err;
-      }
+    }
+    if (typeof selectedWeapon.lifeLink == "boolean") {
+      this.lifeLink = selectedWeapon.lifeLink || undefined;
+    }
+    if (typeof selectedWeapon.dualWield == "boolean") {
+      this.dualWield = selectedWeapon.dualWield || undefined;
+    }
+    if (typeof selectedWeapon.selfOverHeal == "boolean") {
+      this.selfOverHeal = selectedWeapon.selfOverHeal || undefined;
+    }
+    if (typeof selectedWeapon.targetOverHeal == "boolean") {
+      this.targetOverHeal = selectedWeapon.targetOverHeal || undefined;
+    }
+    if (typeof selectedWeapon.upgrade == "string") {
+      this.upgrade = selectedWeapon.upgrade || undefined;
+    }
+    switch (typeof selectedWeapon.flatMagicDamageModifier) {
+      case "number":
+        this.flatMagicDamageModifier = Math.trunc(selectedWeapon.flatMagicDamageModifier) || undefined;
+        break;
+      case "string":
+        this.flatMagicDamageModifier = numFromString(selectedWeapon.flatMagicDamageModifier).value || undefined;
     }
     this.setEffectType();
     //Ensure max damage values are at least min values

@@ -200,245 +200,229 @@ export class armour {
       return;
     }
     let type: string = this.armourType();
-    try {
+    //@ts-expect-error
+    let selectedArmour = armourData[type][blueprint];
+    if (selectedArmour == undefined) {
+      errorMessages.push(`Unable to find ${type.toLowerCase()} armour blueprint ${blueprint}`);
+      return;
+    }
+    for (let i = 0; Array.isArray(selectedArmour); i++) {
+      if (i == 10) {
+        errorMessages.push(`Exceeded maximum list depth loading ${type.toLowerCase()} armour blueprint ${blueprint}`);
+        return;
+      }
+      if (selectedArmour.length == 0) {
+        errorMessages.push(`${type.toLowerCase()} armour blueprint list ${blueprint} is empty`);
+        return;
+      }
+      blueprint = selectedArmour[randomInt(0, selectedArmour.length)];
+      if (blueprint == "EMPTY") {
+        return;
+      } else if (typeof blueprint != "string") {
+        errorMessages.push(`Unable to parse ${type.toLowerCase()} armour blueprint ${blueprint}`);
+        return;
+      }
       //@ts-expect-error
-      let selectedArmour = armourData[type][blueprint];
+      selectedArmour = armourData[type][blueprint];
       if (selectedArmour == undefined) {
-        throw 2;
+        errorMessages.push(`Unable to find ${type.toLowerCase()} armour blueprint ${blueprint}`);
+        return;
       }
-      for (let i = 0; Array.isArray(selectedArmour); i++) {
-        if (i == 10) {
-          throw 9;
-        }
-        if (selectedArmour.length == 0) {
-          throw 5;
-        }
-        blueprint = selectedArmour[randomInt(0, selectedArmour.length)];
-        if (blueprint == "EMPTY") {
-          return;
-        } else if (typeof blueprint != "string") {
-          throw 1;
-        }
-        //@ts-expect-error
-        selectedArmour = armourData[type][blueprint];
-        if (selectedArmour == undefined) {
-          throw 2;
-        }
-      }
-      this.real = true;
-      switch (typeof selectedArmour.maxHealthModifier) {
-        case "number":
-          this.maxHealthModifier = Math.trunc(selectedArmour.maxHealthModifier) || undefined;
-          break;
-        case "string":
-          this.maxHealthModifier = numFromString(selectedArmour.maxHealthModifier).value || undefined;
-      }
-      switch (typeof selectedArmour.maxManaModifier) {
-        case "number":
-          this.maxManaModifier = Math.trunc(selectedArmour.maxManaModifier) || undefined;
-          break;
-        case "string":
-          this.maxManaModifier = numFromString(selectedArmour.maxManaModifier).value || undefined;
-      }
-      switch (typeof selectedArmour.turnManaRegenModifier) {
-        case "number":
-          this.turnManaRegenModifier = Math.trunc(selectedArmour.turnManaRegenModifier) || undefined;
-          break;
-        case "string":
-          this.turnManaRegenModifier = numFromString(selectedArmour.turnManaRegenModifier).value || undefined;
-      }
-      switch (typeof selectedArmour.battleManaRegenModifier) {
-        case "number":
-          this.battleManaRegenModifier = Math.trunc(selectedArmour.battleManaRegenModifier) || undefined;
-          break;
-        case "string":
-          this.battleManaRegenModifier = numFromString(selectedArmour.battleManaRegenModifier).value || undefined;
-      }
-      switch (typeof selectedArmour.turnRegenModifier) {
-        case "number":
-          this.turnRegenModifier = Math.trunc(selectedArmour.turnRegenModifier) || undefined;
-          break;
-        case "string":
-          this.turnRegenModifier = numFromString(selectedArmour.turnRegenModifier).value || undefined;
-      }
-      switch (typeof selectedArmour.battleRegenModifier) {
-        case "number":
-          this.battleRegenModifier = Math.trunc(selectedArmour.battleRegenModifier) || undefined;
-          break;
-        case "string":
-          this.battleRegenModifier = numFromString(selectedArmour.battleRegenModifier).value || undefined;
-      }
-      switch (typeof selectedArmour.flatArmourModifier) {
-        case "number":
-          this.flatArmourModifier = Math.trunc(selectedArmour.flatArmourModifier) || undefined;
-          break;
-        case "string":
-          this.flatArmourModifier = numFromString(selectedArmour.flatArmourModifier).value || undefined;
-      }
-      switch (typeof selectedArmour.propArmourModifier) {
-        case "number":
-          this.propArmourModifier = selectedArmour.propArmourModifier || undefined;
-          break;
-        case "string":
-          this.propArmourModifier = floatFromString(selectedArmour.propArmourModifier).value || undefined;
-      }
-      if (this.propArmourModifier != undefined && this.propArmourModifier < -1) {
-        this.propArmourModifier = -1;
-      }
-      switch (typeof selectedArmour.flatMagicArmourModifier) {
-        case "number":
-          this.flatMagicArmourModifier = Math.trunc(selectedArmour.flatMagicArmourModifier) || undefined;
-          break;
-        case "string":
-          this.flatMagicArmourModifier = numFromString(selectedArmour.flatMagicArmourModifier).value || undefined;
-      }
-      switch (typeof selectedArmour.propMagicArmourModifier) {
-        case "number":
-          this.propMagicArmourModifier = selectedArmour.propMagicArmourModifier || undefined;
-          break;
-        case "string":
-          this.propMagicArmourModifier = floatFromString(selectedArmour.propMagicArmourModifier).value || undefined;
-      }
-      if (this.propMagicArmourModifier != undefined && this.propMagicArmourModifier < -1) {
-        this.propMagicArmourModifier = -1;
-      }
-      switch (typeof selectedArmour.flatDamageModifier) {
-        case "number":
-          this.flatDamageModifier = Math.trunc(selectedArmour.flatDamageModifier) || undefined;
-          break;
-        case "string":
-          this.flatDamageModifier = numFromString(selectedArmour.flatDamageModifier).value || undefined;
-      }
-      switch (typeof selectedArmour.propDamageModifier) {
-        case "number":
-          this.propDamageModifier = selectedArmour.propDamageModifier || undefined;
-          break;
-        case "string":
-          this.propDamageModifier = floatFromString(selectedArmour.propDamageModifier).value || undefined;
-      }
-      if (this.propDamageModifier != undefined && this.propDamageModifier < -1) {
-        this.propDamageModifier = -1;
-      }
-      switch (typeof selectedArmour.flatMagicDamageModifier) {
-        case "number":
-          this.flatMagicDamageModifier = Math.trunc(selectedArmour.flatMagicDamageModifier) || undefined;
-          break;
-        case "string":
-          this.flatMagicDamageModifier = numFromString(selectedArmour.flatMagicDamageModifier).value || undefined;
-      }
-      switch (typeof selectedArmour.propMagicDamageModifier) {
-        case "number":
-          this.propMagicDamageModifier = selectedArmour.propMagicDamageModifier || undefined;
-          break;
-        case "string":
-          this.propMagicDamageModifier = floatFromString(selectedArmour.propMagicDamageModifier).value || undefined;
-      }
-      if (this.propMagicDamageModifier != undefined && this.propMagicDamageModifier < -1) {
-        this.propMagicDamageModifier = -1;
-      }
-      switch (typeof selectedArmour.flatArmourPiercingDamageModifier) {
-        case "number":
-          this.flatArmourPiercingDamageModifier =
-            Math.trunc(selectedArmour.flatArmourPiercingDamageModifier) || undefined;
-          break;
-        case "string":
-          this.flatArmourPiercingDamageModifier =
-            numFromString(selectedArmour.flatArmourPiercingDamageModifier).value || undefined;
-      }
-      switch (typeof selectedArmour.propArmourPiercingDamageModifier) {
-        case "number":
-          this.propArmourPiercingDamageModifier = selectedArmour.propArmourPiercingDamageModifier || undefined;
-          break;
-        case "string":
-          this.propArmourPiercingDamageModifier =
-            floatFromString(selectedArmour.propArmourPiercingDamageModifier).value || undefined;
-      }
-      if (this.propArmourPiercingDamageModifier != undefined && this.propArmourPiercingDamageModifier < -1) {
-        this.propArmourPiercingDamageModifier = -1;
-      }
-      switch (typeof selectedArmour.evadeChanceModifier) {
-        case "number":
-          this.evadeChanceModifier = selectedArmour.evadeChanceModifier || undefined;
-          break;
-        case "string":
-          this.evadeChanceModifier = floatFromString(selectedArmour.evadeChanceModifier).value || undefined;
-      }
-      if (this.evadeChanceModifier != undefined && this.evadeChanceModifier < -1) {
-        this.evadeChanceModifier = -1;
-      }
-      switch (typeof selectedArmour.poisonResistModifier) {
-        case "number":
-          this.poisonResistModifier = selectedArmour.poisonResistModifier || undefined;
-          break;
-        case "string":
-          this.poisonResistModifier = floatFromString(selectedArmour.poisonResistModifier).value || undefined;
-      }
-      if (this.poisonResistModifier != undefined && this.poisonResistModifier < -1) {
-        this.poisonResistModifier = -1;
-      }
-      switch (typeof selectedArmour.bleedResistModifier) {
-        case "number":
-          this.bleedResistModifier = selectedArmour.bleedResistModifier || undefined;
-          break;
-        case "string":
-          this.bleedResistModifier = floatFromString(selectedArmour.bleedResistModifier).value || undefined;
-      }
-      if (this.bleedResistModifier != undefined && this.bleedResistModifier < -1) {
-        this.bleedResistModifier = -1;
-      }
-      switch (typeof selectedArmour.counterAttackChanceModifier) {
-        case "number":
-          this.counterAttackChanceModifier = selectedArmour.counterAttackChanceModifier || undefined;
-          break;
-        case "string":
-          this.counterAttackChanceModifier =
-            floatFromString(selectedArmour.counterAttackChanceModifier).value || undefined;
-      }
-      if (this.counterAttackChanceModifier != undefined && this.counterAttackChanceModifier < -1) {
-        this.counterAttackChanceModifier = -1;
-      }
-      switch (typeof selectedArmour.bonusActionsModifier) {
-        case "number":
-          this.bonusActionsModifier = Math.trunc(selectedArmour.bonusActionsModifier) || undefined;
-          break;
-        case "string":
-          this.bonusActionsModifier = numFromString(selectedArmour.bonusActionsModifier).value || undefined;
-      }
-      switch (typeof selectedArmour.initiativeModifier) {
-        case "number":
-          this.initiativeModifier = Math.trunc(selectedArmour.initiativeModifier) || undefined;
-          break;
-        case "string":
-          this.initiativeModifier = numFromString(selectedArmour.initiativeModifier).value || undefined;
-      }
-      if (typeof selectedArmour.name == "string") {
-        this.name = selectedArmour.name || undefined;
-      }
-      if (typeof selectedArmour.description == "string") {
-        this.description = selectedArmour.description || undefined;
-      }
-      if (typeof selectedArmour.upgrade == "string") {
-        this.upgrade = selectedArmour.upgrade || undefined;
-      }
-      return;
-    } catch (err) {
-      switch (err) {
-        case 1:
-          errorMessages.push(`Unable to parse ${type.toLowerCase()} armour blueprint ${blueprint}`);
-          break;
-        case 2:
-          errorMessages.push(`Unable to find ${type.toLowerCase()} armour blueprint ${blueprint}`);
-          break;
-        case 5:
-          errorMessages.push(`${type.toLowerCase()} armour blueprint list ${blueprint} is empty`);
-          break;
-        case 9:
-          errorMessages.push(`Exceeded maximum list depth loading ${type.toLowerCase()} armour blueprint ${blueprint}`);
-          break;
-        default:
-          throw err;
-      }
-      return;
+    }
+    this.real = true;
+    switch (typeof selectedArmour.maxHealthModifier) {
+      case "number":
+        this.maxHealthModifier = Math.trunc(selectedArmour.maxHealthModifier) || undefined;
+        break;
+      case "string":
+        this.maxHealthModifier = numFromString(selectedArmour.maxHealthModifier).value || undefined;
+    }
+    switch (typeof selectedArmour.maxManaModifier) {
+      case "number":
+        this.maxManaModifier = Math.trunc(selectedArmour.maxManaModifier) || undefined;
+        break;
+      case "string":
+        this.maxManaModifier = numFromString(selectedArmour.maxManaModifier).value || undefined;
+    }
+    switch (typeof selectedArmour.turnManaRegenModifier) {
+      case "number":
+        this.turnManaRegenModifier = Math.trunc(selectedArmour.turnManaRegenModifier) || undefined;
+        break;
+      case "string":
+        this.turnManaRegenModifier = numFromString(selectedArmour.turnManaRegenModifier).value || undefined;
+    }
+    switch (typeof selectedArmour.battleManaRegenModifier) {
+      case "number":
+        this.battleManaRegenModifier = Math.trunc(selectedArmour.battleManaRegenModifier) || undefined;
+        break;
+      case "string":
+        this.battleManaRegenModifier = numFromString(selectedArmour.battleManaRegenModifier).value || undefined;
+    }
+    switch (typeof selectedArmour.turnRegenModifier) {
+      case "number":
+        this.turnRegenModifier = Math.trunc(selectedArmour.turnRegenModifier) || undefined;
+        break;
+      case "string":
+        this.turnRegenModifier = numFromString(selectedArmour.turnRegenModifier).value || undefined;
+    }
+    switch (typeof selectedArmour.battleRegenModifier) {
+      case "number":
+        this.battleRegenModifier = Math.trunc(selectedArmour.battleRegenModifier) || undefined;
+        break;
+      case "string":
+        this.battleRegenModifier = numFromString(selectedArmour.battleRegenModifier).value || undefined;
+    }
+    switch (typeof selectedArmour.flatArmourModifier) {
+      case "number":
+        this.flatArmourModifier = Math.trunc(selectedArmour.flatArmourModifier) || undefined;
+        break;
+      case "string":
+        this.flatArmourModifier = numFromString(selectedArmour.flatArmourModifier).value || undefined;
+    }
+    switch (typeof selectedArmour.propArmourModifier) {
+      case "number":
+        this.propArmourModifier = selectedArmour.propArmourModifier || undefined;
+        break;
+      case "string":
+        this.propArmourModifier = floatFromString(selectedArmour.propArmourModifier).value || undefined;
+    }
+    if (this.propArmourModifier != undefined && this.propArmourModifier < -1) {
+      this.propArmourModifier = -1;
+    }
+    switch (typeof selectedArmour.flatMagicArmourModifier) {
+      case "number":
+        this.flatMagicArmourModifier = Math.trunc(selectedArmour.flatMagicArmourModifier) || undefined;
+        break;
+      case "string":
+        this.flatMagicArmourModifier = numFromString(selectedArmour.flatMagicArmourModifier).value || undefined;
+    }
+    switch (typeof selectedArmour.propMagicArmourModifier) {
+      case "number":
+        this.propMagicArmourModifier = selectedArmour.propMagicArmourModifier || undefined;
+        break;
+      case "string":
+        this.propMagicArmourModifier = floatFromString(selectedArmour.propMagicArmourModifier).value || undefined;
+    }
+    if (this.propMagicArmourModifier != undefined && this.propMagicArmourModifier < -1) {
+      this.propMagicArmourModifier = -1;
+    }
+    switch (typeof selectedArmour.flatDamageModifier) {
+      case "number":
+        this.flatDamageModifier = Math.trunc(selectedArmour.flatDamageModifier) || undefined;
+        break;
+      case "string":
+        this.flatDamageModifier = numFromString(selectedArmour.flatDamageModifier).value || undefined;
+    }
+    switch (typeof selectedArmour.propDamageModifier) {
+      case "number":
+        this.propDamageModifier = selectedArmour.propDamageModifier || undefined;
+        break;
+      case "string":
+        this.propDamageModifier = floatFromString(selectedArmour.propDamageModifier).value || undefined;
+    }
+    if (this.propDamageModifier != undefined && this.propDamageModifier < -1) {
+      this.propDamageModifier = -1;
+    }
+    switch (typeof selectedArmour.flatMagicDamageModifier) {
+      case "number":
+        this.flatMagicDamageModifier = Math.trunc(selectedArmour.flatMagicDamageModifier) || undefined;
+        break;
+      case "string":
+        this.flatMagicDamageModifier = numFromString(selectedArmour.flatMagicDamageModifier).value || undefined;
+    }
+    switch (typeof selectedArmour.propMagicDamageModifier) {
+      case "number":
+        this.propMagicDamageModifier = selectedArmour.propMagicDamageModifier || undefined;
+        break;
+      case "string":
+        this.propMagicDamageModifier = floatFromString(selectedArmour.propMagicDamageModifier).value || undefined;
+    }
+    if (this.propMagicDamageModifier != undefined && this.propMagicDamageModifier < -1) {
+      this.propMagicDamageModifier = -1;
+    }
+    switch (typeof selectedArmour.flatArmourPiercingDamageModifier) {
+      case "number":
+        this.flatArmourPiercingDamageModifier =
+          Math.trunc(selectedArmour.flatArmourPiercingDamageModifier) || undefined;
+        break;
+      case "string":
+        this.flatArmourPiercingDamageModifier =
+          numFromString(selectedArmour.flatArmourPiercingDamageModifier).value || undefined;
+    }
+    switch (typeof selectedArmour.propArmourPiercingDamageModifier) {
+      case "number":
+        this.propArmourPiercingDamageModifier = selectedArmour.propArmourPiercingDamageModifier || undefined;
+        break;
+      case "string":
+        this.propArmourPiercingDamageModifier =
+          floatFromString(selectedArmour.propArmourPiercingDamageModifier).value || undefined;
+    }
+    if (this.propArmourPiercingDamageModifier != undefined && this.propArmourPiercingDamageModifier < -1) {
+      this.propArmourPiercingDamageModifier = -1;
+    }
+    switch (typeof selectedArmour.evadeChanceModifier) {
+      case "number":
+        this.evadeChanceModifier = selectedArmour.evadeChanceModifier || undefined;
+        break;
+      case "string":
+        this.evadeChanceModifier = floatFromString(selectedArmour.evadeChanceModifier).value || undefined;
+    }
+    if (this.evadeChanceModifier != undefined && this.evadeChanceModifier < -1) {
+      this.evadeChanceModifier = -1;
+    }
+    switch (typeof selectedArmour.poisonResistModifier) {
+      case "number":
+        this.poisonResistModifier = selectedArmour.poisonResistModifier || undefined;
+        break;
+      case "string":
+        this.poisonResistModifier = floatFromString(selectedArmour.poisonResistModifier).value || undefined;
+    }
+    if (this.poisonResistModifier != undefined && this.poisonResistModifier < -1) {
+      this.poisonResistModifier = -1;
+    }
+    switch (typeof selectedArmour.bleedResistModifier) {
+      case "number":
+        this.bleedResistModifier = selectedArmour.bleedResistModifier || undefined;
+        break;
+      case "string":
+        this.bleedResistModifier = floatFromString(selectedArmour.bleedResistModifier).value || undefined;
+    }
+    if (this.bleedResistModifier != undefined && this.bleedResistModifier < -1) {
+      this.bleedResistModifier = -1;
+    }
+    switch (typeof selectedArmour.counterAttackChanceModifier) {
+      case "number":
+        this.counterAttackChanceModifier = selectedArmour.counterAttackChanceModifier || undefined;
+        break;
+      case "string":
+        this.counterAttackChanceModifier =
+          floatFromString(selectedArmour.counterAttackChanceModifier).value || undefined;
+    }
+    if (this.counterAttackChanceModifier != undefined && this.counterAttackChanceModifier < -1) {
+      this.counterAttackChanceModifier = -1;
+    }
+    switch (typeof selectedArmour.bonusActionsModifier) {
+      case "number":
+        this.bonusActionsModifier = Math.trunc(selectedArmour.bonusActionsModifier) || undefined;
+        break;
+      case "string":
+        this.bonusActionsModifier = numFromString(selectedArmour.bonusActionsModifier).value || undefined;
+    }
+    switch (typeof selectedArmour.initiativeModifier) {
+      case "number":
+        this.initiativeModifier = Math.trunc(selectedArmour.initiativeModifier) || undefined;
+        break;
+      case "string":
+        this.initiativeModifier = numFromString(selectedArmour.initiativeModifier).value || undefined;
+    }
+    if (typeof selectedArmour.name == "string") {
+      this.name = selectedArmour.name || undefined;
+    }
+    if (typeof selectedArmour.description == "string") {
+      this.description = selectedArmour.description || undefined;
+    }
+    if (typeof selectedArmour.upgrade == "string") {
+      this.upgrade = selectedArmour.upgrade || undefined;
     }
   }
   toString(): string {

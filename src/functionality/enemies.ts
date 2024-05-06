@@ -109,13 +109,13 @@ export class enemy {
   }
   getWeapon(i: number): weapon {
     if (i >= this.weapons.length || i < 0) {
-      throw 6;
+      throw RangeError("Trying to access weapon outside of weapon slots");
     }
     return this.weapons[i];
   }
   getSpell(i: number): spell {
     if (i >= this.spells.length) {
-      throw 6;
+      throw RangeError("Trying to access spell outside of spell slots");
     }
     return this.spells[i];
   }
@@ -576,340 +576,328 @@ export class enemy {
     if (blueprint == "EMPTY") {
       return;
     }
-    try {
+    //@ts-expect-error
+    let selectedEnemy = enemyData[blueprint];
+    if (selectedEnemy == undefined) {
+      errorMessages.push(`Unable to find enemy blueprint ${blueprint}`);
+      return;
+    }
+    for (let i = 0; Array.isArray(selectedEnemy); i++) {
+      if (i == 10) {
+        errorMessages.push(`Exceeded maximum list depth loading enemy blueprint ${blueprint}`);
+        return;
+      }
+      if (selectedEnemy.length == 0) {
+        errorMessages.push(`Enemy blueprint list ${blueprint} is empty`);
+        return;
+      }
+      blueprint = selectedEnemy[randomInt(0, selectedEnemy.length)];
+      if (blueprint == "EMPTY") {
+        return;
+      } else if (typeof blueprint != "string") {
+        errorMessages.push(`Unable to parse enemy blueprint ${blueprint}`);
+        return;
+      }
       //@ts-expect-error
-      let selectedEnemy = enemyData[blueprint];
+      selectedEnemy = enemyData[blueprint];
       if (selectedEnemy == undefined) {
-        throw 1;
+        errorMessages.push(`Unable to parse enemy blueprint ${blueprint}`);
+        return;
       }
-      for (let i = 0; Array.isArray(selectedEnemy); i++) {
-        if (i == 10) {
-          throw 9;
-        }
-        if (selectedEnemy.length == 0) {
-          throw 5;
-        }
-        blueprint = selectedEnemy[randomInt(0, selectedEnemy.length)];
-        if (blueprint == "EMPTY") {
-          return;
-        } else if (typeof blueprint != "string") {
-          throw 1;
-        }
-        //@ts-expect-error
-        selectedEnemy = enemyData[blueprint];
-        if (selectedEnemy == undefined) {
-          throw 1;
-        }
-      }
-      this.poison = 0;
-      this.bleed = 0;
-      this.tempRegen = 0;
-      this.turnRegen = 0;
-      this.flatArmour = 0;
-      this.propArmour = 0;
-      this.flatMagicArmour = 0;
-      this.propMagicArmour = 0;
-      this.flatDamageModifier = 0;
-      this.propDamageModifier = 0;
-      this.flatMagicDamageModifier = 0;
-      this.propMagicDamageModifier = 0;
-      this.flatArmourPiercingDamageModifier = 0;
-      this.propArmourPiercingDamageModifier = 0;
-      this.poisonResist = 0.1;
-      this.bleedResist = 0.1;
-      this.evadeChance = 0.1;
-      this.counterAttackChance = 0.1;
-      this.maxHealth = 50;
-      this.maxMana = 50;
-      this.turnManaRegen = 5;
-      this.projectiles = 10;
-      this.initiative = 10;
-      this.initialSpell = -1;
-      this.bonusActions = 1;
-      this.AIType = 2;
-      this.real = true;
-      if (typeof selectedEnemy.name == "string") {
-        this.name = selectedEnemy.name || undefined;
-      }
-      if (typeof selectedEnemy.introduction == "string") {
-        this.introduction = selectedEnemy.introduction || undefined;
-      }
-      switch (typeof selectedEnemy.maxHealth) {
-        case "number":
-          this.maxHealth = Math.trunc(selectedEnemy.maxHealth);
-          break;
-        case "string":
-          this.maxHealth = numFromString(selectedEnemy.maxHealth).value;
-      }
-      if (this.maxHealth < 0) {
-        this.maxHealth = 0;
-      }
-      this.health = this.maxHealth;
-      switch (typeof selectedEnemy.projectiles) {
-        case "number":
-          this.projectiles = Math.trunc(selectedEnemy.projectiles);
-          break;
-        case "string":
-          this.projectiles = numFromString(selectedEnemy.projectiles).value;
-      }
-      if (this.projectiles < 0) {
-        this.projectiles = 0;
-      }
-      switch (typeof selectedEnemy.maxMana) {
-        case "number":
-          this.maxMana = Math.trunc(selectedEnemy.maxMana);
-          break;
-        case "string":
-          this.maxMana = numFromString(selectedEnemy.maxMana).value;
-      }
-      if (this.maxMana < 0) {
-        this.maxMana = 0;
-      }
-      this.mana = this.maxMana;
-      switch (typeof selectedEnemy.turnManaRegen) {
-        case "number":
-          this.turnManaRegen = Math.trunc(selectedEnemy.turnManaRegen);
-          break;
-        case "string":
-          this.turnManaRegen = numFromString(selectedEnemy.turnManaRegen).value;
-      }
-      switch (typeof selectedEnemy.poisonResist) {
-        case "number":
-          this.poisonResist = selectedEnemy.poisonResist;
-          break;
-        case "string":
-          this.poisonResist = floatFromString(selectedEnemy.poisonResist).value;
-      }
-      if (this.poisonResist < 0) {
-        this.poisonResist = 0;
-      }
-      switch (typeof selectedEnemy.bleedResist) {
-        case "number":
-          this.bleedResist = selectedEnemy.bleedResist;
-          break;
-        case "string":
-          this.bleedResist = floatFromString(selectedEnemy.bleedResist).value;
-      }
-      if (this.bleedResist < 0) {
-        this.bleedResist = 0;
-      }
-      switch (typeof selectedEnemy.turnRegen) {
-        case "number":
-          this.turnRegen = Math.trunc(selectedEnemy.turnRegen);
-          break;
-        case "string":
-          this.turnRegen = numFromString(selectedEnemy.turnRegen).value;
-      }
-      if (Array.isArray(selectedEnemy.weapons)) {
-        let weapons: any[] = selectedEnemy.weapons;
-        let weaponCount: number = Math.min(weapons.length, 256);
-        let weaponBlueprint: any;
-        for (let i = 0; i < weaponCount; i++) {
-          weaponBlueprint = weapons[i];
-          if (weaponBlueprint == "EMPTY") {
-            continue;
-          } else if (typeof weaponBlueprint != "string") {
-            throw 1;
-          }
-          this.weapons.push(new weapon(weaponBlueprint));
-          if (!this.weapons.at(-1)?.getReal()) {
-            this.weapons.pop();
-          } else if (!this.weapons.at(-1)!.getCanCounter()) {
-            this.addNoCounter(false, this.weapons.at(-1)!.getName());
-          }
-        }
-      }
-      if (Array.isArray(selectedEnemy.spells)) {
-        let spells: any[] = selectedEnemy.spells;
-        let spellCount: number = Math.min(spells.length, 256);
-        let spellBlueprint: any;
-        for (let i = 0; i < spellCount; i++) {
-          spellBlueprint = spells[i];
-          if (spellBlueprint == "EMPTY") {
-            continue;
-          } else if (typeof spellBlueprint != "string") {
-            throw 1;
-          }
-          this.spells.push(new spell(spellBlueprint));
-          if (!this.spells.at(-1)?.getReal()) {
-            this.spells.pop();
-          } else if (this.spells.at(-1)!.getNoCounter()) {
-            this.addNoCounter(true, this.spells.at(-1)!.getName());
-          }
-        }
-      }
-      switch (typeof selectedEnemy.initialSpell) {
-        case "number":
-          this.initialSpell = Math.trunc(selectedEnemy.initialSpell);
-          break;
-        case "string":
-          this.initialSpell = numFromString(selectedEnemy.initialSpell).value;
-      }
-      if (this.initialSpell < -1 || this.initialSpell >= this.spells.length) {
-        this.initialSpell = -1;
-      }
-      if (typeof selectedEnemy.deathSpell == "string" && selectedEnemy.deathSpell != "EMPTY") {
-        this.deathSpell = new spell(selectedEnemy.deathSpell);
-        if (!this.deathSpell.getReal()) {
-          this.deathSpell = undefined;
-        } else if (this.deathSpell.getNoCounter()) {
-          this.addNoCounter(true, this.deathSpell.getName());
-        }
-      }
-      switch (typeof selectedEnemy.flatArmour) {
-        case "number":
-          this.flatArmour = Math.trunc(selectedEnemy.flatArmour);
-          break;
-        case "string":
-          this.flatArmour = numFromString(selectedEnemy.flatArmour).value;
-      }
-      switch (typeof selectedEnemy.propArmour) {
-        case "number":
-          this.propArmour = selectedEnemy.propArmour;
-          break;
-        case "string":
-          this.propArmour = floatFromString(selectedEnemy.propArmour).value;
-      }
-      if (this.propArmour < -1) {
-        this.propArmour = -1;
-      }
-      switch (typeof selectedEnemy.flatMagicArmour) {
-        case "number":
-          this.flatMagicArmour = Math.trunc(selectedEnemy.flatMagicArmour);
-          break;
-        case "string":
-          this.flatMagicArmour = numFromString(selectedEnemy.flatMagicArmour).value;
-      }
-      switch (typeof selectedEnemy.propMagicArmour) {
-        case "number":
-          this.propMagicArmour = selectedEnemy.propMagicArmour;
-          break;
-        case "string":
-          this.propMagicArmour = floatFromString(selectedEnemy.propMagicArmour).value;
-      }
-      if (this.propMagicArmour < -1) {
-        this.propMagicArmour = -1;
-      }
-      switch (typeof selectedEnemy.flatDamageModifier) {
-        case "number":
-          this.flatDamageModifier = Math.trunc(selectedEnemy.flatDamageModifier);
-          break;
-        case "string":
-          this.flatDamageModifier = numFromString(selectedEnemy.flatDamageModifier).value;
-      }
-      switch (typeof selectedEnemy.propDamageModifier) {
-        case "number":
-          this.propDamageModifier = selectedEnemy.propDamageModifier;
-          break;
-        case "string":
-          this.propDamageModifier = floatFromString(selectedEnemy.propDamageModifier).value;
-      }
-      if (this.propDamageModifier < -1) {
-        this.propDamageModifier = -1;
-      }
-      switch (typeof selectedEnemy.flatMagicDamageModifier) {
-        case "number":
-          this.flatMagicDamageModifier = Math.trunc(selectedEnemy.flatMagicDamageModifier);
-          break;
-        case "string":
-          this.flatMagicDamageModifier = numFromString(selectedEnemy.flatMagicDamageModifier).value;
-      }
-      switch (typeof selectedEnemy.propMagicDamageModifier) {
-        case "number":
-          this.propMagicDamageModifier = selectedEnemy.propMagicDamageModifier;
-          break;
-        case "string":
-          this.propMagicDamageModifier = floatFromString(selectedEnemy.propMagicDamageModifier).value;
-      }
-      if (this.propMagicDamageModifier < -1) {
-        this.propMagicDamageModifier = -1;
-      }
-      switch (typeof selectedEnemy.flatArmourPiercingDamageModifier) {
-        case "number":
-          this.flatArmourPiercingDamageModifier = Math.trunc(selectedEnemy.flatArmourPiercingDamageModifier);
-          break;
-        case "string":
-          this.flatArmourPiercingDamageModifier = numFromString(selectedEnemy.flatArmourPiercingDamageModifier).value;
-      }
-      switch (typeof selectedEnemy.propArmourPiercingDamageModifier) {
-        case "number":
-          this.propArmourPiercingDamageModifier = selectedEnemy.propArmourPiercingDamageModifier;
-          break;
-        case "string":
-          this.propArmourPiercingDamageModifier = floatFromString(selectedEnemy.propArmourPiercingDamageModifier).value;
-      }
-      if (this.propArmourPiercingDamageModifier < -1) {
-        this.propArmourPiercingDamageModifier = -1;
-      }
-      switch (typeof selectedEnemy.evadeChance) {
-        case "number":
-          this.evadeChance = selectedEnemy.evadeChance;
-          break;
-        case "string":
-          this.evadeChance = floatFromString(selectedEnemy.evadeChance).value;
-      }
-      if (this.evadeChance < -1) {
-        this.evadeChance = -1;
-      }
-      switch (typeof selectedEnemy.counterAttackChance) {
-        case "number":
-          this.counterAttackChance = selectedEnemy.counterAttackChance;
-          break;
-        case "string":
-          this.counterAttackChance = floatFromString(selectedEnemy.counterAttackChance).value;
-      }
-      if (this.counterAttackChance < -1) {
-        this.counterAttackChance = -1;
-      }
-      switch (typeof selectedEnemy.bonusActions) {
-        case "number":
-          this.bonusActions = Math.trunc(selectedEnemy.bonusActions);
-          break;
-        case "string":
-          this.bonusActions = numFromString(selectedEnemy.bonusActions).value;
-      }
-      this.currentBonusActions = Math.max(0, this.bonusActions);
-      switch (typeof selectedEnemy.AIType) {
-        case "number":
-          this.AIType = Math.trunc(selectedEnemy.AIType);
-          break;
-        case "string":
-          this.AIType = numFromString(selectedEnemy.AIType).value;
-      }
-      if (this.AIType < 1 || this.AIType > AI_VALUES.AI_TYPES_NO) {
-        this.AIType = 2;
-      }
-      switch (typeof selectedEnemy.initiative) {
-        case "number":
-          this.initiative = Math.trunc(selectedEnemy.initiative);
-          break;
-        case "string":
-          this.initiative = numFromString(selectedEnemy.initiative).value;
-      }
-      switch (typeof selectedEnemy.xp) {
-        case "number":
-          this.xp = Math.trunc(selectedEnemy.xp);
-          break;
-        case "string":
-          this.xp = numFromString(selectedEnemy.xp).value;
-      }
-    } catch (err) {
-      switch (err) {
-        case 1:
+    }
+    this.poison = 0;
+    this.bleed = 0;
+    this.tempRegen = 0;
+    this.turnRegen = 0;
+    this.flatArmour = 0;
+    this.propArmour = 0;
+    this.flatMagicArmour = 0;
+    this.propMagicArmour = 0;
+    this.flatDamageModifier = 0;
+    this.propDamageModifier = 0;
+    this.flatMagicDamageModifier = 0;
+    this.propMagicDamageModifier = 0;
+    this.flatArmourPiercingDamageModifier = 0;
+    this.propArmourPiercingDamageModifier = 0;
+    this.poisonResist = 0.1;
+    this.bleedResist = 0.1;
+    this.evadeChance = 0.1;
+    this.counterAttackChance = 0.1;
+    this.maxHealth = 50;
+    this.maxMana = 50;
+    this.turnManaRegen = 5;
+    this.projectiles = 10;
+    this.initiative = 10;
+    this.initialSpell = -1;
+    this.bonusActions = 1;
+    this.AIType = 2;
+    this.real = true;
+    if (typeof selectedEnemy.name == "string") {
+      this.name = selectedEnemy.name || undefined;
+    }
+    if (typeof selectedEnemy.introduction == "string") {
+      this.introduction = selectedEnemy.introduction || undefined;
+    }
+    switch (typeof selectedEnemy.maxHealth) {
+      case "number":
+        this.maxHealth = Math.trunc(selectedEnemy.maxHealth);
+        break;
+      case "string":
+        this.maxHealth = numFromString(selectedEnemy.maxHealth).value;
+    }
+    if (this.maxHealth < 0) {
+      this.maxHealth = 0;
+    }
+    this.health = this.maxHealth;
+    switch (typeof selectedEnemy.projectiles) {
+      case "number":
+        this.projectiles = Math.trunc(selectedEnemy.projectiles);
+        break;
+      case "string":
+        this.projectiles = numFromString(selectedEnemy.projectiles).value;
+    }
+    if (this.projectiles < 0) {
+      this.projectiles = 0;
+    }
+    switch (typeof selectedEnemy.maxMana) {
+      case "number":
+        this.maxMana = Math.trunc(selectedEnemy.maxMana);
+        break;
+      case "string":
+        this.maxMana = numFromString(selectedEnemy.maxMana).value;
+    }
+    if (this.maxMana < 0) {
+      this.maxMana = 0;
+    }
+    this.mana = this.maxMana;
+    switch (typeof selectedEnemy.turnManaRegen) {
+      case "number":
+        this.turnManaRegen = Math.trunc(selectedEnemy.turnManaRegen);
+        break;
+      case "string":
+        this.turnManaRegen = numFromString(selectedEnemy.turnManaRegen).value;
+    }
+    switch (typeof selectedEnemy.poisonResist) {
+      case "number":
+        this.poisonResist = selectedEnemy.poisonResist;
+        break;
+      case "string":
+        this.poisonResist = floatFromString(selectedEnemy.poisonResist).value;
+    }
+    if (this.poisonResist < 0) {
+      this.poisonResist = 0;
+    }
+    switch (typeof selectedEnemy.bleedResist) {
+      case "number":
+        this.bleedResist = selectedEnemy.bleedResist;
+        break;
+      case "string":
+        this.bleedResist = floatFromString(selectedEnemy.bleedResist).value;
+    }
+    if (this.bleedResist < 0) {
+      this.bleedResist = 0;
+    }
+    switch (typeof selectedEnemy.turnRegen) {
+      case "number":
+        this.turnRegen = Math.trunc(selectedEnemy.turnRegen);
+        break;
+      case "string":
+        this.turnRegen = numFromString(selectedEnemy.turnRegen).value;
+    }
+    if (Array.isArray(selectedEnemy.weapons)) {
+      let weapons: any[] = selectedEnemy.weapons;
+      let weaponCount: number = Math.min(weapons.length, 256);
+      let weaponBlueprint: any;
+      for (let i = 0; i < weaponCount; i++) {
+        weaponBlueprint = weapons[i];
+        if (weaponBlueprint == "EMPTY") {
+          continue;
+        } else if (typeof weaponBlueprint != "string") {
           errorMessages.push(`Unable to parse enemy blueprint ${blueprint}`);
-          break;
-        case 2:
-          errorMessages.push(`Unable to find enemy blueprint ${blueprint}`);
-          break;
-        case 5:
-          errorMessages.push(`Enemy blueprint list ${blueprint} is empty`);
-          break;
-        case 9:
-          errorMessages.push(`Exceeded maximum list depth loading enemy blueprint ${blueprint}`);
-          break;
-        default:
-          throw err;
+          return;
+        }
+        this.weapons.push(new weapon(weaponBlueprint));
+        if (!this.weapons.at(-1)?.getReal()) {
+          this.weapons.pop();
+        } else if (!this.weapons.at(-1)!.getCanCounter()) {
+          this.addNoCounter(false, this.weapons.at(-1)!.getName());
+        }
       }
+    }
+    if (Array.isArray(selectedEnemy.spells)) {
+      let spells: any[] = selectedEnemy.spells;
+      let spellCount: number = Math.min(spells.length, 256);
+      let spellBlueprint: any;
+      for (let i = 0; i < spellCount; i++) {
+        spellBlueprint = spells[i];
+        if (spellBlueprint == "EMPTY") {
+          continue;
+        } else if (typeof spellBlueprint != "string") {
+          errorMessages.push(`Unable to parse enemy blueprint ${blueprint}`);
+          return;
+        }
+        this.spells.push(new spell(spellBlueprint));
+        if (!this.spells.at(-1)?.getReal()) {
+          this.spells.pop();
+        } else if (this.spells.at(-1)!.getNoCounter()) {
+          this.addNoCounter(true, this.spells.at(-1)!.getName());
+        }
+      }
+    }
+    switch (typeof selectedEnemy.initialSpell) {
+      case "number":
+        this.initialSpell = Math.trunc(selectedEnemy.initialSpell);
+        break;
+      case "string":
+        this.initialSpell = numFromString(selectedEnemy.initialSpell).value;
+    }
+    if (this.initialSpell < -1 || this.initialSpell >= this.spells.length) {
+      this.initialSpell = -1;
+    }
+    if (typeof selectedEnemy.deathSpell == "string" && selectedEnemy.deathSpell != "EMPTY") {
+      this.deathSpell = new spell(selectedEnemy.deathSpell);
+      if (!this.deathSpell.getReal()) {
+        this.deathSpell = undefined;
+      } else if (this.deathSpell.getNoCounter()) {
+        this.addNoCounter(true, this.deathSpell.getName());
+      }
+    }
+    switch (typeof selectedEnemy.flatArmour) {
+      case "number":
+        this.flatArmour = Math.trunc(selectedEnemy.flatArmour);
+        break;
+      case "string":
+        this.flatArmour = numFromString(selectedEnemy.flatArmour).value;
+    }
+    switch (typeof selectedEnemy.propArmour) {
+      case "number":
+        this.propArmour = selectedEnemy.propArmour;
+        break;
+      case "string":
+        this.propArmour = floatFromString(selectedEnemy.propArmour).value;
+    }
+    if (this.propArmour < -1) {
+      this.propArmour = -1;
+    }
+    switch (typeof selectedEnemy.flatMagicArmour) {
+      case "number":
+        this.flatMagicArmour = Math.trunc(selectedEnemy.flatMagicArmour);
+        break;
+      case "string":
+        this.flatMagicArmour = numFromString(selectedEnemy.flatMagicArmour).value;
+    }
+    switch (typeof selectedEnemy.propMagicArmour) {
+      case "number":
+        this.propMagicArmour = selectedEnemy.propMagicArmour;
+        break;
+      case "string":
+        this.propMagicArmour = floatFromString(selectedEnemy.propMagicArmour).value;
+    }
+    if (this.propMagicArmour < -1) {
+      this.propMagicArmour = -1;
+    }
+    switch (typeof selectedEnemy.flatDamageModifier) {
+      case "number":
+        this.flatDamageModifier = Math.trunc(selectedEnemy.flatDamageModifier);
+        break;
+      case "string":
+        this.flatDamageModifier = numFromString(selectedEnemy.flatDamageModifier).value;
+    }
+    switch (typeof selectedEnemy.propDamageModifier) {
+      case "number":
+        this.propDamageModifier = selectedEnemy.propDamageModifier;
+        break;
+      case "string":
+        this.propDamageModifier = floatFromString(selectedEnemy.propDamageModifier).value;
+    }
+    if (this.propDamageModifier < -1) {
+      this.propDamageModifier = -1;
+    }
+    switch (typeof selectedEnemy.flatMagicDamageModifier) {
+      case "number":
+        this.flatMagicDamageModifier = Math.trunc(selectedEnemy.flatMagicDamageModifier);
+        break;
+      case "string":
+        this.flatMagicDamageModifier = numFromString(selectedEnemy.flatMagicDamageModifier).value;
+    }
+    switch (typeof selectedEnemy.propMagicDamageModifier) {
+      case "number":
+        this.propMagicDamageModifier = selectedEnemy.propMagicDamageModifier;
+        break;
+      case "string":
+        this.propMagicDamageModifier = floatFromString(selectedEnemy.propMagicDamageModifier).value;
+    }
+    if (this.propMagicDamageModifier < -1) {
+      this.propMagicDamageModifier = -1;
+    }
+    switch (typeof selectedEnemy.flatArmourPiercingDamageModifier) {
+      case "number":
+        this.flatArmourPiercingDamageModifier = Math.trunc(selectedEnemy.flatArmourPiercingDamageModifier);
+        break;
+      case "string":
+        this.flatArmourPiercingDamageModifier = numFromString(selectedEnemy.flatArmourPiercingDamageModifier).value;
+    }
+    switch (typeof selectedEnemy.propArmourPiercingDamageModifier) {
+      case "number":
+        this.propArmourPiercingDamageModifier = selectedEnemy.propArmourPiercingDamageModifier;
+        break;
+      case "string":
+        this.propArmourPiercingDamageModifier = floatFromString(selectedEnemy.propArmourPiercingDamageModifier).value;
+    }
+    if (this.propArmourPiercingDamageModifier < -1) {
+      this.propArmourPiercingDamageModifier = -1;
+    }
+    switch (typeof selectedEnemy.evadeChance) {
+      case "number":
+        this.evadeChance = selectedEnemy.evadeChance;
+        break;
+      case "string":
+        this.evadeChance = floatFromString(selectedEnemy.evadeChance).value;
+    }
+    if (this.evadeChance < -1) {
+      this.evadeChance = -1;
+    }
+    switch (typeof selectedEnemy.counterAttackChance) {
+      case "number":
+        this.counterAttackChance = selectedEnemy.counterAttackChance;
+        break;
+      case "string":
+        this.counterAttackChance = floatFromString(selectedEnemy.counterAttackChance).value;
+    }
+    if (this.counterAttackChance < -1) {
+      this.counterAttackChance = -1;
+    }
+    switch (typeof selectedEnemy.bonusActions) {
+      case "number":
+        this.bonusActions = Math.trunc(selectedEnemy.bonusActions);
+        break;
+      case "string":
+        this.bonusActions = numFromString(selectedEnemy.bonusActions).value;
+    }
+    this.currentBonusActions = Math.max(0, this.bonusActions);
+    switch (typeof selectedEnemy.AIType) {
+      case "number":
+        this.AIType = Math.trunc(selectedEnemy.AIType);
+        break;
+      case "string":
+        this.AIType = numFromString(selectedEnemy.AIType).value;
+    }
+    if (this.AIType < 1 || this.AIType > AI_VALUES.AI_TYPES_NO) {
+      this.AIType = 2;
+    }
+    switch (typeof selectedEnemy.initiative) {
+      case "number":
+        this.initiative = Math.trunc(selectedEnemy.initiative);
+        break;
+      case "string":
+        this.initiative = numFromString(selectedEnemy.initiative).value;
+    }
+    switch (typeof selectedEnemy.xp) {
+      case "number":
+        this.xp = Math.trunc(selectedEnemy.xp);
+        break;
+      case "string":
+        this.xp = numFromString(selectedEnemy.xp).value;
     }
   }
   /**Chooses an action to take
