@@ -22,6 +22,7 @@ import {
 } from "@ionic/react";
 import { close } from "ionicons/icons";
 import { fn } from "./interfaces";
+import { variables } from "./variables";
 export class weapon {
   private key: number | undefined;
   private real: boolean = false;
@@ -60,9 +61,9 @@ export class weapon {
   private targetOverHeal: boolean | undefined;
   private upgrade: string | undefined;
   private flatMagicDamageModifier: number | undefined;
-  constructor(blueprint: string | weapon = "EMPTY") {
+  constructor(blueprint: string | weapon = "EMPTY", vars?: variables) {
     if (typeof blueprint == "string") {
-      this.loadFromFile(blueprint);
+      this.loadFromFile(blueprint, vars);
     } else {
       this.key = blueprint.key;
       this.real = blueprint.real;
@@ -108,7 +109,7 @@ export class weapon {
   toString(): string {
     return this.name ?? "None";
   }
-  loadFromFile(blueprint: string = "EMPTY"): void {
+  loadFromFile(blueprint: string = "EMPTY", vars?: variables): void {
     this.real = false;
     this.key = undefined;
     this.name = undefined;
@@ -168,7 +169,8 @@ export class weapon {
       blueprint = selectedWeapon[randomInt(0, selectedWeapon.length)];
       if (blueprint == "EMPTY") {
         return;
-      } else if (typeof blueprint != "string") {
+      }
+      if (typeof blueprint != "string") {
         errorMessages.push(`Unable to parse weapon blueprint ${blueprint}`);
         return;
       }
@@ -191,21 +193,21 @@ export class weapon {
         this.flatDamageMin = this.flatDamageMax = Math.trunc(selectedWeapon.flatDamage) || undefined;
         break;
       case "string":
-        this.flatDamageMin = this.flatDamageMax = numFromString(selectedWeapon.flatDamage).value || undefined;
+        this.flatDamageMin = this.flatDamageMax = numFromString(selectedWeapon.flatDamage, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatDamageMin) {
       case "number":
         this.flatDamageMin = Math.trunc(selectedWeapon.flatDamageMin) || undefined;
         break;
       case "string":
-        this.flatDamageMin = numFromString(selectedWeapon.flatDamageMin).value || undefined;
+        this.flatDamageMin = numFromString(selectedWeapon.flatDamageMin, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatDamageMax) {
       case "number":
         this.flatDamageMax = Math.trunc(selectedWeapon.flatDamageMax) || undefined;
         break;
       case "string":
-        this.flatDamageMax = numFromString(selectedWeapon.flatDamageMax).value || undefined;
+        this.flatDamageMax = numFromString(selectedWeapon.flatDamageMax, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatMagicDamage) {
       case "number":
@@ -213,21 +215,21 @@ export class weapon {
         break;
       case "string":
         this.flatMagicDamageMin = this.flatMagicDamageMax =
-          numFromString(selectedWeapon.flatMagicDamage).value || undefined;
+          numFromString(selectedWeapon.flatMagicDamage, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatMagicDamageMin) {
       case "number":
         this.flatMagicDamageMin = Math.trunc(selectedWeapon.flatMagicDamageMin) || undefined;
         break;
       case "string":
-        this.flatMagicDamageMin = numFromString(selectedWeapon.flatMagicDamageMin).value || undefined;
+        this.flatMagicDamageMin = numFromString(selectedWeapon.flatMagicDamageMin, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatMagicDamageMax) {
       case "number":
         this.flatMagicDamageMax = Math.trunc(selectedWeapon.flatMagicDamageMax) || undefined;
         break;
       case "string":
-        this.flatMagicDamageMax = numFromString(selectedWeapon.flatMagicDamageMax).value || undefined;
+        this.flatMagicDamageMax = numFromString(selectedWeapon.flatMagicDamageMax, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatArmourPiercingDamage) {
       case "number":
@@ -236,28 +238,30 @@ export class weapon {
         break;
       case "string":
         this.flatArmourPiercingDamageMin = this.flatArmourPiercingDamageMax =
-          numFromString(selectedWeapon.flatArmourPiercingDamage).value || undefined;
+          numFromString(selectedWeapon.flatArmourPiercingDamage, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatArmourPiercingDamageMin) {
       case "number":
         this.flatArmourPiercingDamageMin = Math.trunc(selectedWeapon.flatArmourPiercingDamageMin) || undefined;
         break;
       case "string":
-        this.flatArmourPiercingDamageMin = numFromString(selectedWeapon.flatArmourPiercingDamageMin).value || undefined;
+        this.flatArmourPiercingDamageMin =
+          numFromString(selectedWeapon.flatArmourPiercingDamageMin, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatArmourPiercingDamageMax) {
       case "number":
         this.flatArmourPiercingDamageMax = Math.trunc(selectedWeapon.flatArmourPiercingDamageMax) || undefined;
         break;
       case "string":
-        this.flatArmourPiercingDamageMax = numFromString(selectedWeapon.flatArmourPiercingDamageMax).value || undefined;
+        this.flatArmourPiercingDamageMax =
+          numFromString(selectedWeapon.flatArmourPiercingDamageMax, vars).value || undefined;
     }
     switch (typeof selectedWeapon.propDamage) {
       case "number":
         this.propDamage = selectedWeapon.propDamage || undefined;
         break;
       case "string":
-        this.propDamage = floatFromString(selectedWeapon.propDamage).value || undefined;
+        this.propDamage = floatFromString(selectedWeapon.propDamage, vars).value || undefined;
     }
     if (this.propDamage != undefined) {
       if (this.propDamage < -1) {
@@ -272,21 +276,21 @@ export class weapon {
         break;
       case "string":
         this.flatSelfDamageMin = this.flatSelfDamageMax =
-          numFromString(selectedWeapon.flatSelfDamage).value || undefined;
+          numFromString(selectedWeapon.flatSelfDamage, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatSelfDamageMin) {
       case "number":
         this.flatSelfDamageMin = Math.trunc(selectedWeapon.flatSelfDamageMin) || undefined;
         break;
       case "string":
-        this.flatSelfDamageMin = numFromString(selectedWeapon.flatSelfDamageMin).value || undefined;
+        this.flatSelfDamageMin = numFromString(selectedWeapon.flatSelfDamageMin, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatSelfDamageMax) {
       case "number":
         this.flatSelfDamageMax = Math.trunc(selectedWeapon.flatSelfDamageMax) || undefined;
         break;
       case "string":
-        this.flatSelfDamageMax = numFromString(selectedWeapon.flatSelfDamageMax).value || undefined;
+        this.flatSelfDamageMax = numFromString(selectedWeapon.flatSelfDamageMax, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatSelfMagicDamage) {
       case "number":
@@ -295,28 +299,28 @@ export class weapon {
         break;
       case "string":
         this.flatSelfMagicDamageMin = this.flatSelfMagicDamageMax =
-          numFromString(selectedWeapon.flatSelfMagicDamage).value || undefined;
+          numFromString(selectedWeapon.flatSelfMagicDamage, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatSelfMagicDamageMin) {
       case "number":
         this.flatSelfMagicDamageMin = Math.trunc(selectedWeapon.flatSelfMagicDamageMin) || undefined;
         break;
       case "string":
-        this.flatSelfMagicDamageMin = numFromString(selectedWeapon.flatSelfMagicDamageMin).value || undefined;
+        this.flatSelfMagicDamageMin = numFromString(selectedWeapon.flatSelfMagicDamageMin, vars).value || undefined;
     }
     switch (typeof selectedWeapon.flatSelfMagicDamageMax) {
       case "number":
         this.flatSelfMagicDamageMax = Math.trunc(selectedWeapon.flatSelfMagicDamageMax) || undefined;
         break;
       case "string":
-        this.flatSelfMagicDamageMax = numFromString(selectedWeapon.flatSelfMagicDamageMax).value || undefined;
+        this.flatSelfMagicDamageMax = numFromString(selectedWeapon.flatSelfMagicDamageMax, vars).value || undefined;
     }
     switch (typeof selectedWeapon.propSelfDamage) {
       case "number":
         this.propSelfDamage = selectedWeapon.propSelfDamage || undefined;
         break;
       case "string":
-        this.propSelfDamage = floatFromString(selectedWeapon.propSelfDamage).value || undefined;
+        this.propSelfDamage = floatFromString(selectedWeapon.propSelfDamage, vars).value || undefined;
     }
     if (this.propSelfDamage != undefined) {
       if (this.propSelfDamage < -1) {
@@ -330,14 +334,14 @@ export class weapon {
         this.healthChange = Math.trunc(selectedWeapon.healthChange) || undefined;
         break;
       case "string":
-        this.healthChange = numFromString(selectedWeapon.healthChange).value || undefined;
+        this.healthChange = numFromString(selectedWeapon.healthChange, vars).value || undefined;
     }
     switch (typeof selectedWeapon.hitCount) {
       case "number":
         this.hitCount = Math.trunc(selectedWeapon.hitCount);
         break;
       case "string":
-        this.hitCount = numFromString(selectedWeapon.hitCount).value;
+        this.hitCount = numFromString(selectedWeapon.hitCount, vars).value;
     }
     if (this.hitCount < 0) {
       this.hitCount = 0;
@@ -347,7 +351,7 @@ export class weapon {
         this.counterHits = Math.trunc(selectedWeapon.counterHits) || undefined;
         break;
       case "string":
-        this.counterHits = numFromString(selectedWeapon.counterHits).value || undefined;
+        this.counterHits = numFromString(selectedWeapon.counterHits, vars).value || undefined;
     }
     if (this.counterHits != undefined && this.counterHits < 0) {
       this.counterHits = 0;
@@ -366,21 +370,21 @@ export class weapon {
         this.manaChange = Math.trunc(selectedWeapon.manaChange) || undefined;
         break;
       case "string":
-        this.manaChange = numFromString(selectedWeapon.manaChange).value || undefined;
+        this.manaChange = numFromString(selectedWeapon.manaChange, vars).value || undefined;
     }
     switch (typeof selectedWeapon.projectileChange) {
       case "number":
         this.projectileChange = Math.trunc(selectedWeapon.projectileChange) || undefined;
         break;
       case "string":
-        this.projectileChange = numFromString(selectedWeapon.projectileChange).value || undefined;
+        this.projectileChange = numFromString(selectedWeapon.projectileChange, vars).value || undefined;
     }
     switch (typeof selectedWeapon.poison) {
       case "number":
         this.poison = Math.trunc(selectedWeapon.poison) || undefined;
         break;
       case "string":
-        this.poison = numFromString(selectedWeapon.poison).value || undefined;
+        this.poison = numFromString(selectedWeapon.poison, vars).value || undefined;
     }
     if (this.poison != undefined) {
       if (this.poison < 0) {
@@ -394,7 +398,7 @@ export class weapon {
         this.selfPoison = Math.trunc(selectedWeapon.selfPoison) || undefined;
         break;
       case "string":
-        this.selfPoison = numFromString(selectedWeapon.selfPoison).value || undefined;
+        this.selfPoison = numFromString(selectedWeapon.selfPoison, vars).value || undefined;
     }
     if (this.selfPoison != undefined) {
       if (this.selfPoison < 0) {
@@ -408,7 +412,7 @@ export class weapon {
         this.bleed = Math.trunc(selectedWeapon.bleed) || undefined;
         break;
       case "string":
-        this.bleed = numFromString(selectedWeapon.bleed).value || undefined;
+        this.bleed = numFromString(selectedWeapon.bleed, vars).value || undefined;
     }
     if (this.bleed != undefined) {
       if (this.bleed < 0) {
@@ -422,7 +426,7 @@ export class weapon {
         this.selfBleed = Math.trunc(selectedWeapon.selfBleed) || undefined;
         break;
       case "string":
-        this.selfBleed = numFromString(selectedWeapon.selfBleed).value || undefined;
+        this.selfBleed = numFromString(selectedWeapon.selfBleed, vars).value || undefined;
     }
     if (this.selfBleed != undefined) {
       if (this.selfBleed < 0) {
@@ -451,7 +455,7 @@ export class weapon {
         this.flatMagicDamageModifier = Math.trunc(selectedWeapon.flatMagicDamageModifier) || undefined;
         break;
       case "string":
-        this.flatMagicDamageModifier = numFromString(selectedWeapon.flatMagicDamageModifier).value || undefined;
+        this.flatMagicDamageModifier = numFromString(selectedWeapon.flatMagicDamageModifier, vars).value || undefined;
     }
     this.setEffectType();
     //Ensure max damage values are at least min values

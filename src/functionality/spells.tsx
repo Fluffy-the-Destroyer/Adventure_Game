@@ -21,6 +21,7 @@ import {
 } from "@ionic/react";
 import { close } from "ionicons/icons";
 import { fn } from "./interfaces";
+import { variables } from "./variables";
 const enum SPELL_VALUES {
   SPELL_TYPES_NO = 5,
   ATTACK_SPELL_FLAT_CUTOFF = 10,
@@ -121,9 +122,9 @@ export class spell {
   private effectType: Uint8Array = new Uint8Array(2);
   private upgrade: string | undefined;
   private initiativeModifier: number | undefined;
-  constructor(blueprint: string | spell = "EMPTY") {
+  constructor(blueprint: string | spell = "EMPTY", vars?: variables) {
     if (typeof blueprint == "string") {
-      this.loadFromFile(blueprint);
+      this.loadFromFile(blueprint, vars);
     } else {
       this.key = blueprint.key;
       this.real = blueprint.real;
@@ -216,7 +217,7 @@ export class spell {
       }
     }
   }
-  loadFromFile(blueprint: string = "EMPTY"): void {
+  loadFromFile(blueprint: string = "EMPTY", vars?: variables): void {
     this.real = false;
     this.key = undefined;
     this.name = undefined;
@@ -325,7 +326,8 @@ export class spell {
       blueprint = selectedSpell[randomInt(0, selectedSpell.length)];
       if (blueprint == "EMPTY") {
         return;
-      } else if (typeof blueprint != "string") {
+      }
+      if (typeof blueprint != "string") {
         errorMessages.push(`Unable to parse spell blueprint ${blueprint}`);
         return;
       }
@@ -348,21 +350,21 @@ export class spell {
         this.flatDamageMin = this.flatDamageMax = Math.trunc(selectedSpell.flatDamage) || undefined;
         break;
       case "string":
-        this.flatDamageMin = this.flatDamageMax = numFromString(selectedSpell.flatDamage).value || undefined;
+        this.flatDamageMin = this.flatDamageMax = numFromString(selectedSpell.flatDamage, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatDamageMin) {
       case "number":
         this.flatDamageMin = Math.trunc(selectedSpell.flatDamageMin) || undefined;
         break;
       case "string":
-        this.flatDamageMin = numFromString(selectedSpell.flatDamageMin).value || undefined;
+        this.flatDamageMin = numFromString(selectedSpell.flatDamageMin, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatDamageMax) {
       case "number":
         this.flatDamageMax = Math.trunc(selectedSpell.flatDamageMax) || undefined;
         break;
       case "string":
-        this.flatDamageMax = numFromString(selectedSpell.flatDamageMax).value || undefined;
+        this.flatDamageMax = numFromString(selectedSpell.flatDamageMax, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatMagicDamage) {
       case "number":
@@ -370,21 +372,21 @@ export class spell {
         break;
       case "string":
         this.flatMagicDamageMin = this.flatMagicDamageMax =
-          numFromString(selectedSpell.flatMagicDamage).value || undefined;
+          numFromString(selectedSpell.flatMagicDamage, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatMagicDamageMin) {
       case "number":
         this.flatMagicDamageMin = Math.trunc(selectedSpell.flatMagicDamageMin) || undefined;
         break;
       case "string":
-        this.flatMagicDamageMin = numFromString(selectedSpell.flatMagicDamageMin).value || undefined;
+        this.flatMagicDamageMin = numFromString(selectedSpell.flatMagicDamageMin, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatMagicDamageMax) {
       case "number":
         this.flatMagicDamageMax = Math.trunc(selectedSpell.flatMagicDamageMax) || undefined;
         break;
       case "string":
-        this.flatMagicDamageMax = numFromString(selectedSpell.flatMagicDamageMax).value || undefined;
+        this.flatMagicDamageMax = numFromString(selectedSpell.flatMagicDamageMax, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatArmourPiercingDamage) {
       case "number":
@@ -393,28 +395,30 @@ export class spell {
         break;
       case "string":
         this.flatArmourPiercingDamageMin = this.flatArmourPiercingDamageMax =
-          numFromString(selectedSpell.flatArmourPiercingDamage).value || undefined;
+          numFromString(selectedSpell.flatArmourPiercingDamage, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatArmourPiercingDamageMin) {
       case "number":
         this.flatArmourPiercingDamageMin = Math.trunc(selectedSpell.flatArmourPiercingDamageMin) || undefined;
         break;
       case "string":
-        this.flatArmourPiercingDamageMin = numFromString(selectedSpell.flatArmourPiercingDamageMin).value || undefined;
+        this.flatArmourPiercingDamageMin =
+          numFromString(selectedSpell.flatArmourPiercingDamageMin, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatArmourPiercingDamageMax) {
       case "number":
         this.flatArmourPiercingDamageMax = Math.trunc(selectedSpell.flatArmourPiercingDamageMax) || undefined;
         break;
       case "string":
-        this.flatArmourPiercingDamageMax = numFromString(selectedSpell.flatArmourPiercingDamageMax).value || undefined;
+        this.flatArmourPiercingDamageMax =
+          numFromString(selectedSpell.flatArmourPiercingDamageMax, vars).value || undefined;
     }
     switch (typeof selectedSpell.propDamage) {
       case "number":
         this.propDamage = selectedSpell.propDamage || undefined;
         break;
       case "string":
-        this.propDamage = floatFromString(selectedSpell.propDamage).value || undefined;
+        this.propDamage = floatFromString(selectedSpell.propDamage, vars).value || undefined;
     }
     if (this.propDamage != undefined) {
       if (this.propDamage > 1) {
@@ -429,21 +433,21 @@ export class spell {
         break;
       case "string":
         this.flatSelfDamageMin = this.flatSelfDamageMax =
-          numFromString(selectedSpell.flatSelfDamage).value || undefined;
+          numFromString(selectedSpell.flatSelfDamage, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatSelfDamageMin) {
       case "number":
         this.flatSelfDamageMin = Math.trunc(selectedSpell.flatSelfDamageMin) || undefined;
         break;
       case "string":
-        this.flatSelfDamageMin = numFromString(selectedSpell.flatSelfDamageMin).value || undefined;
+        this.flatSelfDamageMin = numFromString(selectedSpell.flatSelfDamageMin, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatSelfDamageMax) {
       case "number":
         this.flatSelfDamageMax = Math.trunc(selectedSpell.flatSelfDamageMax) || undefined;
         break;
       case "string":
-        this.flatSelfDamageMax = numFromString(selectedSpell.flatSelfDamageMax).value || undefined;
+        this.flatSelfDamageMax = numFromString(selectedSpell.flatSelfDamageMax, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatSelfMagicDamage) {
       case "number":
@@ -452,21 +456,21 @@ export class spell {
         break;
       case "string":
         this.flatSelfMagicDamageMin = this.flatSelfMagicDamageMax =
-          numFromString(selectedSpell.flatSelfMagicDamage).value || undefined;
+          numFromString(selectedSpell.flatSelfMagicDamage, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatSelfMagicDamageMin) {
       case "number":
         this.flatSelfMagicDamageMin = Math.trunc(selectedSpell.flatSelfMagicDamageMin) || undefined;
         break;
       case "string":
-        this.flatSelfMagicDamageMin = numFromString(selectedSpell.flatSelfMagicDamageMin).value || undefined;
+        this.flatSelfMagicDamageMin = numFromString(selectedSpell.flatSelfMagicDamageMin, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatSelfMagicDamageMax) {
       case "number":
         this.flatSelfMagicDamageMax = Math.trunc(selectedSpell.flatSelfMagicDamageMax) || undefined;
         break;
       case "string":
-        this.flatSelfMagicDamageMax = numFromString(selectedSpell.flatSelfMagicDamageMax).value || undefined;
+        this.flatSelfMagicDamageMax = numFromString(selectedSpell.flatSelfMagicDamageMax, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatSelfArmourPiercingDamage) {
       case "number":
@@ -475,7 +479,7 @@ export class spell {
         break;
       case "string":
         this.flatSelfArmourPiercingDamageMin = this.flatSelfArmourPiercingDamageMax =
-          numFromString(selectedSpell.flatSelfArmourPiercingDamage).value || undefined;
+          numFromString(selectedSpell.flatSelfArmourPiercingDamage, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatSelfArmourPiercingDamageMin) {
       case "number":
@@ -483,7 +487,7 @@ export class spell {
         break;
       case "string":
         this.flatSelfArmourPiercingDamageMin =
-          numFromString(selectedSpell.flatSelfArmourPiercingDamageMin).value || undefined;
+          numFromString(selectedSpell.flatSelfArmourPiercingDamageMin, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatSelfArmourPiercingDamageMax) {
       case "number":
@@ -491,14 +495,14 @@ export class spell {
         break;
       case "string":
         this.flatSelfArmourPiercingDamageMax =
-          numFromString(selectedSpell.flatSelfArmourPiercingDamageMax).value || undefined;
+          numFromString(selectedSpell.flatSelfArmourPiercingDamageMax, vars).value || undefined;
     }
     switch (typeof selectedSpell.propSelfDamage) {
       case "number":
         this.propSelfDamage = selectedSpell.propSelfDamage || undefined;
         break;
       case "string":
-        this.propSelfDamage = floatFromString(selectedSpell.propSelfDamage).value || undefined;
+        this.propSelfDamage = floatFromString(selectedSpell.propSelfDamage, vars).value || undefined;
     }
     if (this.propSelfDamage != undefined) {
       if (this.propSelfDamage > 1) {
@@ -512,7 +516,7 @@ export class spell {
         this.hitCount = Math.trunc(selectedSpell.hitCount);
         break;
       case "string":
-        this.hitCount = numFromString(selectedSpell.hitCount).value;
+        this.hitCount = numFromString(selectedSpell.hitCount, vars).value;
     }
     if (this.hitCount < 0) {
       this.hitCount = 0;
@@ -522,7 +526,7 @@ export class spell {
         this.counterHits = Math.trunc(selectedSpell.counterHits) || undefined;
         break;
       case "string":
-        this.counterHits = numFromString(selectedSpell.counterHits).value || undefined;
+        this.counterHits = numFromString(selectedSpell.counterHits, vars).value || undefined;
     }
     if (this.counterHits != undefined && this.counterHits <= 0) {
       this.counterHits = undefined;
@@ -532,7 +536,7 @@ export class spell {
         this.responseHits = Math.trunc(selectedSpell.responseHits) || undefined;
         break;
       case "string":
-        this.responseHits = numFromString(selectedSpell.responseHits).value || undefined;
+        this.responseHits = numFromString(selectedSpell.responseHits, vars).value || undefined;
     }
     if (this.responseHits != undefined && this.responseHits < 0) {
       this.responseHits = 0;
@@ -551,28 +555,28 @@ export class spell {
         this.manaChangeEnemy = Math.trunc(selectedSpell.manaChangeEnemy) || undefined;
         break;
       case "string":
-        this.manaChangeEnemy = numFromString(selectedSpell.manaChangeEnemy).value || undefined;
+        this.manaChangeEnemy = numFromString(selectedSpell.manaChangeEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.manaChange) {
       case "number":
         this.manaChange = Math.trunc(selectedSpell.manaChange) || undefined;
         break;
       case "string":
-        this.manaChange = numFromString(selectedSpell.manaChange).value || undefined;
+        this.manaChange = numFromString(selectedSpell.manaChange, vars).value || undefined;
     }
     switch (typeof selectedSpell.projectileChange) {
       case "number":
         this.projectileChange = Math.trunc(selectedSpell.projectileChange) || undefined;
         break;
       case "string":
-        this.projectileChange = numFromString(selectedSpell.projectileChange).value || undefined;
+        this.projectileChange = numFromString(selectedSpell.projectileChange, vars).value || undefined;
     }
     switch (typeof selectedSpell.poison) {
       case "number":
         this.poison = Math.trunc(selectedSpell.poison) || undefined;
         break;
       case "string":
-        this.poison = numFromString(selectedSpell.poison).value || undefined;
+        this.poison = numFromString(selectedSpell.poison, vars).value || undefined;
     }
     if (this.poison != undefined) {
       if (this.poison < -255) {
@@ -586,7 +590,7 @@ export class spell {
         this.selfPoison = Math.trunc(selectedSpell.selfPoison) || undefined;
         break;
       case "string":
-        this.selfPoison = numFromString(selectedSpell.selfPoison).value || undefined;
+        this.selfPoison = numFromString(selectedSpell.selfPoison, vars).value || undefined;
     }
     if (this.selfPoison != undefined) {
       if (this.selfPoison < -255) {
@@ -600,7 +604,7 @@ export class spell {
         this.bleed = Math.trunc(selectedSpell.bleed) || undefined;
         break;
       case "string":
-        this.bleed = numFromString(selectedSpell.bleed).value || undefined;
+        this.bleed = numFromString(selectedSpell.bleed, vars).value || undefined;
     }
     if (this.bleed != undefined) {
       if (this.bleed < -255) {
@@ -614,7 +618,7 @@ export class spell {
         this.selfBleed = Math.trunc(selectedSpell.selfBleed) || undefined;
         break;
       case "string":
-        this.selfBleed = numFromString(selectedSpell.selfBleed).value || undefined;
+        this.selfBleed = numFromString(selectedSpell.selfBleed, vars).value || undefined;
     }
     if (this.selfBleed != undefined) {
       if (this.selfBleed < -255) {
@@ -628,42 +632,43 @@ export class spell {
         this.maxHealthModifierEnemy = Math.trunc(selectedSpell.maxHealthModifierEnemy) || undefined;
         break;
       case "string":
-        this.maxHealthModifierEnemy = numFromString(selectedSpell.maxHealthModifierEnemy).value || undefined;
+        this.maxHealthModifierEnemy = numFromString(selectedSpell.maxHealthModifierEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.maxHealthModifier) {
       case "number":
         this.maxHealthModifier = Math.trunc(selectedSpell.maxHealthModifier) || undefined;
         break;
       case "string":
-        this.maxHealthModifier = numFromString(selectedSpell.maxHealthModifier).value || undefined;
+        this.maxHealthModifier = numFromString(selectedSpell.maxHealthModifier, vars).value || undefined;
     }
     switch (typeof selectedSpell.maxManaModifierEnemy) {
       case "number":
         this.maxManaModifierEnemy = Math.trunc(selectedSpell.maxManaModifierEnemy) || undefined;
         break;
       case "string":
-        this.maxManaModifierEnemy = numFromString(selectedSpell.maxManaModifierEnemy).value || undefined;
+        this.maxManaModifierEnemy = numFromString(selectedSpell.maxManaModifierEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.maxManaModifier) {
       case "number":
         this.maxManaModifier = Math.trunc(selectedSpell.maxManaModifier) || undefined;
         break;
       case "string":
-        this.maxManaModifier = numFromString(selectedSpell.maxManaModifier).value || undefined;
+        this.maxManaModifier = numFromString(selectedSpell.maxManaModifier, vars).value || undefined;
     }
     switch (typeof selectedSpell.turnManaRegenModifierEnemy) {
       case "number":
         this.turnManaRegenModifierEnemy = Math.trunc(selectedSpell.turnManaRegenModifierEnemy) || undefined;
         break;
       case "string":
-        this.turnManaRegenModifierEnemy = numFromString(selectedSpell.turnManaRegenModifierEnemy).value || undefined;
+        this.turnManaRegenModifierEnemy =
+          numFromString(selectedSpell.turnManaRegenModifierEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.turnManaRegenModifier) {
       case "number":
         this.turnManaRegenModifier = Math.trunc(selectedSpell.turnManaRegenModifier) || undefined;
         break;
       case "string":
-        this.turnManaRegenModifier = numFromString(selectedSpell.turnManaRegenModifier).value || undefined;
+        this.turnManaRegenModifier = numFromString(selectedSpell.turnManaRegenModifier, vars).value || undefined;
     }
     switch (typeof selectedSpell.battleManaRegenModifierEnemy) {
       case "number":
@@ -671,21 +676,22 @@ export class spell {
         break;
       case "string":
         this.battleManaRegenModifierEnemy =
-          numFromString(selectedSpell.battleManaRegenModifierEnemy).value || undefined;
+          numFromString(selectedSpell.battleManaRegenModifierEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.battleManaRegenModifier) {
       case "number":
         this.battleManaRegenModifier = Math.trunc(selectedSpell.battleManaRegenModifier) || undefined;
         break;
       case "string":
-        this.battleManaRegenModifier = numFromString(selectedSpell.battleManaRegenModifier).value || undefined;
+        this.battleManaRegenModifier = numFromString(selectedSpell.battleManaRegenModifier, vars).value || undefined;
     }
     switch (typeof selectedSpell.poisonResistModifierEnemy) {
       case "number":
         this.poisonResistModifierEnemy = selectedSpell.poisonResistModifierEnemy || undefined;
         break;
       case "string":
-        this.poisonResistModifierEnemy = floatFromString(selectedSpell.poisonResistModifierEnemy).value || undefined;
+        this.poisonResistModifierEnemy =
+          floatFromString(selectedSpell.poisonResistModifierEnemy, vars).value || undefined;
     }
     if (this.poisonResistModifierEnemy != undefined && this.poisonResistModifierEnemy < -1) {
       this.poisonResistModifierEnemy = -1;
@@ -695,7 +701,7 @@ export class spell {
         this.poisonResistModifier = selectedSpell.poisonResistModifier || undefined;
         break;
       case "string":
-        this.poisonResistModifier = floatFromString(selectedSpell.poisonResistModifier).value || undefined;
+        this.poisonResistModifier = floatFromString(selectedSpell.poisonResistModifier, vars).value || undefined;
     }
     if (this.poisonResistModifier != undefined && this.poisonResistModifier < -1) {
       this.poisonResistModifier = -1;
@@ -705,7 +711,8 @@ export class spell {
         this.bleedResistModifierEnemy = selectedSpell.bleedResistModifierEnemy || undefined;
         break;
       case "string":
-        this.bleedResistModifierEnemy = floatFromString(selectedSpell.bleedResistModifierEnemy).value || undefined;
+        this.bleedResistModifierEnemy =
+          floatFromString(selectedSpell.bleedResistModifierEnemy, vars).value || undefined;
     }
     if (this.bleedResistModifierEnemy != undefined && this.bleedResistModifierEnemy < -1) {
       this.bleedResistModifierEnemy = -1;
@@ -715,7 +722,7 @@ export class spell {
         this.bleedResistModifier = selectedSpell.bleedResistModifier || undefined;
         break;
       case "string":
-        this.bleedResistModifier = floatFromString(selectedSpell.bleedResistModifier).value || undefined;
+        this.bleedResistModifier = floatFromString(selectedSpell.bleedResistModifier, vars).value || undefined;
     }
     if (this.bleedResistModifier != undefined && this.bleedResistModifier < -1) {
       this.bleedResistModifier = -1;
@@ -725,7 +732,7 @@ export class spell {
         this.tempRegen = Math.trunc(selectedSpell.tempRegen) || undefined;
         break;
       case "string":
-        this.tempRegen = numFromString(selectedSpell.tempRegen).value || undefined;
+        this.tempRegen = numFromString(selectedSpell.tempRegen, vars).value || undefined;
     }
     if (this.tempRegen != undefined) {
       if (this.tempRegen < -255) {
@@ -739,7 +746,7 @@ export class spell {
         this.tempRegenSelf = Math.trunc(selectedSpell.tempRegenSelf) || undefined;
         break;
       case "string":
-        this.tempRegenSelf = numFromString(selectedSpell.tempRegenSelf).value || undefined;
+        this.tempRegenSelf = numFromString(selectedSpell.tempRegenSelf, vars).value || undefined;
     }
     if (this.tempRegenSelf != undefined) {
       if (this.tempRegenSelf < -255) {
@@ -753,49 +760,49 @@ export class spell {
         this.turnRegenModifierEnemy = Math.trunc(selectedSpell.turnRegenModifierEnemy) || undefined;
         break;
       case "string":
-        this.turnRegenModifierEnemy = numFromString(selectedSpell.turnRegenModifierEnemy).value || undefined;
+        this.turnRegenModifierEnemy = numFromString(selectedSpell.turnRegenModifierEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.turnRegenModifier) {
       case "number":
         this.turnRegenModifier = Math.trunc(selectedSpell.turnRegenModifier) || undefined;
         break;
       case "string":
-        this.turnRegenModifier = numFromString(selectedSpell.turnRegenModifier).value || undefined;
+        this.turnRegenModifier = numFromString(selectedSpell.turnRegenModifier, vars).value || undefined;
     }
     switch (typeof selectedSpell.battleRegenModifierEnemy) {
       case "number":
         this.battleRegenModifierEnemy = Math.trunc(selectedSpell.battleRegenModifierEnemy) || undefined;
         break;
       case "string":
-        this.battleRegenModifierEnemy = numFromString(selectedSpell.battleRegenModifierEnemy).value || undefined;
+        this.battleRegenModifierEnemy = numFromString(selectedSpell.battleRegenModifierEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.battleRegenModifier) {
       case "number":
         this.battleRegenModifier = Math.trunc(selectedSpell.battleRegenModifier) || undefined;
         break;
       case "string":
-        this.battleRegenModifier = numFromString(selectedSpell.battleRegenModifier).value || undefined;
+        this.battleRegenModifier = numFromString(selectedSpell.battleRegenModifier, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatArmourModifierEnemy) {
       case "number":
         this.flatArmourModifierEnemy = Math.trunc(selectedSpell.flatArmourModifierEnemy) || undefined;
         break;
       case "string":
-        this.flatArmourModifierEnemy = numFromString(selectedSpell.flatArmourModifierEnemy).value || undefined;
+        this.flatArmourModifierEnemy = numFromString(selectedSpell.flatArmourModifierEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatArmourModifier) {
       case "number":
         this.flatArmourModifier = Math.trunc(selectedSpell.flatArmourModifierEnemy) || undefined;
         break;
       case "string":
-        this.flatArmourModifier = numFromString(selectedSpell.flatArmourModifier).value || undefined;
+        this.flatArmourModifier = numFromString(selectedSpell.flatArmourModifier, vars).value || undefined;
     }
     switch (typeof selectedSpell.propArmourModifierEnemy) {
       case "number":
         this.propArmourModifierEnemy = selectedSpell.propArmourModifierEnemy || undefined;
         break;
       case "string":
-        this.propArmourModifierEnemy = floatFromString(selectedSpell.propArmourModifierEnemy).value || undefined;
+        this.propArmourModifierEnemy = floatFromString(selectedSpell.propArmourModifierEnemy, vars).value || undefined;
     }
     if (this.propArmourModifierEnemy != undefined && this.propArmourModifierEnemy < -1) {
       this.propArmourModifierEnemy = -1;
@@ -805,7 +812,7 @@ export class spell {
         this.propArmourModifier = selectedSpell.propArmourModifier || undefined;
         break;
       case "string":
-        this.propArmourModifier = floatFromString(selectedSpell.propArmourModifier).value || undefined;
+        this.propArmourModifier = floatFromString(selectedSpell.propArmourModifier, vars).value || undefined;
     }
     if (this.propArmourModifier != undefined && this.propArmourModifier < -1) {
       this.propArmourModifier = -1;
@@ -816,14 +823,14 @@ export class spell {
         break;
       case "string":
         this.flatMagicArmourModifierEnemy =
-          numFromString(selectedSpell.flatMagicArmourModifierEnemy).value || undefined;
+          numFromString(selectedSpell.flatMagicArmourModifierEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatMagicArmourModifier) {
       case "number":
         this.flatMagicArmourModifier = Math.trunc(selectedSpell.flatMagicArmourModifier) || undefined;
         break;
       case "string":
-        this.flatMagicArmourModifier = numFromString(selectedSpell.flatMagicArmourModifier).value || undefined;
+        this.flatMagicArmourModifier = numFromString(selectedSpell.flatMagicArmourModifier, vars).value || undefined;
     }
     switch (typeof selectedSpell.propMagicArmourModifierEnemy) {
       case "number":
@@ -831,7 +838,7 @@ export class spell {
         break;
       case "string":
         this.propMagicArmourModifierEnemy =
-          floatFromString(selectedSpell.flatMagicArmourModifierEnemy).value || undefined;
+          floatFromString(selectedSpell.flatMagicArmourModifierEnemy, vars).value || undefined;
     }
     if (this.propMagicArmourModifierEnemy != undefined && this.propMagicArmourModifierEnemy < -1) {
       this.propMagicArmourModifierEnemy = -1;
@@ -841,7 +848,7 @@ export class spell {
         this.propMagicArmourModifier = selectedSpell.propMagicArmourModifier || undefined;
         break;
       case "string":
-        this.propMagicArmourModifier = floatFromString(selectedSpell.propMagicArmourModifier).value || undefined;
+        this.propMagicArmourModifier = floatFromString(selectedSpell.propMagicArmourModifier, vars).value || undefined;
     }
     if (this.propMagicArmourModifier != undefined && this.propMagicArmourModifier < -1) {
       this.propMagicArmourModifier = -1;
@@ -851,21 +858,21 @@ export class spell {
         this.flatDamageModifierEnemy = Math.trunc(selectedSpell.flatDamageModifierEnemy) || undefined;
         break;
       case "string":
-        this.flatDamageModifierEnemy = numFromString(selectedSpell.flatDamageModifierEnemy).value || undefined;
+        this.flatDamageModifierEnemy = numFromString(selectedSpell.flatDamageModifierEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatDamageModifier) {
       case "number":
         this.flatDamageModifier = Math.trunc(selectedSpell.flatDamageModifier) || undefined;
         break;
       case "string":
-        this.flatDamageModifier = numFromString(selectedSpell.flatDamageModifier).value || undefined;
+        this.flatDamageModifier = numFromString(selectedSpell.flatDamageModifier, vars).value || undefined;
     }
     switch (typeof selectedSpell.propDamageModifierEnemy) {
       case "number":
         this.propDamageModifierEnemy = selectedSpell.propDamageModifierEnemy || undefined;
         break;
       case "string":
-        this.propDamageModifierEnemy = floatFromString(selectedSpell.propDamageModifierEnemy).value || undefined;
+        this.propDamageModifierEnemy = floatFromString(selectedSpell.propDamageModifierEnemy, vars).value || undefined;
     }
     if (this.propDamageModifierEnemy != undefined && this.propDamageModifierEnemy < -1) {
       this.propDamageModifierEnemy = -1;
@@ -875,7 +882,7 @@ export class spell {
         this.propDamageModifier = selectedSpell.propDamageModifier || undefined;
         break;
       case "string":
-        this.propDamageModifier = floatFromString(selectedSpell.propDamageModifier).value || undefined;
+        this.propDamageModifier = floatFromString(selectedSpell.propDamageModifier, vars).value || undefined;
     }
     if (this.propDamageModifier != undefined && this.propDamageModifier < -1) {
       this.propDamageModifier = -1;
@@ -886,14 +893,14 @@ export class spell {
         break;
       case "string":
         this.flatMagicDamageModifierEnemy =
-          numFromString(selectedSpell.flatMagicDamageModifierEnemy).value || undefined;
+          numFromString(selectedSpell.flatMagicDamageModifierEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatMagicDamageModifier) {
       case "number":
         this.flatMagicDamageModifier = Math.trunc(selectedSpell.flatMagicDamageModifier) || undefined;
         break;
       case "string":
-        this.flatMagicDamageModifier = numFromString(selectedSpell.flatMagicDamageModifier).value || undefined;
+        this.flatMagicDamageModifier = numFromString(selectedSpell.flatMagicDamageModifier, vars).value || undefined;
     }
     switch (typeof selectedSpell.propMagicDamageModifierEnemy) {
       case "number":
@@ -901,7 +908,7 @@ export class spell {
         break;
       case "string":
         this.propMagicDamageModifierEnemy =
-          floatFromString(selectedSpell.propMagicDamageModifierEnemy).value || undefined;
+          floatFromString(selectedSpell.propMagicDamageModifierEnemy, vars).value || undefined;
     }
     if (this.propMagicDamageModifierEnemy != undefined && this.propMagicDamageModifierEnemy < -1) {
       this.propMagicDamageModifierEnemy = -1;
@@ -911,7 +918,7 @@ export class spell {
         this.propMagicDamageModifier = selectedSpell.propMagicDamageModifier || undefined;
         break;
       case "string":
-        this.propMagicDamageModifier = floatFromString(selectedSpell.propMagicDamageModifier).value || undefined;
+        this.propMagicDamageModifier = floatFromString(selectedSpell.propMagicDamageModifier, vars).value || undefined;
     }
     if (this.propMagicDamageModifier != undefined && this.propMagicDamageModifier < -1) {
       this.propMagicDamageModifier = -1;
@@ -923,7 +930,7 @@ export class spell {
         break;
       case "string":
         this.flatArmourPiercingDamageModifierEnemy =
-          numFromString(selectedSpell.flatArmourPiercingDamageModifierEnemy).value || undefined;
+          numFromString(selectedSpell.flatArmourPiercingDamageModifierEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.flatArmourPiercingDamageModifier) {
       case "number":
@@ -931,7 +938,7 @@ export class spell {
         break;
       case "string":
         this.flatArmourPiercingDamageModifier =
-          numFromString(selectedSpell.flatArmourPiercingDamageModifier).value || undefined;
+          numFromString(selectedSpell.flatArmourPiercingDamageModifier, vars).value || undefined;
     }
     switch (typeof selectedSpell.propArmourPiercingDamageModifierEnemy) {
       case "number":
@@ -939,7 +946,7 @@ export class spell {
         break;
       case "string":
         this.propArmourPiercingDamageModifierEnemy =
-          floatFromString(selectedSpell.propArmourPiercingDamageModifierEnemy).value || undefined;
+          floatFromString(selectedSpell.propArmourPiercingDamageModifierEnemy, vars).value || undefined;
     }
     if (this.propArmourPiercingDamageModifierEnemy != undefined && this.propArmourPiercingDamageModifierEnemy < -1) {
       this.propArmourPiercingDamageModifierEnemy = -1;
@@ -950,7 +957,7 @@ export class spell {
         break;
       case "string":
         this.propArmourPiercingDamageModifier =
-          floatFromString(selectedSpell.propArmourPiercingDamageModifier).value || undefined;
+          floatFromString(selectedSpell.propArmourPiercingDamageModifier, vars).value || undefined;
     }
     if (this.propArmourPiercingDamageModifier != undefined && this.propArmourPiercingDamageModifier < -1) {
       this.propArmourPiercingDamageModifier = -1;
@@ -960,7 +967,8 @@ export class spell {
         this.evadeChanceModifierEnemy = selectedSpell.evadeChanceModifierEnemy || undefined;
         break;
       case "string":
-        this.evadeChanceModifierEnemy = floatFromString(selectedSpell.evadeChanceModifierEnemy).value || undefined;
+        this.evadeChanceModifierEnemy =
+          floatFromString(selectedSpell.evadeChanceModifierEnemy, vars).value || undefined;
     }
     if (this.evadeChanceModifierEnemy != undefined && this.evadeChanceModifierEnemy < -1) {
       this.evadeChanceModifierEnemy = -1;
@@ -970,7 +978,7 @@ export class spell {
         this.evadeChanceModifier = selectedSpell.evadeChanceModifier || undefined;
         break;
       case "string":
-        this.evadeChanceModifier = floatFromString(selectedSpell.evadeChanceModifier).value || undefined;
+        this.evadeChanceModifier = floatFromString(selectedSpell.evadeChanceModifier, vars).value || undefined;
     }
     if (this.evadeChanceModifier != undefined && this.evadeChanceModifier < -1) {
       this.evadeChanceModifier = -1;
@@ -981,7 +989,7 @@ export class spell {
         break;
       case "string":
         this.counterAttackChanceModifierEnemy =
-          floatFromString(selectedSpell.counterAttackChanceModifierEnemy).value || undefined;
+          floatFromString(selectedSpell.counterAttackChanceModifierEnemy, vars).value || undefined;
     }
     if (this.counterAttackChanceModifierEnemy != undefined && this.counterAttackChanceModifierEnemy < -1) {
       this.counterAttackChanceModifierEnemy = -1;
@@ -992,7 +1000,7 @@ export class spell {
         break;
       case "string":
         this.counterAttackChanceModifier =
-          floatFromString(selectedSpell.counterAttackChanceModifier).value || undefined;
+          floatFromString(selectedSpell.counterAttackChanceModifier, vars).value || undefined;
     }
     if (this.counterAttackChanceModifier != undefined && this.counterAttackChanceModifier < -1) {
       this.counterAttackChanceModifier = -1;
@@ -1002,7 +1010,7 @@ export class spell {
         this.cooldown = selectedSpell.cooldown;
         break;
       case "string":
-        this.cooldown = numFromString(selectedSpell.cooldown).value;
+        this.cooldown = numFromString(selectedSpell.cooldown, vars).value;
     }
     if (this.cooldown < 0) {
       this.cooldown = 0;
@@ -1012,7 +1020,7 @@ export class spell {
         this.spellType = Math.trunc(selectedSpell.spellType);
         break;
       case "string":
-        this.spellType = numFromString(selectedSpell.spellType).value;
+        this.spellType = numFromString(selectedSpell.spellType, vars).value;
     }
     if (this.spellType < 0 || this.spellType > SPELL_VALUES.SPELL_TYPES_NO) {
       this.spellType = 0;
@@ -1022,7 +1030,7 @@ export class spell {
         this.timing = Math.trunc(selectedSpell.timing) || undefined;
         break;
       case "string":
-        this.timing = numFromString(selectedSpell.timing).value || undefined;
+        this.timing = numFromString(selectedSpell.timing, vars).value || undefined;
     }
     if (this.timing != undefined && (this.timing < 0 || this.timing > 2)) {
       this.timing = undefined;
@@ -1032,7 +1040,7 @@ export class spell {
         this.counterSpell = Math.trunc(selectedSpell.counterSpell) || undefined;
         break;
       case "string":
-        this.counterSpell = numFromString(selectedSpell.counterSpell).value || undefined;
+        this.counterSpell = numFromString(selectedSpell.counterSpell, vars).value || undefined;
     }
     if (this.counterSpell != undefined && (this.counterSpell < 0 || this.counterSpell > 3)) {
       this.counterSpell = undefined;
@@ -1042,14 +1050,15 @@ export class spell {
         this.bonusActionsModifierEnemy = Math.trunc(selectedSpell.bonusActionsModifierEnemy) || undefined;
         break;
       case "string":
-        this.bonusActionsModifierEnemy = numFromString(selectedSpell.bonusActionsModifierEnemy).value || undefined;
+        this.bonusActionsModifierEnemy =
+          numFromString(selectedSpell.bonusActionsModifierEnemy, vars).value || undefined;
     }
     switch (typeof selectedSpell.bonusActionsModifier) {
       case "number":
         this.bonusActionsModifier = Math.trunc(selectedSpell.bonusActionsModifier) || undefined;
         break;
       case "string":
-        this.bonusActionsModifier = numFromString(selectedSpell.bonusActionsModifier).value || undefined;
+        this.bonusActionsModifier = numFromString(selectedSpell.bonusActionsModifier, vars).value || undefined;
     }
     if (typeof selectedSpell.lifeLink == "boolean") {
       this.lifeLink = selectedSpell.lifeLink || undefined;
@@ -1059,7 +1068,7 @@ export class spell {
         this.healthChange = Math.trunc(selectedSpell.healthChange) || undefined;
         break;
       case "string":
-        this.healthChange = numFromString(selectedSpell.healthChange).value || undefined;
+        this.healthChange = numFromString(selectedSpell.healthChange, vars).value || undefined;
     }
     if (typeof selectedSpell.selfOverHeal == "boolean") {
       this.selfOverHeal = selectedSpell.selfOverHeal || undefined;
@@ -1075,7 +1084,7 @@ export class spell {
         this.initiativeModifier = Math.trunc(selectedSpell.initiativeModifier) || undefined;
         break;
       case "string":
-        this.initiativeModifier = numFromString(selectedSpell.initiativeModifier).value || undefined;
+        this.initiativeModifier = numFromString(selectedSpell.initiativeModifier, vars).value || undefined;
     }
     if (!this.spellType) {
       this.setSpellType();

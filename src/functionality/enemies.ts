@@ -5,6 +5,7 @@ import { randomInt } from "./rng";
 import enemyData from "../data/enemies.json";
 import { errorMessages, floatFromString, numFromString } from "./data";
 import { actionChoice } from "./interfaces";
+import { variables } from "./variables";
 const enum AI_VALUES {
   AI_TYPES_NO = 7,
   AI_HEALING_THRESHOLD = 0.8,
@@ -511,9 +512,9 @@ export class enemy {
   rollInitiative(): number {
     return randomInt(0, Math.max(0, this.initiative));
   }
-  constructor(blueprint: string | enemy = "EMPTY") {
+  constructor(blueprint: string | enemy = "EMPTY", vars?: variables) {
     if (typeof blueprint == "string") {
-      this.loadFromFile(blueprint);
+      this.loadFromFile(blueprint, vars);
     } else {
       this.real = blueprint.real;
       if (this.real) {
@@ -563,7 +564,7 @@ export class enemy {
       }
     }
   }
-  loadFromFile(blueprint: string = "EMPTY"): void {
+  loadFromFile(blueprint: string = "EMPTY", vars?: variables): void {
     this.real = false;
     this.name = undefined;
     this.introduction = undefined;
@@ -594,7 +595,8 @@ export class enemy {
       blueprint = selectedEnemy[randomInt(0, selectedEnemy.length)];
       if (blueprint == "EMPTY") {
         return;
-      } else if (typeof blueprint != "string") {
+      }
+      if (typeof blueprint != "string") {
         errorMessages.push(`Unable to parse enemy blueprint ${blueprint}`);
         return;
       }
@@ -643,7 +645,7 @@ export class enemy {
         this.maxHealth = Math.trunc(selectedEnemy.maxHealth);
         break;
       case "string":
-        this.maxHealth = numFromString(selectedEnemy.maxHealth).value;
+        this.maxHealth = numFromString(selectedEnemy.maxHealth, vars).value;
     }
     if (this.maxHealth < 0) {
       this.maxHealth = 0;
@@ -654,7 +656,7 @@ export class enemy {
         this.projectiles = Math.trunc(selectedEnemy.projectiles);
         break;
       case "string":
-        this.projectiles = numFromString(selectedEnemy.projectiles).value;
+        this.projectiles = numFromString(selectedEnemy.projectiles, vars).value;
     }
     if (this.projectiles < 0) {
       this.projectiles = 0;
@@ -664,7 +666,7 @@ export class enemy {
         this.maxMana = Math.trunc(selectedEnemy.maxMana);
         break;
       case "string":
-        this.maxMana = numFromString(selectedEnemy.maxMana).value;
+        this.maxMana = numFromString(selectedEnemy.maxMana, vars).value;
     }
     if (this.maxMana < 0) {
       this.maxMana = 0;
@@ -675,14 +677,14 @@ export class enemy {
         this.turnManaRegen = Math.trunc(selectedEnemy.turnManaRegen);
         break;
       case "string":
-        this.turnManaRegen = numFromString(selectedEnemy.turnManaRegen).value;
+        this.turnManaRegen = numFromString(selectedEnemy.turnManaRegen, vars).value;
     }
     switch (typeof selectedEnemy.poisonResist) {
       case "number":
         this.poisonResist = selectedEnemy.poisonResist;
         break;
       case "string":
-        this.poisonResist = floatFromString(selectedEnemy.poisonResist).value;
+        this.poisonResist = floatFromString(selectedEnemy.poisonResist, vars).value;
     }
     if (this.poisonResist < 0) {
       this.poisonResist = 0;
@@ -692,7 +694,7 @@ export class enemy {
         this.bleedResist = selectedEnemy.bleedResist;
         break;
       case "string":
-        this.bleedResist = floatFromString(selectedEnemy.bleedResist).value;
+        this.bleedResist = floatFromString(selectedEnemy.bleedResist, vars).value;
     }
     if (this.bleedResist < 0) {
       this.bleedResist = 0;
@@ -702,7 +704,7 @@ export class enemy {
         this.turnRegen = Math.trunc(selectedEnemy.turnRegen);
         break;
       case "string":
-        this.turnRegen = numFromString(selectedEnemy.turnRegen).value;
+        this.turnRegen = numFromString(selectedEnemy.turnRegen, vars).value;
     }
     if (Array.isArray(selectedEnemy.weapons)) {
       let weapons: any[] = selectedEnemy.weapons;
@@ -749,7 +751,7 @@ export class enemy {
         this.initialSpell = Math.trunc(selectedEnemy.initialSpell);
         break;
       case "string":
-        this.initialSpell = numFromString(selectedEnemy.initialSpell).value;
+        this.initialSpell = numFromString(selectedEnemy.initialSpell, vars).value;
     }
     if (this.initialSpell < -1 || this.initialSpell >= this.spells.length) {
       this.initialSpell = -1;
@@ -767,14 +769,14 @@ export class enemy {
         this.flatArmour = Math.trunc(selectedEnemy.flatArmour);
         break;
       case "string":
-        this.flatArmour = numFromString(selectedEnemy.flatArmour).value;
+        this.flatArmour = numFromString(selectedEnemy.flatArmour, vars).value;
     }
     switch (typeof selectedEnemy.propArmour) {
       case "number":
         this.propArmour = selectedEnemy.propArmour;
         break;
       case "string":
-        this.propArmour = floatFromString(selectedEnemy.propArmour).value;
+        this.propArmour = floatFromString(selectedEnemy.propArmour, vars).value;
     }
     if (this.propArmour < -1) {
       this.propArmour = -1;
@@ -784,14 +786,14 @@ export class enemy {
         this.flatMagicArmour = Math.trunc(selectedEnemy.flatMagicArmour);
         break;
       case "string":
-        this.flatMagicArmour = numFromString(selectedEnemy.flatMagicArmour).value;
+        this.flatMagicArmour = numFromString(selectedEnemy.flatMagicArmour, vars).value;
     }
     switch (typeof selectedEnemy.propMagicArmour) {
       case "number":
         this.propMagicArmour = selectedEnemy.propMagicArmour;
         break;
       case "string":
-        this.propMagicArmour = floatFromString(selectedEnemy.propMagicArmour).value;
+        this.propMagicArmour = floatFromString(selectedEnemy.propMagicArmour, vars).value;
     }
     if (this.propMagicArmour < -1) {
       this.propMagicArmour = -1;
@@ -801,14 +803,14 @@ export class enemy {
         this.flatDamageModifier = Math.trunc(selectedEnemy.flatDamageModifier);
         break;
       case "string":
-        this.flatDamageModifier = numFromString(selectedEnemy.flatDamageModifier).value;
+        this.flatDamageModifier = numFromString(selectedEnemy.flatDamageModifier, vars).value;
     }
     switch (typeof selectedEnemy.propDamageModifier) {
       case "number":
         this.propDamageModifier = selectedEnemy.propDamageModifier;
         break;
       case "string":
-        this.propDamageModifier = floatFromString(selectedEnemy.propDamageModifier).value;
+        this.propDamageModifier = floatFromString(selectedEnemy.propDamageModifier, vars).value;
     }
     if (this.propDamageModifier < -1) {
       this.propDamageModifier = -1;
@@ -818,14 +820,14 @@ export class enemy {
         this.flatMagicDamageModifier = Math.trunc(selectedEnemy.flatMagicDamageModifier);
         break;
       case "string":
-        this.flatMagicDamageModifier = numFromString(selectedEnemy.flatMagicDamageModifier).value;
+        this.flatMagicDamageModifier = numFromString(selectedEnemy.flatMagicDamageModifier, vars).value;
     }
     switch (typeof selectedEnemy.propMagicDamageModifier) {
       case "number":
         this.propMagicDamageModifier = selectedEnemy.propMagicDamageModifier;
         break;
       case "string":
-        this.propMagicDamageModifier = floatFromString(selectedEnemy.propMagicDamageModifier).value;
+        this.propMagicDamageModifier = floatFromString(selectedEnemy.propMagicDamageModifier, vars).value;
     }
     if (this.propMagicDamageModifier < -1) {
       this.propMagicDamageModifier = -1;
@@ -835,14 +837,20 @@ export class enemy {
         this.flatArmourPiercingDamageModifier = Math.trunc(selectedEnemy.flatArmourPiercingDamageModifier);
         break;
       case "string":
-        this.flatArmourPiercingDamageModifier = numFromString(selectedEnemy.flatArmourPiercingDamageModifier).value;
+        this.flatArmourPiercingDamageModifier = numFromString(
+          selectedEnemy.flatArmourPiercingDamageModifier,
+          vars
+        ).value;
     }
     switch (typeof selectedEnemy.propArmourPiercingDamageModifier) {
       case "number":
         this.propArmourPiercingDamageModifier = selectedEnemy.propArmourPiercingDamageModifier;
         break;
       case "string":
-        this.propArmourPiercingDamageModifier = floatFromString(selectedEnemy.propArmourPiercingDamageModifier).value;
+        this.propArmourPiercingDamageModifier = floatFromString(
+          selectedEnemy.propArmourPiercingDamageModifier,
+          vars
+        ).value;
     }
     if (this.propArmourPiercingDamageModifier < -1) {
       this.propArmourPiercingDamageModifier = -1;
@@ -852,7 +860,7 @@ export class enemy {
         this.evadeChance = selectedEnemy.evadeChance;
         break;
       case "string":
-        this.evadeChance = floatFromString(selectedEnemy.evadeChance).value;
+        this.evadeChance = floatFromString(selectedEnemy.evadeChance, vars).value;
     }
     if (this.evadeChance < -1) {
       this.evadeChance = -1;
@@ -862,7 +870,7 @@ export class enemy {
         this.counterAttackChance = selectedEnemy.counterAttackChance;
         break;
       case "string":
-        this.counterAttackChance = floatFromString(selectedEnemy.counterAttackChance).value;
+        this.counterAttackChance = floatFromString(selectedEnemy.counterAttackChance, vars).value;
     }
     if (this.counterAttackChance < -1) {
       this.counterAttackChance = -1;
@@ -872,7 +880,7 @@ export class enemy {
         this.bonusActions = Math.trunc(selectedEnemy.bonusActions);
         break;
       case "string":
-        this.bonusActions = numFromString(selectedEnemy.bonusActions).value;
+        this.bonusActions = numFromString(selectedEnemy.bonusActions, vars).value;
     }
     this.currentBonusActions = Math.max(0, this.bonusActions);
     switch (typeof selectedEnemy.AIType) {
@@ -880,7 +888,7 @@ export class enemy {
         this.AIType = Math.trunc(selectedEnemy.AIType);
         break;
       case "string":
-        this.AIType = numFromString(selectedEnemy.AIType).value;
+        this.AIType = numFromString(selectedEnemy.AIType, vars).value;
     }
     if (this.AIType < 1 || this.AIType > AI_VALUES.AI_TYPES_NO) {
       this.AIType = 2;
@@ -890,14 +898,14 @@ export class enemy {
         this.initiative = Math.trunc(selectedEnemy.initiative);
         break;
       case "string":
-        this.initiative = numFromString(selectedEnemy.initiative).value;
+        this.initiative = numFromString(selectedEnemy.initiative, vars).value;
     }
     switch (typeof selectedEnemy.xp) {
       case "number":
         this.xp = Math.trunc(selectedEnemy.xp);
         break;
       case "string":
-        this.xp = numFromString(selectedEnemy.xp).value;
+        this.xp = numFromString(selectedEnemy.xp, vars).value;
     }
   }
   /**Chooses an action to take

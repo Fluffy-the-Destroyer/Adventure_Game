@@ -94,9 +94,20 @@ function* battleHandler(
   playerCharacter: player,
   opponent: enemy,
   endBattle: fn,
-  battleLog: string[]
+  battleLog: string[],
+  firstGo: -1 | 0 | 1 = 0
 ): Generator<React.ReactNode, React.ReactNode, void | fn> {
-  let playerTurn: boolean = playerCharacter.rollInitiative() > opponent.rollInitiative();
+  let playerTurn: boolean;
+  switch (firstGo) {
+    case 0:
+      playerTurn = playerCharacter.rollInitiative() > opponent.rollInitiative();
+      break;
+    case 1:
+      playerTurn = true;
+      break;
+    case -1:
+      playerTurn = false;
+  }
   let firstTurn: boolean = true;
   const advanceCombat: fn =
     (yield) ??

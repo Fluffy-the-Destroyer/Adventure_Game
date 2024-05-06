@@ -1,4 +1,6 @@
+import { player } from "./player";
 import { randomFloat, randomInt } from "./rng";
+import { variables } from "./variables";
 
 export const errorMessages: string[] = [];
 
@@ -7,7 +9,11 @@ export function itemKeyGen(): number {
   return ++key;
 }
 
-export function numFromString(input: string): { value: number; output: string } {
+export function numFromString(
+  input: string,
+  vars?: variables,
+  playerCharacter?: player
+): { value: number; output: string } {
   input = input.split(" ").join("");
   if (input.length == 0) {
     return { value: 0, output: input };
@@ -21,12 +27,12 @@ export function numFromString(input: string): { value: number; output: string } 
   if (input.slice(0, 4) == "rng(") {
     input = input.slice(4);
     let value2: number;
-    ({ value, output: input } = numFromString(input));
+    ({ value, output: input } = numFromString(input, vars, playerCharacter));
     if (input[0] != ",") {
       return { value: 0, output: input };
     }
     input = input.slice(1);
-    ({ value: value2, output: input } = numFromString(input));
+    ({ value: value2, output: input } = numFromString(input, vars, playerCharacter));
     if (input[0] != ")") {
       return { value: 0, output: input };
     }
@@ -36,6 +42,14 @@ export function numFromString(input: string): { value: number; output: string } 
       value *= -1;
     }
     return { value, output: input };
+  }
+  if (input.slice(0, 2) == "v_") {
+    if (vars === undefined) {
+      return { value: 0, output: input };
+    }
+    let varName: string = "";
+    input = input.slice(2);
+    while (input.length != 0 && input[0] != " ") {}
   }
   while (!Number.isNaN(parseInt(input[0]))) {
     value *= 10;
@@ -48,7 +62,11 @@ export function numFromString(input: string): { value: number; output: string } 
   return { value, output: input };
 }
 
-export function floatFromString(input: string): { value: number; output: string } {
+export function floatFromString(
+  input: string,
+  vars?: variables,
+  playerCharacter?: player
+): { value: number; output: string } {
   input = input.split(" ").join("");
   if (input.length == 0) {
     return { value: 0, output: input };

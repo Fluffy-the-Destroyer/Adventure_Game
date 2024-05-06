@@ -1,0 +1,27 @@
+{
+  "TEST_EVENT": {
+    "preBattleSpell": "EMPTY",
+    "enemyBlueprint": { "blueprint": "BAD_GUY", "first": "player" },
+    "statChanges": {
+      "health": 0,
+      "maxHealth": 0,
+      "turnRegen": 0,
+      "battleRegen": 0,
+      "mana": 0,
+      "maxMana": 0,
+      "turnManaRegen": 0,
+      "battleManaRegen": 0,
+      "projectiles": 0,
+      "flatArmour": 0,
+      "flatMagicArmour": 0,
+      "flatDamageModifier": 0,
+      "flatMagicDamageModifier": 0,
+      "flatArmourPiercingDamageModifier": 0,
+      "bonusActions": 0,
+      "initiative": 0,
+      "statPoints": 0,
+      "upgradePoints": 0,
+      "xp": 0
+    }
+  }
+}
