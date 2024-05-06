@@ -94,15 +94,10 @@ export function DebugPage(): React.ReactNode {
             >
               Start Battle
             </IonButton>
-            <IonButton mode="ios" onClick={() => storePlayer(playerCharacter)}>
+            <IonButton mode="ios" onClick={() => storePlayer(playerCharacter).catch(console.error)}>
               Save player
             </IonButton>
-            <IonButton
-              mode="ios"
-              onClick={() =>
-                getStoredPlayer().then((playerCharacter) => setPlayerCharacter(new player(playerCharacter)))
-              }
-            >
+            <IonButton mode="ios" onClick={() => getStoredPlayer().then(setPlayerCharacter).catch(console.error)}>
               Load saved player
             </IonButton>
             <IonButton mode="ios" onClick={deleteStoredPlayer}>
@@ -118,22 +113,8 @@ export function DebugPage(): React.ReactNode {
     try {
       setPlayerCharacter(new player(classInputValue));
     } catch (err) {
-      switch (err) {
-        case 1:
-          errorMessages.push(`Error parsing JSON while loading player blueprint ${classInputValue}`);
-          break;
-        case 2:
-          errorMessages.push(`Unable to find player blueprint ${classInputValue}`);
-          break;
-        case 9:
-          errorMessages.push(`Maximum list depth exceeded trying to load player blueprint ${classInputValue}`);
-          break;
-        case 5:
-          errorMessages.push(`Player blueprint list ${classInputValue} contains no entries`);
-          break;
-        default:
-          throw err;
-      }
+      console.error(err);
+      errorMessages.push(err.message);
     }
     if (errorMessages.length == 0) {
       return;

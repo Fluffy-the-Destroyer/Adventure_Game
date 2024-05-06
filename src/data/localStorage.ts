@@ -9,9 +9,9 @@ export const storePlayer = queueManagerCreator(async function storePlayerInterna
 });
 
 export const getStoredPlayer = requestHandlerCreator(async function getStoredPlayerInternal(): Promise<player> {
-  return JSON.parse((await Preferences.get({ key: "playerCharacter" })).value!);
+  return new player(JSON.parse((await Preferences.get({ key: "playerCharacter" })).value!));
 });
 
 export const deleteStoredPlayer = requestHandlerCreator(async function deleteStoredPlayerInternal(): Promise<void> {
-  await Preferences.remove({ key: "playerCharacter" });
+  await Preferences.remove({ key: "playerCharacter" }).catch(console.error);
 });
