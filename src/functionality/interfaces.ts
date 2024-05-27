@@ -26,8 +26,8 @@ interface spellAction {
 
 export type actionChoice = noAction | weaponAction | dualWeaponAction | spellAction;
 
-export type fn<T extends any[] = [], U = void> = (...args: T) => U;
-export type asyncFn<T extends any[] = [], U = void> = (...args: T) => Promise<U>;
+export type fn<T extends unknown[] = [], U = void> = (...args: T) => U;
+export type asyncFn<T extends unknown[] = [], U = void> = (...args: T) => Promise<U>;
 
 export type command =
   | { command: "victory" }

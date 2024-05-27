@@ -57,7 +57,7 @@ export function DebugPage(): React.ReactNode {
               labelPlacement="stacked"
               placeholder="EMPTY"
               value={classInputValue}
-              //@ts-expect-error
+              //@ts-expect-error: I don't know what the types are supposed to be here
               onInput={(e) => setClassInputValue(e.target.value)}
               onIonChange={playerClickHandler}
             />
@@ -76,7 +76,7 @@ export function DebugPage(): React.ReactNode {
               labelPlacement="stacked"
               placeholder="EMPTY"
               value={enemyInputValue}
-              //@ts-expect-error
+              //@ts-expect-error: I don't know what the types are supposed to be here
               onInput={(e) => setEnemyInputValue(e.target.value)}
               onIonChange={enemyClickHandler}
             />
@@ -119,7 +119,7 @@ export function DebugPage(): React.ReactNode {
     if (errorMessages.length == 0) {
       return;
     }
-    present({
+    void present({
       message: errorMessages.join("\n"),
       duration: 3000 * errorMessages.length,
       cssClass: "error-message ion-text-center",
@@ -133,7 +133,7 @@ export function DebugPage(): React.ReactNode {
       if (errorMessages.length == 0) {
         return;
       }
-      present({
+      void present({
         message: errorMessages.join("\n"),
         duration: 3000 * errorMessages.length,
         cssClass: "error-message ion-text-center",

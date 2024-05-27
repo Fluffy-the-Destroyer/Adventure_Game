@@ -33,18 +33,18 @@ export function WeaponAttack({
 }: WeaponAttackProps): React.ReactNode {
   //If dual wielding, ensure weapon1 hits at least as many times as weapon2
   if (counter) {
-    //@ts-expect-error
+    //@ts-expect-error: undefined coerces to NaN, so the comparison would return false
     if (weapon2?.getCounterHits() > weapon1.getCounterHits()) {
       return (
-        //@ts-expect-error
+        //@ts-expect-error: Typescript doesn't realise attacker and target are always different types
         WeaponAttack({ weapon1, weapon2, attacker, target, battleLog, counter })
       );
     }
   } else {
-    //@ts-expect-error
+    //@ts-expect-error: undefined coerces to NaN, so the comparison would return false
     if (weapon2?.getHitCount() > weapon1.getHitCount()) {
       return (
-        //@ts-expect-error
+        //@ts-expect-error: Typescript doesn't realise attacker and target are always different types
         WeaponAttack({ weapon1, weapon2, attacker, target, battleLog })
       );
     }
@@ -73,7 +73,7 @@ export function WeaponAttack({
   }
   //Positive and negative prop damage do not commute, so take care over the ordering
   if (weapon1.getPropSelfDamage() > 0) {
-    //@ts-expect-error
+    //@ts-expect-error: undefined coerces to NaN, so the comparison would return false
     if (weapon2?.getPropSelfDamage() > 0) {
       damageBuffer =
         weapon1.getPropSelfDamage() +
@@ -86,7 +86,7 @@ export function WeaponAttack({
           {outputText}
         </div>
       );
-      //@ts-expect-error
+      //@ts-expect-error: undefined coerces to NaN, so the comparison would return false
     } else if (weapon2?.getPropSelfDamage() < 0) {
       attacker.propDamage(weapon1.getPropSelfDamage());
       attacker.propDamage(weapon2!.getPropSelfDamage());
@@ -110,7 +110,7 @@ export function WeaponAttack({
       );
     }
   } else if (weapon1.getPropSelfDamage() < 0) {
-    //@ts-expect-error
+    //@ts-expect-error: undefined coerces to NaN, so the comparison would return false
     if (weapon2?.getPropSelfDamage() > 0) {
       attacker.propDamage(weapon2!.getPropSelfDamage());
       attacker.propDamage(weapon1.getPropSelfDamage());
@@ -124,7 +124,7 @@ export function WeaponAttack({
           {outputText}
         </div>
       );
-      //@ts-expect-error
+      //@ts-expect-error: undefined coerces to NaN, so the comparison would return false
     } else if (weapon2?.getPropSelfDamage() < 0) {
       damageBuffer = Math.max(-1, weapon1.getPropSelfDamage() + weapon2!.getPropSelfDamage());
       attacker.propDamage(damageBuffer);
@@ -144,7 +144,7 @@ export function WeaponAttack({
       );
     }
   } else {
-    //@ts-expect-error
+    //@ts-expect-error: undefined coerces to NaN, so the comparison would return false
     if (weapon2?.getPropSelfDamage() > 0) {
       attacker.propDamage(weapon2!.getPropSelfDamage());
       battleLog.push((outputText = `${-Math.round(100 * weapon2!.getPropSelfDamage())}% health`));
@@ -153,7 +153,7 @@ export function WeaponAttack({
           {outputText}
         </div>
       );
-      //@ts-expect-error
+      //@ts-expect-error: undefined coerces to NaN, so the comparison would return false
     } else if (weapon2?.getPropSelfDamage() < 0) {
       attacker.propDamage(weapon2!.getPropSelfDamage());
       battleLog.push((outputText = `${-Math.round(100 * weapon2!.getPropSelfDamage())}% of health recovered`));
@@ -277,7 +277,7 @@ export function WeaponAttack({
   }
   for (let i = 0; i < hits1; i++) {
     targetEffects.push(
-      //@ts-expect-error
+      //@ts-expect-error: Typescript doesn't realise attacker and target are always different types
       <WeaponHit
         key={`${weapon1.getKey()}-${i}`}
         weaponry={weapon1}
@@ -286,10 +286,10 @@ export function WeaponAttack({
         battleLog={battleLog}
       />
     );
-    //@ts-expect-error
+    //@ts-expect-error: undefined coerces to NaN, so the comparison would return false
     if (i < hits2) {
       targetEffects.push(
-        //@ts-expect-error
+        //@ts-expect-error: Typescript doesn't realise attacker and target are different types
         <WeaponHit
           key={`${weapon2!.getKey()}-${i}`}
           weaponry={weapon2!}
@@ -745,7 +745,7 @@ export function SpellCast({ magic, caster, target, timing, battleLog }: SpellCas
   }
   for (let i = 0; i < hits; i++) {
     targetEffects.push(
-      //@ts-expect-error
+      //@ts-expect-error: Typescript doesn't understand that caster and target are different types
       <SpellHit key={`${magic.getKey()}-${i}`} magic={magic} caster={caster} target={target} battleLog={battleLog} />
     );
   }

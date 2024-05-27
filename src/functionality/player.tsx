@@ -946,7 +946,7 @@ export class player {
     this.chestPlate.loadFromFile();
     this.greaves.loadFromFile();
     this.boots.loadFromFile();
-    //@ts-expect-error
+    //@ts-expect-error: Typescript is inferring the type from the json file
     let selectedClass = classData[playerClass];
     if (selectedClass == undefined) {
       throw Error(`Unable to find class blueprint ${playerClass}`);
@@ -962,7 +962,7 @@ export class player {
       if (typeof listPlayerClass != "string") {
         throw Error(`Unable to parse JSON trying to load class blueprint ${playerClass}`);
       }
-      //@ts-expect-error
+      //@ts-expect-error: Typescript is inferring the type from the json file
       selectedClass = classData[listPlayerClass];
       if (selectedClass == undefined) {
         throw Error(`Unable to find class blueprint ${listPlayerClass} trying to load class blueprint ${playerClass}`);
@@ -1044,9 +1044,9 @@ export class player {
         this.battleRegenBase = numFromString(selectedClass.battleRegen).value;
     }
     if (Array.isArray(selectedClass.weapons)) {
-      let weapons: any[] = selectedClass.weapons;
+      let weapons: unknown[] = selectedClass.weapons;
       let weaponCount: number = Math.min(256, weapons.length);
-      let weaponBlueprint: any;
+      let weaponBlueprint: unknown;
       for (let i = 0; i < weaponCount; i++) {
         weaponBlueprint = weapons[i];
         if (typeof weaponBlueprint != "string") {
@@ -1056,9 +1056,9 @@ export class player {
       }
     }
     if (Array.isArray(selectedClass.spells)) {
-      let spells: any[] = selectedClass.spells;
+      let spells: unknown[] = selectedClass.spells;
       let spellCount: number = Math.min(256, spells.length);
-      let spellBlueprint: any;
+      let spellBlueprint: unknown;
       for (let i = 0; i < spellCount; i++) {
         spellBlueprint = spells[i];
         if (typeof spellBlueprint != "string") {
@@ -1409,36 +1409,36 @@ export class player {
     }
   }
 }
-type EquipWeaponProps = { playerCharacter: player; weaponry: weapon };
-/**Equips a weapon */
-export function EquipWeapon({ playerCharacter, weaponry }: EquipWeaponProps): React.ReactNode {
-  return <Fragment></Fragment>;
-}
-type EquipSpellProps = { playerCharacter: player; magic: spell };
-/**Equips a spell */
-export function EquipSpell({ playerCharacter, magic }: EquipSpellProps): React.ReactNode {
-  return <Fragment></Fragment>;
-}
-type EquipHelmetProps = { playerCharacter: player; helmet: armourHead };
-/**Equips a helmet */
-export function EquipHelmet({ playerCharacter, helmet }: EquipHelmetProps): React.ReactNode {
-  return <Fragment></Fragment>;
-}
-type EquipChestPlateProps = { playerCharacter: player; chestPlate: armourTorso };
-/**Equips a chestplate */
-export function EquipChestPlate({ playerCharacter, chestPlate }: EquipChestPlateProps): React.ReactNode {
-  return <Fragment></Fragment>;
-}
-type EquipGreavesProps = { playerCharacter: player; greaves: armourLegs };
-/**Equips greaves */
-export function EquipGreaves({ playerCharacter, greaves }: EquipGreavesProps): React.ReactNode {
-  return <Fragment></Fragment>;
-}
-type EquipBootsProps = { playerCharacter: player; boots: armourFeet };
-/**Equips boots */
-export function EquipBoots({ playerCharacter, boots }: EquipBootsProps): React.ReactNode {
-  return <Fragment></Fragment>;
-}
+//type EquipWeaponProps = { playerCharacter: player; weaponry: weapon };
+///**Equips a weapon */
+//export function EquipWeapon({ playerCharacter, weaponry }: EquipWeaponProps): React.ReactNode {
+//  return <Fragment></Fragment>;
+//}
+//type EquipSpellProps = { playerCharacter: player; magic: spell };
+///**Equips a spell */
+//export function EquipSpell({ playerCharacter, magic }: EquipSpellProps): React.ReactNode {
+//  return <Fragment></Fragment>;
+//}
+//type EquipHelmetProps = { playerCharacter: player; helmet: armourHead };
+///**Equips a helmet */
+//export function EquipHelmet({ playerCharacter, helmet }: EquipHelmetProps): React.ReactNode {
+//  return <Fragment></Fragment>;
+//}
+//type EquipChestPlateProps = { playerCharacter: player; chestPlate: armourTorso };
+///**Equips a chestplate */
+//export function EquipChestPlate({ playerCharacter, chestPlate }: EquipChestPlateProps): React.ReactNode {
+//  return <Fragment></Fragment>;
+//}
+//type EquipGreavesProps = { playerCharacter: player; greaves: armourLegs };
+///**Equips greaves */
+//export function EquipGreaves({ playerCharacter, greaves }: EquipGreavesProps): React.ReactNode {
+//  return <Fragment></Fragment>;
+//}
+//type EquipBootsProps = { playerCharacter: player; boots: armourFeet };
+///**Equips boots */
+//export function EquipBoots({ playerCharacter, boots }: EquipBootsProps): React.ReactNode {
+//  return <Fragment></Fragment>;
+//}
 type ShowPlayerEquipmentProps = { playerCharacter: player };
 /**Displays the player's equipment */
 export function ShowPlayerEquipment({ playerCharacter }: ShowPlayerEquipmentProps): React.ReactNode {
@@ -1721,6 +1721,7 @@ export function ChoosePlayerAction({
   switch (currentChoice.actionType) {
     case 3:
       weaponArray[currentChoice.slot2] = true;
+    //Fallthrough
     case 1:
       weaponArray[currentChoice.slot1] = true;
       break;

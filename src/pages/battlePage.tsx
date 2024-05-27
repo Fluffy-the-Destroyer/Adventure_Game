@@ -132,12 +132,12 @@ function* battleHandler(
   //Reset bonus actions
   playerCharacter.resetBonusActions();
   opponent.resetBonusActions();
-  let weaponBuffer1: weapon;
-  let weaponBuffer2: weapon;
-  let spellBuffer: spell;
-  let responseSpellBuffer: spell;
-  let playerSelection: actionChoice;
-  let enemySelection: actionChoice;
+  let weaponBuffer1: weapon | undefined;
+  let weaponBuffer2: weapon | undefined;
+  let spellBuffer: spell | undefined;
+  let responseSpellBuffer: spell | undefined;
+  let playerSelection: actionChoice | undefined;
+  let enemySelection: actionChoice | undefined;
   let health: number;
   //Turn cycle loop
   for (; ; playerTurn = !playerTurn) {

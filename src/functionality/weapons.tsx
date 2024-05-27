@@ -151,7 +151,7 @@ export class weapon {
     if (blueprint == "EMPTY") {
       return;
     }
-    //@ts-expect-error
+    //@ts-expect-error: Typescript is inferring the type from the json file
     let selectedWeapon = weaponData[blueprint];
     if (selectedWeapon == undefined) {
       errorMessages.push(`Unable to find weapon blueprint ${blueprint}`);
@@ -174,7 +174,7 @@ export class weapon {
         errorMessages.push(`Unable to parse weapon blueprint ${blueprint}`);
         return;
       }
-      //@ts-expect-error
+      //@ts-expect-error: Typescript is inferring the type from the json file
       selectedWeapon = weaponData[blueprint];
       if (selectedWeapon == undefined) {
         errorMessages.push(`Unable to find weapon blueprint ${blueprint}`);

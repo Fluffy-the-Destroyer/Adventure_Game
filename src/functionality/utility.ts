@@ -11,9 +11,9 @@ export function requestHandlerCreator<T>(fn: asyncFn<[], T>): asyncFn<[], T> {
   };
 }
 
-export function queueManagerCreator<T extends any[], U>(fn: asyncFn<T, U>): asyncFn<T, U> {
+export function queueManagerCreator<T extends unknown[], U>(fn: asyncFn<T, U>): asyncFn<T, U> {
   let it: AsyncGenerator<PromiseSettledResult<U>, never, T> = queue(fn);
-  it.next();
+  void it.next();
   return async function queueManager(...args: T): Promise<U> {
     let res: PromiseSettledResult<U> = (await it.next(args)).value;
     if (res.status == "fulfilled") {
@@ -23,7 +23,7 @@ export function queueManagerCreator<T extends any[], U>(fn: asyncFn<T, U>): asyn
     }
   };
 }
-async function* queue<T extends any[], U>(fn: asyncFn<T, U>): AsyncGenerator<PromiseSettledResult<U>, never, T> {
+async function* queue<T extends unknown[], U>(fn: asyncFn<T, U>): AsyncGenerator<PromiseSettledResult<U>, never, T> {
   let res: PromiseSettledResult<U>;
   while (true) {
     try {

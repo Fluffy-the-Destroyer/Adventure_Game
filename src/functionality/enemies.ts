@@ -10,6 +10,7 @@ const enum AI_VALUES {
   AI_TYPES_NO = 7,
   AI_HEALING_THRESHOLD = 0.8,
   ENEMY_OVERHEAL_DECAY = 5,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   ENEMY_MANA_DECAY = 5,
 }
 
@@ -577,7 +578,7 @@ export class enemy {
     if (blueprint == "EMPTY") {
       return;
     }
-    //@ts-expect-error
+    //@ts-expect-error: Typescript is inferring the type from the json file
     let selectedEnemy = enemyData[blueprint];
     if (selectedEnemy == undefined) {
       errorMessages.push(`Unable to find enemy blueprint ${blueprint}`);
@@ -600,7 +601,7 @@ export class enemy {
         errorMessages.push(`Unable to parse enemy blueprint ${blueprint}`);
         return;
       }
-      //@ts-expect-error
+      //@ts-expect-error: Typescript is inferring the type from the json file
       selectedEnemy = enemyData[blueprint];
       if (selectedEnemy == undefined) {
         errorMessages.push(`Unable to parse enemy blueprint ${blueprint}`);
@@ -707,9 +708,9 @@ export class enemy {
         this.turnRegen = numFromString(selectedEnemy.turnRegen, vars).value;
     }
     if (Array.isArray(selectedEnemy.weapons)) {
-      let weapons: any[] = selectedEnemy.weapons;
+      let weapons: unknown[] = selectedEnemy.weapons;
       let weaponCount: number = Math.min(weapons.length, 256);
-      let weaponBlueprint: any;
+      let weaponBlueprint: unknown;
       for (let i = 0; i < weaponCount; i++) {
         weaponBlueprint = weapons[i];
         if (weaponBlueprint == "EMPTY") {
@@ -727,9 +728,9 @@ export class enemy {
       }
     }
     if (Array.isArray(selectedEnemy.spells)) {
-      let spells: any[] = selectedEnemy.spells;
+      let spells: unknown[] = selectedEnemy.spells;
       let spellCount: number = Math.min(spells.length, 256);
-      let spellBlueprint: any;
+      let spellBlueprint: unknown;
       for (let i = 0; i < spellCount; i++) {
         spellBlueprint = spells[i];
         if (spellBlueprint == "EMPTY") {
@@ -952,6 +953,7 @@ export class enemy {
                 switch (selection.actionType) {
                   case 3:
                     this.currentBonusActions--;
+                  //Fallthrough
                   case 1:
                   case 2:
                     return selection;
@@ -974,6 +976,7 @@ export class enemy {
               switch (selection.actionType) {
                 case 3:
                   this.currentBonusActions--;
+                //Fallthrough
                 case 1:
                 case 2:
                   return selection;
@@ -986,6 +989,7 @@ export class enemy {
               switch (selection.actionType) {
                 case 3:
                   this.currentBonusActions--;
+                //Fallthrough
                 case 1:
                 case 2:
                   return selection;
@@ -1032,6 +1036,7 @@ export class enemy {
               switch (selection.actionType) {
                 case 3:
                   this.currentBonusActions--;
+                //Fallthrough
                 case 1:
                 case 2:
                   return selection;
@@ -1044,6 +1049,7 @@ export class enemy {
             switch (selection.actionType) {
               case 3:
                 this.currentBonusActions--;
+              //Fallthrough
               case 1:
               case 2:
                 return selection;
@@ -1191,6 +1197,7 @@ export class enemy {
               switch (selection.actionType) {
                 case 3:
                   this.currentBonusActions--;
+                //Fallthrough
                 case 1:
                 case 2:
                   this.currentBonusActions--;
@@ -1212,13 +1219,16 @@ export class enemy {
             switch (selection.actionType) {
               case 3:
                 this.currentBonusActions--;
+              //Fallthrough
               case 1:
               case 2:
                 this.currentBonusActions--;
+              //Fallthrough
               default:
                 return selection;
             }
         }
+      //Unreachable, but eslint doesn't realise it can't actually fallthrough
       case 4:
       case 5:
       case 6:
@@ -1252,6 +1262,7 @@ export class enemy {
               switch (selection.actionType) {
                 case 3:
                   this.currentBonusActions--;
+                //Fallthrough
                 case 1:
                   return selection;
               }
@@ -1285,6 +1296,7 @@ export class enemy {
               switch (selection.actionType) {
                 case 3:
                   this.currentBonusActions--;
+                //Fallthrough
                 case 1:
                   return selection;
               }
@@ -1317,6 +1329,7 @@ export class enemy {
             switch (selection.actionType) {
               case 3:
                 this.currentBonusActions--;
+              //Fallthrough
               case 1:
                 return selection;
             }
@@ -1475,12 +1488,15 @@ export class enemy {
             switch (selection.actionType) {
               case 3:
                 this.currentBonusActions--;
+              //Fallthrough
               case 1:
                 this.currentBonusActions--;
+              //Fallthrough
               default:
                 return selection;
             }
         }
+      //Unreachable, but eslint doesn't realise it can't actually fallthrough
       case 7: //Melee berserker
         switch (timing) {
           case 0:
@@ -1488,6 +1504,7 @@ export class enemy {
             switch (selection.actionType) {
               case 3:
                 this.currentBonusActions--;
+              //Fallthrough
               case 1:
                 return selection;
             }
@@ -1500,6 +1517,7 @@ export class enemy {
             switch (selection.actionType) {
               case 3:
                 this.currentBonusActions--;
+              //Fallthrough
               case 1:
                 this.currentBonusActions--;
                 return selection;
@@ -1921,6 +1939,7 @@ export class enemy {
         switch (selection.actionType) {
           case 3:
             this.currentBonusActions--;
+          //Fallthrough
           case 1:
           case 2:
             return selection;
@@ -1945,6 +1964,7 @@ export class enemy {
         switch (selection.actionType) {
           case 3:
             this.currentBonusActions--;
+          //Fallthrough
           case 1:
           case 2:
             return selection;
@@ -1963,6 +1983,7 @@ export class enemy {
         switch (selection.actionType) {
           case 3:
             this.currentBonusActions--;
+          //Fallthrough
           case 1:
           case 2:
             return selection;

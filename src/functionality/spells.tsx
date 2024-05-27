@@ -308,7 +308,7 @@ export class spell {
     if (blueprint == "EMPTY") {
       return;
     }
-    //@ts-expect-error
+    //@ts-expect-error: Typescript is inferring the type from the json file
     let selectedSpell = spellData[blueprint];
     if (selectedSpell == undefined) {
       errorMessages.push(`Unable to find spell blueprint ${blueprint}`);
@@ -331,7 +331,7 @@ export class spell {
         errorMessages.push(`Unable to parse spell blueprint ${blueprint}`);
         return;
       }
-      //@ts-expect-error
+      //@ts-expect-error: Typescript is inferring the type from the json file
       selectedSpell = spellData[blueprint];
       if (selectedSpell == undefined) {
         errorMessages.push(`Unable to find spell blueprint ${blueprint}`);

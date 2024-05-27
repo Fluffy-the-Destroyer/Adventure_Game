@@ -48,7 +48,7 @@ export class event {
     if (blueprint == "EMPTY") {
       return;
     }
-    //@ts-expect-error
+    //@ts-expect-error: Typescript is inferring the type from the json file
     let selectedEvent = eventData[blueprint];
     if (selectedEvent == undefined) {
       errorMessages.push(`Unable to find event blueprint ${blueprint}`);
@@ -71,7 +71,7 @@ export class event {
         errorMessages.push(`Unable to parse event blueprint ${blueprint}`);
         return;
       }
-      //@ts-expect-error
+      //@ts-expect-error: Typescript is inferring the type from the json file
       selectedEvent = eventData[blueprint];
       if (selectedEvent == undefined) {
         errorMessages.push(`Unable to find event blueprint ${blueprint}`);

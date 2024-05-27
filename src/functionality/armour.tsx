@@ -201,7 +201,7 @@ export class armour {
       return;
     }
     let type: string = this.armourType();
-    //@ts-expect-error
+    //@ts-expect-error: Typescript is inferring the type based on the contents of the json file
     let selectedArmour = armourData[type][blueprint];
     if (selectedArmour == undefined) {
       errorMessages.push(`Unable to find ${type.toLowerCase()} armour blueprint ${blueprint}`);
@@ -224,7 +224,7 @@ export class armour {
         errorMessages.push(`Unable to parse ${type.toLowerCase()} armour blueprint ${blueprint}`);
         return;
       }
-      //@ts-expect-error
+      //@ts-expect-error: Typescript is inferring the type from the json file
       selectedArmour = armourData[type][blueprint];
       if (selectedArmour == undefined) {
         errorMessages.push(`Unable to find ${type.toLowerCase()} armour blueprint ${blueprint}`);
