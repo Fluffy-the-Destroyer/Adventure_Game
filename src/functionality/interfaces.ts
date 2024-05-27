@@ -34,7 +34,13 @@ export type command =
   | { command: "defeat" }
   | { command: "text"; text: string }
   | { command: "event"; event: string }
-  | { command: "var"; var: string; operation: "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "++" | "--" | "display" }
+  | { command: "var"; var: string; operation: "display" }
+  | {
+      command: "var";
+      var: string;
+      operation: "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "++" | "--";
+      value: string | number;
+    }
   | {
       command: "if";
       cond: string;
@@ -46,3 +52,24 @@ export type command =
   | { command: "break" }
   | { command: "continue" }
   | { command: "save" };
+
+export interface statChanges {
+  health?: number;
+  maxHealth?: number;
+  projectiles?: number;
+  mana?: number;
+  maxMana?: number;
+  turnManaRegen?: number;
+  battleManaRegen?: number;
+  turnRegen?: number;
+  battleRegen?: number;
+  flatArmour?: number;
+  flatMagicArmour?: number;
+  flatDamageModifier?: number;
+  flatMagicDamageModifier?: number;
+  flatArmourPiercingDamageModifier?: number;
+  bonusActions?: number;
+  initiative?: number;
+  statPoints?: number;
+  upgradePoints?: number;
+}

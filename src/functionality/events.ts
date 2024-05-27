@@ -1,8 +1,7 @@
-import { fn } from "./interfaces";
-import { player } from "./player";
+import { statChanges } from "./interfaces";
 import { variables } from "./variables";
 import eventData from "../data/events.json";
-import { errorMessages } from "./data";
+import { errorMessages, numFromString } from "./data";
 import { randomInt } from "./rng";
 
 class choice {
@@ -22,7 +21,7 @@ export class event {
   private enemyBlueprint!: string;
   private firstGo!: -1 | 0 | 1;
   private postBattleText!: string;
-  private statChanges!: number[];
+  private statChanges!: statChanges;
   private xpChange!: number;
   private reward!: string;
   private varChanges!: variables;
@@ -40,7 +39,7 @@ export class event {
     this.enemyBlueprint = "";
     this.firstGo = 0;
     this.postBattleText = "";
-    this.statChanges = Array(18).fill(0);
+    this.statChanges = {};
     this.xpChange = 0;
     this.reward = "";
     this.varChanges = new variables();
@@ -98,10 +97,73 @@ export class event {
     if (typeof selectedEvent.postBattleText == "string") {
       this.postBattleText = selectedEvent.postBattleText;
     }
+    if (selectedEvent.statChanges != null && typeof selectedEvent.statChanges == "object") {
+      switch (typeof selectedEvent.statChanges.health) {
+        case "number":
+          this.statChanges.health = Math.trunc(selectedEvent.statChanges.health) || undefined;
+          break;
+        case "string":
+          this.statChanges.health = numFromString(selectedEvent.statChanges.health, vars).value || undefined;
+      }
+      switch (typeof selectedEvent.statChanges.maxHealth) {
+        case "number":
+          this.statChanges.maxHealth = Math.trunc(selectedEvent.statChanges.maxHealth) || undefined;
+          break;
+        case "string":
+          this.statChanges.maxHealth = numFromString(selectedEvent.statChanges.maxHealth, vars).value || undefined;
+      }
+      switch (typeof selectedEvent.statChanges.projectiles) {
+        case "number":
+          this.statChanges.projectiles = Math.trunc(selectedEvent.statChanges.projectiles) || undefined;
+          break;
+        case "string":
+          this.statChanges.projectiles = numFromString(selectedEvent.statChanges.projectiles, vars).value || undefined;
+      }
+      switch (typeof selectedEvent.statChanges.mana) {
+        case "number":
+          this.statChanges.mana = Math.trunc(selectedEvent.statChanges.mana) || undefined;
+          break;
+        case "string":
+          this.statChanges.mana = numFromString(selectedEvent.statChanges.mana, vars).value || undefined;
+      }
+      switch (typeof selectedEvent.statChanges.maxMana) {
+        case "number":
+          this.statChanges.maxMana = Math.trunc(selectedEvent.statChanges.maxMana) || undefined;
+          break;
+        case "string":
+          this.statChanges.maxMana = numFromString(selectedEvent.statChanges.maxMana, vars).value || undefined;
+      }
+      switch (typeof selectedEvent.statChanges.turnManaRegen) {
+        case "number":
+          this.statChanges.turnManaRegen = Math.trunc(selectedEvent.statChanges.turnManaRegen) || undefined;
+          break;
+        case "string":
+          this.statChanges.turnManaRegen =
+            numFromString(selectedEvent.statChanges.turnManaRegen, vars).value || undefined;
+      }
+      switch (typeof selectedEvent.statChanges.battleManaRegen) {
+        case "number":
+          this.statChanges.battleManaRegen = Math.trunc(selectedEvent.statChanges.battleManaRegen) || undefined;
+          break;
+        case "string":
+          this.statChanges.battleManaRegen =
+            numFromString(selectedEvent.statChanges.battleManaRegen, vars).value || undefined;
+      }
+      switch (typeof selectedEvent.statChanges.turnRegen) {
+        case "number":
+          this.statChanges.turnRegen = Math.trunc(selectedEvent.statChanges.turnRegen) || undefined;
+          break;
+        case "string":
+          this.statChanges.turnRegen = numFromString(selectedEvent.statChanges.turnRegen, vars).value || undefined;
+      }
+      switch (typeof selectedEvent.statChanges.battleRegen) {
+        case "number":
+      }
+    }
   }
-  *eventHandler(
-    this: event,
-    playerCharacter: player,
-    vars: variables
-  ): Generator<React.ReactNode, React.ReactNode, void | fn> {}
+  //*eventHandler(
+  //  this: event,
+  //  playerCharacter: player,
+  //  vars: variables
+  //): Generator<React.ReactNode, React.ReactNode, void | fn> {}
 }

@@ -550,17 +550,7 @@ export class player {
    * @param b - change in bonus actions
    */
   modifyBonusActions(b: number): void {
-    if (b > 255) {
-      this.bonusActions = 127;
-    } else if (b < -255) {
-      this.bonusActions = -127;
-    } else if (this.bonusActions + b > 127) {
-      this.bonusActions = 127;
-    } else if (this.bonusActions + b < -127) {
-      this.bonusActions = -127;
-    } else {
-      this.bonusActions += b;
-    }
+    this.bonusActions += b;
   }
   calculateBonusActions(): void {
     this.bonusActions = this.bonusActionsBase;
@@ -570,11 +560,7 @@ export class player {
     this.modifyBonusActions(this.boots.getBonusActionsModifier());
   }
   resetBonusActions(): void {
-    if (this.bonusActions < 0) {
-      this.currentBonusActions = 0;
-    } else {
-      this.currentBonusActions = this.bonusActions;
-    }
+    this.currentBonusActions = Math.max(0, Math.min(4, this.bonusActions));
   }
   decBonusActions(): void {
     if (this.currentBonusActions > 0) {
@@ -633,11 +619,7 @@ export class player {
     for (let magic of this.spells) {
       magic.decCooldown();
     }
-    if (this.bonusActions < 0) {
-      this.currentBonusActions = 0;
-    } else {
-      this.currentBonusActions = this.bonusActions;
-    }
+    this.currentBonusActions = Math.max(0, Math.min(4, this.bonusActions));
   }
   getHealth(): number {
     return this.health;
@@ -1216,7 +1198,7 @@ export class player {
     this.calculateModifiers();
     this.fullHeal();
     this.fullMana();
-    this.currentBonusActions = this.bonusActions;
+    this.currentBonusActions = Math.max(0, Math.min(4, this.bonusActions));
   }
   /**For end of battle, applies battle regens, removes status effects and recalculates modidiers */
   reset(): void {

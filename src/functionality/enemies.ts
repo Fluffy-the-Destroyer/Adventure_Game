@@ -458,17 +458,7 @@ export class enemy {
    * @param b - change in bonus actions
    */
   modifyBonusActions(b: number): void {
-    if (b > 255) {
-      this.bonusActions = 127;
-    } else if (b < -255) {
-      this.bonusActions = -127;
-    } else if (this.bonusActions + b > 127) {
-      this.bonusActions = 127;
-    } else if (this.bonusActions + b < -127) {
-      this.bonusActions = -127;
-    } else {
-      this.bonusActions += b;
-    }
+    this.bonusActions += b;
   }
   resetBonusActions(): void {
     if (this.bonusActions < 0) {
