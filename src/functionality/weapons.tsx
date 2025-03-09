@@ -23,6 +23,15 @@ import {
 import { close } from "ionicons/icons";
 import { fn } from "./interfaces";
 import { variables } from "./variables";
+
+type DisplayWeaponStatsProps = { weaponry: weapon };
+type DisplayWeaponNameProps = {
+  weaponry: weapon;
+  inBattle?: boolean;
+  selected?: boolean;
+  canUse?: boolean;
+  onToggle?: fn;
+};
 export class weapon {
   private key: number | undefined;
   private real: boolean = false;
@@ -707,288 +716,277 @@ export class weapon {
         this.flatArmourPiercingDamageMax
     );
   }
-}
-type DisplayWeaponStatsProps = { weaponry: weapon };
-/**Displays weapon stats */
-export function DisplayWeaponStats({ weaponry }: DisplayWeaponStatsProps): React.ReactNode {
-  let healingMin: number = 0;
-  let healingMax: number = 0;
-  let healingSelfMin: number = 0;
-  let healingSelfMax: number = 0;
-  if (weaponry.getFlatDamageMax() <= 0) {
-    healingMin -= weaponry.getFlatDamageMax();
-    healingMax -= weaponry.getFlatDamageMin();
-  }
-  if (weaponry.getFlatMagicDamageMax() <= 0) {
-    healingMin -= weaponry.getFlatMagicDamageMax();
-    healingMax -= weaponry.getFlatMagicDamageMin();
-  }
-  if (weaponry.getFlatArmourPiercingDamageMax() <= 0) {
-    healingMin -= weaponry.getFlatArmourPiercingDamageMax();
-    healingMax -= weaponry.getFlatArmourPiercingDamageMin();
-  }
-  if (weaponry.getFlatSelfDamageMax() <= 0) {
-    healingSelfMin -= weaponry.getFlatSelfDamageMax();
-    healingSelfMax -= weaponry.getFlatSelfDamageMin();
-  }
-  if (weaponry.getFlatSelfMagicDamageMax() <= 0) {
-    healingSelfMin -= weaponry.getFlatSelfMagicDamageMax();
-    healingSelfMax -= weaponry.getFlatSelfMagicDamageMin();
-  }
-  if (weaponry.getFlatSelfArmourPiercingDamageMax() <= 0) {
-    healingSelfMin -= weaponry.getFlatSelfArmourPiercingDamageMax();
-    healingSelfMax -= weaponry.getFlatSelfArmourPiercingDamageMin();
-  }
-  return (
-    <IonList>
-      <IonListHeader>{weaponry.getDescription()}</IonListHeader>
-      {weaponry.getFlatDamageMin() == weaponry.getFlatDamageMax() ? (
-        weaponry.getFlatDamageMax() > 0 ? (
-          <IonItem>Deals {weaponry.getFlatDamageMax()} physical damage</IonItem>
-        ) : null
-      ) : weaponry.getFlatDamageMin() >= 0 ? (
-        <IonItem>
-          Deals {weaponry.getFlatDamageMin()} to {weaponry.getFlatDamageMax()} physical damage
-        </IonItem>
-      ) : weaponry.getFlatDamageMax() > 0 ? (
-        <IonItem>
-          Deals {weaponry.getFlatDamageMin()} to {weaponry.getFlatDamageMax()} physical damage, negative damage will
-          heal the target
-        </IonItem>
-      ) : null}
-      {weaponry.getFlatMagicDamageMin() == weaponry.getFlatMagicDamageMax() ? (
-        weaponry.getFlatMagicDamageMax() > 0 ? (
-          <IonItem>Deals {weaponry.getFlatMagicDamageMax()} magic damage</IonItem>
-        ) : null
-      ) : weaponry.getFlatMagicDamageMin() >= 0 ? (
-        <IonItem>
-          Deals {weaponry.getFlatMagicDamageMin()} to {weaponry.getFlatMagicDamageMax()} magic damage
-        </IonItem>
-      ) : weaponry.getFlatMagicDamageMax() > 0 ? (
-        <IonItem>
-          Deals {weaponry.getFlatMagicDamageMin()} to {weaponry.getFlatMagicDamageMax()} magic damage, negative damage
-          will heal the target
-        </IonItem>
-      ) : null}
-      {weaponry.getFlatArmourPiercingDamageMin() == weaponry.getFlatArmourPiercingDamageMax() ? (
-        weaponry.getFlatArmourPiercingDamageMax() > 0 ? (
-          <IonItem>Deals {weaponry.getFlatArmourPiercingDamageMax()} armour piercing damage</IonItem>
-        ) : null
-      ) : weaponry.getFlatArmourPiercingDamageMin() >= 0 ? (
-        <IonItem>
-          Deals {weaponry.getFlatArmourPiercingDamageMin()} to {weaponry.getFlatArmourPiercingDamageMax()} armour
-          piercing damage
-        </IonItem>
-      ) : weaponry.getFlatArmourPiercingDamageMax() > 0 ? (
-        <IonItem>
-          Deals {weaponry.getFlatArmourPiercingDamageMin()} to {weaponry.getFlatArmourPiercingDamageMax()} armour
-          piercing damage, negative damage will heal the target
-        </IonItem>
-      ) : null}
-      {healingMax > 0 ? (
-        <IonItem>
-          Heals the target for {healingMin} {healingMin != healingMax ? ` to ${healingMax}` : ""}
-        </IonItem>
-      ) : null}
-      {weaponry.getTargetOverHeal() ? <IonItem>Attacks may over heal the target</IonItem> : null}
-      {weaponry.getPropDamage() > 0 ? (
-        <IonItem>Reduces target&apos;s health by {Math.round(100 * weaponry.getPropDamage())}%</IonItem>
-      ) : weaponry.getPropDamage() < 0 ? (
-        <IonItem>Heals target for {Math.round(-100 * weaponry.getPropDamage())}% of their maximum health</IonItem>
-      ) : null}
-      {weaponry.getFlatSelfDamageMin() == weaponry.getFlatSelfDamageMax() ? (
-        weaponry.getFlatSelfDamageMax() > 0 ? (
-          <IonItem>Deals {weaponry.getFlatSelfDamageMax()} physical damage to user on attack</IonItem>
-        ) : null
-      ) : weaponry.getFlatSelfDamageMin() >= 0 ? (
-        <IonItem>
-          Deals {weaponry.getFlatSelfDamageMin()} to {weaponry.getFlatSelfDamageMax()} physical damage to user on attack
-        </IonItem>
-      ) : weaponry.getFlatSelfDamageMax() > 0 ? (
-        <IonItem>
-          Deals {weaponry.getFlatSelfDamageMin()} to {weaponry.getFlatSelfDamageMax()} physical damage to user on
-          attack, negative damage will heal
-        </IonItem>
-      ) : null}
-      {weaponry.getFlatSelfMagicDamageMin() == weaponry.getFlatSelfMagicDamageMax() ? (
-        weaponry.getFlatSelfMagicDamageMax() > 0 ? (
-          <IonItem>Deals {weaponry.getFlatSelfMagicDamageMax()} magic damage to user on attack</IonItem>
-        ) : null
-      ) : weaponry.getFlatSelfMagicDamageMin() >= 0 ? (
-        <IonItem>
-          Deals {weaponry.getFlatSelfMagicDamageMin()} to {weaponry.getFlatSelfMagicDamageMax()} magic damage to user on
-          attack
-        </IonItem>
-      ) : weaponry.getFlatSelfMagicDamageMax() > 0 ? (
-        <IonItem>
-          Deals {weaponry.getFlatSelfMagicDamageMin()} to {weaponry.getFlatSelfMagicDamageMax()} magic damage to user on
-          attack, negative damage will heal
-        </IonItem>
-      ) : null}
-      {weaponry.getFlatSelfArmourPiercingDamageMin() == weaponry.getFlatSelfArmourPiercingDamageMax() ? (
-        weaponry.getFlatSelfArmourPiercingDamageMax() > 0 ? (
+  static DisplayStats({ weaponry }: DisplayWeaponStatsProps): React.ReactNode {
+    let healingMin: number = 0;
+    let healingMax: number = 0;
+    let healingSelfMin: number = 0;
+    let healingSelfMax: number = 0;
+    if (weaponry.getFlatDamageMax() <= 0) {
+      healingMin -= weaponry.getFlatDamageMax();
+      healingMax -= weaponry.getFlatDamageMin();
+    }
+    if (weaponry.getFlatMagicDamageMax() <= 0) {
+      healingMin -= weaponry.getFlatMagicDamageMax();
+      healingMax -= weaponry.getFlatMagicDamageMin();
+    }
+    if (weaponry.getFlatArmourPiercingDamageMax() <= 0) {
+      healingMin -= weaponry.getFlatArmourPiercingDamageMax();
+      healingMax -= weaponry.getFlatArmourPiercingDamageMin();
+    }
+    if (weaponry.getFlatSelfDamageMax() <= 0) {
+      healingSelfMin -= weaponry.getFlatSelfDamageMax();
+      healingSelfMax -= weaponry.getFlatSelfDamageMin();
+    }
+    if (weaponry.getFlatSelfMagicDamageMax() <= 0) {
+      healingSelfMin -= weaponry.getFlatSelfMagicDamageMax();
+      healingSelfMax -= weaponry.getFlatSelfMagicDamageMin();
+    }
+    if (weaponry.getFlatSelfArmourPiercingDamageMax() <= 0) {
+      healingSelfMin -= weaponry.getFlatSelfArmourPiercingDamageMax();
+      healingSelfMax -= weaponry.getFlatSelfArmourPiercingDamageMin();
+    }
+    return (
+      <IonList>
+        <IonListHeader>{weaponry.getDescription()}</IonListHeader>
+        {weaponry.getFlatDamageMin() == weaponry.getFlatDamageMax() ? (
+          weaponry.getFlatDamageMax() > 0 ? (
+            <IonItem>Deals {weaponry.getFlatDamageMax()} physical damage</IonItem>
+          ) : null
+        ) : weaponry.getFlatDamageMin() >= 0 ? (
           <IonItem>
-            Deals {weaponry.getFlatSelfArmourPiercingDamageMax()} armour piercing damage to user on attack
+            Deals {weaponry.getFlatDamageMin()} to {weaponry.getFlatDamageMax()} physical damage
           </IonItem>
-        ) : null
-      ) : weaponry.getFlatSelfArmourPiercingDamageMin() >= 0 ? (
+        ) : weaponry.getFlatDamageMax() > 0 ? (
+          <IonItem>
+            Deals {weaponry.getFlatDamageMin()} to {weaponry.getFlatDamageMax()} physical damage, negative damage will
+            heal the target
+          </IonItem>
+        ) : null}
+        {weaponry.getFlatMagicDamageMin() == weaponry.getFlatMagicDamageMax() ? (
+          weaponry.getFlatMagicDamageMax() > 0 ? (
+            <IonItem>Deals {weaponry.getFlatMagicDamageMax()} magic damage</IonItem>
+          ) : null
+        ) : weaponry.getFlatMagicDamageMin() >= 0 ? (
+          <IonItem>
+            Deals {weaponry.getFlatMagicDamageMin()} to {weaponry.getFlatMagicDamageMax()} magic damage
+          </IonItem>
+        ) : weaponry.getFlatMagicDamageMax() > 0 ? (
+          <IonItem>
+            Deals {weaponry.getFlatMagicDamageMin()} to {weaponry.getFlatMagicDamageMax()} magic damage, negative damage
+            will heal the target
+          </IonItem>
+        ) : null}
+        {weaponry.getFlatArmourPiercingDamageMin() == weaponry.getFlatArmourPiercingDamageMax() ? (
+          weaponry.getFlatArmourPiercingDamageMax() > 0 ? (
+            <IonItem>Deals {weaponry.getFlatArmourPiercingDamageMax()} armour piercing damage</IonItem>
+          ) : null
+        ) : weaponry.getFlatArmourPiercingDamageMin() >= 0 ? (
+          <IonItem>
+            Deals {weaponry.getFlatArmourPiercingDamageMin()} to {weaponry.getFlatArmourPiercingDamageMax()} armour
+            piercing damage
+          </IonItem>
+        ) : weaponry.getFlatArmourPiercingDamageMax() > 0 ? (
+          <IonItem>
+            Deals {weaponry.getFlatArmourPiercingDamageMin()} to {weaponry.getFlatArmourPiercingDamageMax()} armour
+            piercing damage, negative damage will heal the target
+          </IonItem>
+        ) : null}
+        {healingMax > 0 ? (
+          <IonItem>
+            Heals the target for {healingMin} {healingMin != healingMax ? ` to ${healingMax}` : ""}
+          </IonItem>
+        ) : null}
+        {weaponry.getTargetOverHeal() ? <IonItem>Attacks may over heal the target</IonItem> : null}
+        {weaponry.getPropDamage() > 0 ? (
+          <IonItem>Reduces target&apos;s health by {Math.round(100 * weaponry.getPropDamage())}%</IonItem>
+        ) : weaponry.getPropDamage() < 0 ? (
+          <IonItem>Heals target for {Math.round(-100 * weaponry.getPropDamage())}% of their maximum health</IonItem>
+        ) : null}
+        {weaponry.getFlatSelfDamageMin() == weaponry.getFlatSelfDamageMax() ? (
+          weaponry.getFlatSelfDamageMax() > 0 ? (
+            <IonItem>Deals {weaponry.getFlatSelfDamageMax()} physical damage to user on attack</IonItem>
+          ) : null
+        ) : weaponry.getFlatSelfDamageMin() >= 0 ? (
+          <IonItem>
+            Deals {weaponry.getFlatSelfDamageMin()} to {weaponry.getFlatSelfDamageMax()} physical damage to user on
+            attack
+          </IonItem>
+        ) : weaponry.getFlatSelfDamageMax() > 0 ? (
+          <IonItem>
+            Deals {weaponry.getFlatSelfDamageMin()} to {weaponry.getFlatSelfDamageMax()} physical damage to user on
+            attack, negative damage will heal
+          </IonItem>
+        ) : null}
+        {weaponry.getFlatSelfMagicDamageMin() == weaponry.getFlatSelfMagicDamageMax() ? (
+          weaponry.getFlatSelfMagicDamageMax() > 0 ? (
+            <IonItem>Deals {weaponry.getFlatSelfMagicDamageMax()} magic damage to user on attack</IonItem>
+          ) : null
+        ) : weaponry.getFlatSelfMagicDamageMin() >= 0 ? (
+          <IonItem>
+            Deals {weaponry.getFlatSelfMagicDamageMin()} to {weaponry.getFlatSelfMagicDamageMax()} magic damage to user
+            on attack
+          </IonItem>
+        ) : weaponry.getFlatSelfMagicDamageMax() > 0 ? (
+          <IonItem>
+            Deals {weaponry.getFlatSelfMagicDamageMin()} to {weaponry.getFlatSelfMagicDamageMax()} magic damage to user
+            on attack, negative damage will heal
+          </IonItem>
+        ) : null}
+        {weaponry.getFlatSelfArmourPiercingDamageMin() == weaponry.getFlatSelfArmourPiercingDamageMax() ? (
+          weaponry.getFlatSelfArmourPiercingDamageMax() > 0 ? (
+            <IonItem>
+              Deals {weaponry.getFlatSelfArmourPiercingDamageMax()} armour piercing damage to user on attack
+            </IonItem>
+          ) : null
+        ) : weaponry.getFlatSelfArmourPiercingDamageMin() >= 0 ? (
+          <IonItem>
+            Deals {weaponry.getFlatSelfArmourPiercingDamageMin()} to {weaponry.getFlatSelfArmourPiercingDamageMax()}{" "}
+            armour piercing damage to user on attack
+          </IonItem>
+        ) : weaponry.getFlatSelfArmourPiercingDamageMax() > 0 ? (
+          <IonItem>
+            Deals {weaponry.getFlatSelfArmourPiercingDamageMin()} to {weaponry.getFlatSelfArmourPiercingDamageMax()}{" "}
+            armour piercing damage to user on attack, negative damage will heal
+          </IonItem>
+        ) : null}
+        {healingSelfMax > 0 ? (
+          <IonItem>
+            Heals the user for {healingSelfMin} {healingSelfMin != healingSelfMax ? ` to ${healingSelfMax}` : ""}
+          </IonItem>
+        ) : null}
+        {weaponry.getSelfOverHeal() ? <IonItem>May over heal user</IonItem> : null}
+        {weaponry.getPropSelfDamage() > 0 ? (
+          <IonItem>Reduces user&apos;s health by {Math.round(100 * weaponry.getPropSelfDamage())}%</IonItem>
+        ) : weaponry.getPropSelfDamage() < 0 ? (
+          <IonItem>Heals user for {Math.round(-100 * weaponry.getPropSelfDamage())}% of their maximum health</IonItem>
+        ) : null}
+        {weaponry.getHealthChange() > 0 ? (
+          <IonItem>User is healed for {weaponry.getHealthChange()}, even if attack is shielded</IonItem>
+        ) : weaponry.getHealthChange() < 0 ? (
+          <IonItem>Costs {-weaponry.getHealthChange()} health to attack (even if shielded)</IonItem>
+        ) : null}
+        {weaponry.getLifeLink() ? <IonItem>On dealing damage to target, heals the user by that much</IonItem> : null}
+        {weaponry.hitCount <= 0 ? (
+          <IonItem>Cannot be used for attacks</IonItem>
+        ) : weaponry.hitCount == 2 ? (
+          <IonItem>Hits twice per attack</IonItem>
+        ) : weaponry.hitCount > 2 ? (
+          <IonItem>Hits {weaponry.hitCount} times per attack</IonItem>
+        ) : null}
+        {weaponry.getCounterHits() == 1 ? (
+          <IonItem>Usable for counter attacks, hits once</IonItem>
+        ) : weaponry.getCounterHits() == 2 ? (
+          <IonItem>Usable for counter attacks, hits twice</IonItem>
+        ) : weaponry.getCounterHits() > 2 ? (
+          <IonItem>Usable for counter attacks, hits {weaponry.getCounterHits()} times per attack</IonItem>
+        ) : null}
+        {weaponry.getDualWield() ? <IonItem>Can be dual wielded</IonItem> : null}
+        {weaponry.getNoEvade() ? <IonItem>Cannot be dodged</IonItem> : null}
+        {weaponry.getNoCounterAttack() ? <IonItem>Does not allow counter attacks</IonItem> : null}
+        {weaponry.getCanCounter() ? <IonItem>Effects can be shielded against by spells</IonItem> : null}
+        {weaponry.getManaChange() < 0 ? (
+          <IonItem>Costs {-weaponry.getManaChange()} to attack</IonItem>
+        ) : weaponry.getManaChange() > 0 ? (
+          <IonItem>Gain {weaponry.getManaChange()} mana on attack</IonItem>
+        ) : null}
+        {weaponry.getProjectileChange() == -1 ? (
+          <IonItem>Requires 1 arrow to attack</IonItem>
+        ) : weaponry.getProjectileChange() < -1 ? (
+          <IonItem>Requires {-weaponry.getProjectileChange()} arrows to attack</IonItem>
+        ) : weaponry.getProjectileChange() == 1 ? (
+          <IonItem>Regain 1 arrow on attack</IonItem>
+        ) : weaponry.getProjectileChange() > 1 ? (
+          <IonItem>Regain {weaponry.getProjectileChange()} arrows on attack</IonItem>
+        ) : null}
+        {weaponry.getPoison() > 0 ? <IonItem>Applies {weaponry.getPoison()} poison on hit</IonItem> : null}
+        {weaponry.getSelfPoison() > 0 ? (
+          <IonItem>Applies {weaponry.getSelfPoison()} poison to user on attack</IonItem>
+        ) : null}
+        {weaponry.getBleed() > 0 ? <IonItem>Applies {weaponry.getBleed()} bleed on hit</IonItem> : null}
+        {weaponry.getSelfBleed() > 0 ? (
+          <IonItem>Applies {weaponry.getSelfBleed()} bleed to user on attack</IonItem>
+        ) : null}
+        {weaponry.getFlatMagicDamageModifier() != 0 ? (
+          <IonItem>
+            {weaponry.getFlatMagicDamageModifier() > 0 ? "+" : ""}
+            {weaponry.getFlatMagicDamageModifier()} magic damage dealt (passive effect)
+          </IonItem>
+        ) : null}
+      </IonList>
+    );
+  }
+  static DisplayName({ weaponry, inBattle, selected, canUse, onToggle }: DisplayWeaponNameProps): React.ReactNode {
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    if (!weaponry.real) {
+      return (
         <IonItem>
-          Deals {weaponry.getFlatSelfArmourPiercingDamageMin()} to {weaponry.getFlatSelfArmourPiercingDamageMax()}{" "}
-          armour piercing damage to user on attack
+          <IonLabel className="ion-text-center">None</IonLabel>
         </IonItem>
-      ) : weaponry.getFlatSelfArmourPiercingDamageMax() > 0 ? (
-        <IonItem>
-          Deals {weaponry.getFlatSelfArmourPiercingDamageMin()} to {weaponry.getFlatSelfArmourPiercingDamageMax()}{" "}
-          armour piercing damage to user on attack, negative damage will heal
-        </IonItem>
-      ) : null}
-      {healingSelfMax > 0 ? (
-        <IonItem>
-          Heals the user for {healingSelfMin} {healingSelfMin != healingSelfMax ? ` to ${healingSelfMax}` : ""}
-        </IonItem>
-      ) : null}
-      {weaponry.getSelfOverHeal() ? <IonItem>May over heal user</IonItem> : null}
-      {weaponry.getPropSelfDamage() > 0 ? (
-        <IonItem>Reduces user&apos;s health by {Math.round(100 * weaponry.getPropSelfDamage())}%</IonItem>
-      ) : weaponry.getPropSelfDamage() < 0 ? (
-        <IonItem>Heals user for {Math.round(-100 * weaponry.getPropSelfDamage())}% of their maximum health</IonItem>
-      ) : null}
-      {weaponry.getHealthChange() > 0 ? (
-        <IonItem>User is healed for {weaponry.getHealthChange()}, even if attack is shielded</IonItem>
-      ) : weaponry.getHealthChange() < 0 ? (
-        <IonItem>Costs {-weaponry.getHealthChange()} health to attack (even if shielded)</IonItem>
-      ) : null}
-      {weaponry.getLifeLink() ? <IonItem>On dealing damage to target, heals the user by that much</IonItem> : null}
-      {weaponry.getHitCount() <= 0 ? (
-        <IonItem>Cannot be used for attacks</IonItem>
-      ) : weaponry.getHitCount() == 2 ? (
-        <IonItem>Hits twice per attack</IonItem>
-      ) : weaponry.getHitCount() > 2 ? (
-        <IonItem>Hits {weaponry.getHitCount()} times per attack</IonItem>
-      ) : null}
-      {weaponry.getCounterHits() == 1 ? (
-        <IonItem>Usable for counter attacks, hits once</IonItem>
-      ) : weaponry.getCounterHits() == 2 ? (
-        <IonItem>Usable for counter attacks, hits twice</IonItem>
-      ) : weaponry.getCounterHits() > 2 ? (
-        <IonItem>Usable for counter attacks, hits {weaponry.getCounterHits()} times per attack</IonItem>
-      ) : null}
-      {weaponry.getDualWield() ? <IonItem>Can be dual wielded</IonItem> : null}
-      {weaponry.getNoEvade() ? <IonItem>Cannot be dodged</IonItem> : null}
-      {weaponry.getNoCounterAttack() ? <IonItem>Does not allow counter attacks</IonItem> : null}
-      {weaponry.getCanCounter() ? <IonItem>Effects can be shielded against by spells</IonItem> : null}
-      {weaponry.getManaChange() < 0 ? (
-        <IonItem>Costs {-weaponry.getManaChange()} to attack</IonItem>
-      ) : weaponry.getManaChange() > 0 ? (
-        <IonItem>Gain {weaponry.getManaChange()} mana on attack</IonItem>
-      ) : null}
-      {weaponry.getProjectileChange() == -1 ? (
-        <IonItem>Requires 1 arrow to attack</IonItem>
-      ) : weaponry.getProjectileChange() < -1 ? (
-        <IonItem>Requires {-weaponry.getProjectileChange()} arrows to attack</IonItem>
-      ) : weaponry.getProjectileChange() == 1 ? (
-        <IonItem>Regain 1 arrow on attack</IonItem>
-      ) : weaponry.getProjectileChange() > 1 ? (
-        <IonItem>Regain {weaponry.getProjectileChange()} arrows on attack</IonItem>
-      ) : null}
-      {weaponry.getPoison() > 0 ? <IonItem>Applies {weaponry.getPoison()} poison on hit</IonItem> : null}
-      {weaponry.getSelfPoison() > 0 ? (
-        <IonItem>Applies {weaponry.getSelfPoison()} poison to user on attack</IonItem>
-      ) : null}
-      {weaponry.getBleed() > 0 ? <IonItem>Applies {weaponry.getBleed()} bleed on hit</IonItem> : null}
-      {weaponry.getSelfBleed() > 0 ? (
-        <IonItem>Applies {weaponry.getSelfBleed()} bleed to user on attack</IonItem>
-      ) : null}
-      {weaponry.getFlatMagicDamageModifier() != 0 ? (
-        <IonItem>
-          {weaponry.getFlatMagicDamageModifier() > 0 ? "+" : ""}
-          {weaponry.getFlatMagicDamageModifier()} magic damage dealt (passive effect)
-        </IonItem>
-      ) : null}
-    </IonList>
-  );
-}
-type DisplayWeaponNameProps = {
-  weaponry: weapon;
-  inBattle?: boolean;
-  selected?: boolean;
-  canUse?: boolean;
-  onToggle?: fn;
-};
-/**Displays weapon panel in inventory or battle
- * @hook
- */
-export function DisplayWeaponName({
-  weaponry,
-  inBattle,
-  selected,
-  canUse,
-  onToggle,
-}: DisplayWeaponNameProps): React.ReactNode {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  if (!weaponry.getReal()) {
+      );
+    }
     return (
       <IonItem>
-        <IonLabel className="ion-text-center">None</IonLabel>
+        {inBattle && weaponry.getDualWield() ? (
+          <IonBadge slot="start" mode="ios" className="ion-no-margin">
+            DW
+          </IonBadge>
+        ) : null}{" "}
+        <IonLabel className="ion-text-center">
+          {weaponry.getName()}
+          {weaponry.getHealthChange() != 0 || weaponry.getManaChange() != 0 || weaponry.getProjectileChange() != 0 ? (
+            <IonLabel className="equipment-costs">
+              {weaponry.getHealthChange() != 0
+                ? ` ${weaponry.getHealthChange() > 0 ? "+" : ""}${weaponry.getHealthChange()} health `
+                : null}
+              {weaponry.getManaChange() != 0
+                ? ` ${weaponry.getManaChange() > 0 ? "+" : ""}${weaponry.getManaChange()} mana `
+                : null}
+              {weaponry.getHealthChange() != 0 && weaponry.getManaChange() != 0 && weaponry.getProjectileChange() != 0
+                ? "\n"
+                : null}
+              {weaponry.getProjectileChange() != 0
+                ? ` ${weaponry.getProjectileChange() > 0 ? "+" : ""}${weaponry.getProjectileChange()} arrow${
+                    Math.abs(weaponry.getProjectileChange()) != 1 ? "s" : ""
+                  } `
+                : null}
+            </IonLabel>
+          ) : null}
+        </IonLabel>
+        {inBattle ? (
+          <IonToggle
+            aria-label="select weapon"
+            slot="end"
+            checked={selected}
+            disabled={!canUse}
+            onIonChange={onToggle}
+          />
+        ) : (
+          <IonButton slot="end" mode="ios" size="small" onClick={() => setIsOpen(true)}>
+            Stats
+          </IonButton>
+        )}
+        <IonModal isOpen={isOpen} backdropDismiss={false}>
+          <IonHeader>
+            <IonToolbar className="ion-text-center">
+              <IonGrid className="ion-no-padding">
+                <IonRow>
+                  <IonCol size="1">
+                    <IonButton size="small" onClick={() => setIsOpen(false)} fill="clear" color="dark">
+                      <IonIcon slot="icon-only" icon={close} />
+                    </IonButton>
+                  </IonCol>
+                  <IonCol size="10">
+                    <IonTitle>{weaponry.getName()}</IonTitle>
+                  </IonCol>
+                </IonRow>
+              </IonGrid>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent>
+            <weapon.DisplayStats weaponry={weaponry} />
+          </IonContent>
+        </IonModal>
       </IonItem>
     );
   }
-  return (
-    <IonItem>
-      {inBattle && weaponry.getDualWield() ? (
-        <IonBadge slot="start" mode="ios" className="ion-no-margin">
-          DW
-        </IonBadge>
-      ) : null}{" "}
-      <IonLabel className="ion-text-center">
-        {weaponry.getName()}
-        {weaponry.getHealthChange() != 0 || weaponry.getManaChange() != 0 || weaponry.getProjectileChange() != 0 ? (
-          <IonLabel className="equipment-costs">
-            {weaponry.getHealthChange() != 0
-              ? ` ${weaponry.getHealthChange() > 0 ? "+" : ""}${weaponry.getHealthChange()} health `
-              : null}
-            {weaponry.getManaChange() != 0
-              ? ` ${weaponry.getManaChange() > 0 ? "+" : ""}${weaponry.getManaChange()} mana `
-              : null}
-            {weaponry.getHealthChange() != 0 && weaponry.getManaChange() != 0 && weaponry.getProjectileChange() != 0
-              ? "\n"
-              : null}
-            {weaponry.getProjectileChange() != 0
-              ? ` ${weaponry.getProjectileChange() > 0 ? "+" : ""}${weaponry.getProjectileChange()} arrow${
-                  Math.abs(weaponry.getProjectileChange()) != 1 ? "s" : ""
-                } `
-              : null}
-          </IonLabel>
-        ) : null}
-      </IonLabel>
-      {inBattle ? (
-        <IonToggle aria-label="select weapon" slot="end" checked={selected} disabled={!canUse} onIonChange={onToggle} />
-      ) : (
-        <IonButton slot="end" mode="ios" size="small" onClick={() => setIsOpen(true)}>
-          Stats
-        </IonButton>
-      )}
-      <IonModal isOpen={isOpen} backdropDismiss={false}>
-        <IonHeader>
-          <IonToolbar className="ion-text-center">
-            <IonGrid className="ion-no-padding">
-              <IonRow>
-                <IonCol size="1">
-                  <IonButton size="small" onClick={() => setIsOpen(false)} fill="clear" color="dark">
-                    <IonIcon slot="icon-only" icon={close} />
-                  </IonButton>
-                </IonCol>
-                <IonCol size="10">
-                  <IonTitle>{weaponry.getName()}</IonTitle>
-                </IonCol>
-              </IonRow>
-            </IonGrid>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent>
-          <DisplayWeaponStats weaponry={weaponry} />
-        </IonContent>
-      </IonModal>
-    </IonItem>
-  );
 }

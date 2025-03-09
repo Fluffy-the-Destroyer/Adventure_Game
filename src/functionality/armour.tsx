@@ -22,7 +22,11 @@ import {
 } from "@ionic/react";
 import { close } from "ionicons/icons";
 import { variables } from "./variables";
-export class armour {
+
+type DisplayArmourNameProps = { armourPiece: armour };
+type DisplayArmourStatsProps = { armourPiece: armour };
+
+abstract class armour {
   protected key: number | undefined;
   protected real: boolean = false;
   protected maxHealthModifier: number | undefined;
@@ -131,9 +135,7 @@ export class armour {
   getUpgrade(): string {
     return this.upgrade ?? "EMPTY";
   }
-  armourType(): string {
-    return "none";
-  }
+  abstract armourType(): string;
   constructor(blueprint: string | armour = "EMPTY", vars?: variables) {
     if (typeof blueprint == "string") {
       this.loadFromFile(blueprint, vars);
@@ -430,211 +432,204 @@ export class armour {
   toString(): string {
     return this.name ?? "None";
   }
-}
-
-type DisplayArmourNameProps = { armourPiece: armour };
-/**Displays the armour's inventory panel
- * @hook
- */
-export function DisplayArmourName({ armourPiece }: DisplayArmourNameProps): React.ReactNode {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  let type: string;
-  switch (armourPiece.armourType()) {
-    case "HEAD":
-      type = "Head";
-      break;
-    case "TORSO":
-      type = "Torso";
-      break;
-    case "LEGS":
-      type = "Legs";
-      break;
-    case "FEET":
-      type = "Feet";
-      break;
-    default:
-      type = "";
+  static DisplayName({ armourPiece }: DisplayArmourNameProps): React.ReactNode {
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    let type: string;
+    switch (armourPiece.armourType()) {
+      case "HEAD":
+        type = "Head";
+        break;
+      case "TORSO":
+        type = "Torso";
+        break;
+      case "LEGS":
+        type = "Legs";
+        break;
+      case "FEET":
+        type = "Feet";
+        break;
+      default:
+        type = "";
+    }
+    return (
+      <Fragment>
+        <IonItem lines="none">
+          <IonLabel>
+            {type}: {armourPiece.getName()}
+          </IonLabel>
+          {armourPiece.real ? (
+            <IonButton mode="ios" slot="end" onClick={() => setIsOpen(true)}>
+              Stats
+            </IonButton>
+          ) : null}
+        </IonItem>
+        <IonModal isOpen={isOpen} backdropDismiss={false}>
+          <IonHeader>
+            <IonToolbar className="ion-text-center">
+              <IonGrid className="ion-no-padding">
+                <IonRow>
+                  <IonCol size="1">
+                    <IonButton size="small" onClick={() => setIsOpen(false)} fill="clear" color="dark">
+                      <IonIcon slot="icon-only" icon={close}></IonIcon>
+                    </IonButton>
+                  </IonCol>
+                  <IonCol size="10">
+                    <IonTitle>{armourPiece.getName()}</IonTitle>
+                    <IonCardSubtitle>Equip location: {type}</IonCardSubtitle>
+                  </IonCol>
+                </IonRow>
+              </IonGrid>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent>
+            <armour.DisplayStats armourPiece={armourPiece} />
+          </IonContent>
+        </IonModal>
+      </Fragment>
+    );
   }
-  return (
-    <Fragment>
-      <IonItem lines="none">
-        <IonLabel>
-          {type}: {armourPiece.getName()}
-        </IonLabel>
-        {armourPiece.getReal() ? (
-          <IonButton mode="ios" slot="end" onClick={() => setIsOpen(true)}>
-            Stats
-          </IonButton>
+  static DisplayStats({ armourPiece }: DisplayArmourStatsProps): React.ReactNode {
+    return (
+      <IonList className="ion-text-center">
+        <IonListHeader>{armourPiece.getDescription()}</IonListHeader>
+        {armourPiece.getMaxHealthModifier() != 0 ? (
+          <IonItem>
+            {armourPiece.getMaxHealthModifier() > 0 ? "+" : null}
+            {armourPiece.getMaxHealthModifier()} maximum health
+          </IonItem>
         ) : null}
-      </IonItem>
-      <IonModal isOpen={isOpen} backdropDismiss={false}>
-        <IonHeader>
-          <IonToolbar className="ion-text-center">
-            <IonGrid className="ion-no-padding">
-              <IonRow>
-                <IonCol size="1">
-                  <IonButton size="small" onClick={() => setIsOpen(false)} fill="clear" color="dark">
-                    <IonIcon slot="icon-only" icon={close}></IonIcon>
-                  </IonButton>
-                </IonCol>
-                <IonCol size="10">
-                  <IonTitle>{armourPiece.getName()}</IonTitle>
-                  <IonCardSubtitle>Equip location: {type}</IonCardSubtitle>
-                </IonCol>
-              </IonRow>
-            </IonGrid>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent>
-          <DisplayArmourStats armourPiece={armourPiece} />
-        </IonContent>
-      </IonModal>
-    </Fragment>
-  );
+        {armourPiece.getTurnRegenModifier() != 0 ? (
+          <IonItem>
+            {armourPiece.getTurnRegenModifier() > 0 ? "+" : null}
+            {armourPiece.getTurnRegenModifier()} health regeneration per turn
+          </IonItem>
+        ) : null}
+        {armourPiece.getBattleRegenModifier() != 0 ? (
+          <IonItem>
+            {armourPiece.getBattleRegenModifier() > 0 ? "+" : null}
+            {armourPiece.getBattleRegenModifier()} health regeneration at end of battle
+          </IonItem>
+        ) : null}
+        {armourPiece.getMaxManaModifier() != 0 ? (
+          <IonItem>
+            {armourPiece.getMaxManaModifier() > 0 ? "+" : null}
+            {armourPiece.getMaxManaModifier()} maximum mana
+          </IonItem>
+        ) : null}
+        {armourPiece.getTurnManaRegenModifier() != 0 ? (
+          <IonItem>
+            {armourPiece.getTurnManaRegenModifier() > 0 ? "+" : null}
+            {armourPiece.getTurnManaRegenModifier()} mana regeneration per turn
+          </IonItem>
+        ) : null}
+        {armourPiece.getBattleManaRegenModifier() != 0 ? (
+          <IonItem>
+            {armourPiece.getBattleManaRegenModifier() > 0 ? "+" : null}
+            {armourPiece.getBattleManaRegenModifier()} mana regeneration at end of battle
+          </IonItem>
+        ) : null}
+        {armourPiece.getFlatArmourModifier() != 0 ? (
+          <IonItem>
+            {armourPiece.getFlatArmourModifier() > 0 ? "+" : null}
+            {armourPiece.getFlatArmourModifier()} physical armour rating
+          </IonItem>
+        ) : null}
+        {armourPiece.getPropArmourModifier() != 0 ? (
+          <IonItem>
+            Incoming physical damage {armourPiece.getPropArmourModifier() > 0 ? "increased" : "reduced"} by{" "}
+            {Math.abs(Math.round(100 * armourPiece.getPropArmourModifier()))}%
+          </IonItem>
+        ) : null}
+        {armourPiece.getFlatMagicArmourModifier() != 0 ? (
+          <IonItem>
+            {armourPiece.getFlatMagicArmourModifier() > 0 ? "+" : null}
+            {armourPiece.getFlatMagicArmourModifier()} magic armour rating
+          </IonItem>
+        ) : null}
+        {armourPiece.getPropMagicArmourModifier() != 0 ? (
+          <IonItem>
+            Incoming magic damage {armourPiece.getPropMagicArmourModifier() > 0 ? "increased" : "reduced"} by{" "}
+            {Math.abs(Math.round(100 * armourPiece.getPropMagicArmourModifier()))}%
+          </IonItem>
+        ) : null}
+        {armourPiece.getFlatDamageModifier() != 0 ? (
+          <IonItem>
+            Deal {Math.abs(armourPiece.getFlatDamageModifier())}{" "}
+            {armourPiece.getFlatDamageModifier() > 0 ? "more" : "less"} physical damage
+          </IonItem>
+        ) : null}
+        {armourPiece.getPropDamageModifier() != 0 ? (
+          <IonItem>
+            Physical damage {armourPiece.getPropDamageModifier() > 0 ? "increased" : "reduced"} by{" "}
+            {Math.abs(Math.round(100 * armourPiece.getPropDamageModifier()))}%
+          </IonItem>
+        ) : null}
+        {armourPiece.getFlatMagicDamageModifier() != 0 ? (
+          <IonItem>
+            Deal {Math.abs(armourPiece.getFlatMagicDamageModifier())}{" "}
+            {armourPiece.getFlatMagicDamageModifier() > 0 ? "more" : "less"} magic damage
+          </IonItem>
+        ) : null}
+        {armourPiece.getPropMagicDamageModifier() != 0 ? (
+          <IonItem>
+            Magic damage {armourPiece.getPropMagicDamageModifier() > 0 ? "increased" : "reduced"} by{" "}
+            {Math.abs(Math.round(100 * armourPiece.getPropMagicDamageModifier()))}%
+          </IonItem>
+        ) : null}
+        {armourPiece.getFlatArmourPiercingDamageModifier() != 0 ? (
+          <IonItem>
+            Deal {Math.abs(armourPiece.getFlatArmourPiercingDamageModifier())}{" "}
+            {armourPiece.getFlatArmourPiercingDamageModifier() > 0 ? "more" : "less"} armour piercing damage
+          </IonItem>
+        ) : null}
+        {armourPiece.getPropArmourPiercingDamageModifier() != 0 ? (
+          <IonItem>
+            Armour piercing damage {armourPiece.getPropArmourPiercingDamageModifier() > 0 ? "increased" : "reduced"} by{" "}
+            {Math.abs(Math.round(100 * armourPiece.getPropArmourPiercingDamageModifier()))}%
+          </IonItem>
+        ) : null}
+        {armourPiece.getPoisonResistModifier() != 0 ? (
+          <IonItem>
+            Poison resistance {armourPiece.getPoisonResistModifier() > 0 ? "increased" : "reduced"} by{" "}
+            {Math.abs(Math.round(100 * armourPiece.getPoisonResistModifier()))}%
+          </IonItem>
+        ) : null}
+        {armourPiece.getBleedResistModifier() != 0 ? (
+          <IonItem>
+            Bleed resistance {armourPiece.getBleedResistModifier() > 0 ? "increased" : "reduced"} by{" "}
+            {Math.abs(Math.round(100 * armourPiece.getBleedResistModifier()))}%
+          </IonItem>
+        ) : null}
+        {armourPiece.getEvadeChanceModifier() != 0 ? (
+          <IonItem>
+            Evade chance {armourPiece.getEvadeChanceModifier() > 0 ? "increased" : "reduced"} by{" "}
+            {Math.abs(Math.round(100 * armourPiece.getEvadeChanceModifier()))}%
+          </IonItem>
+        ) : null}
+        {armourPiece.getCounterAttackChanceModifier() != 0 ? (
+          <IonItem>
+            Counter attack chance {armourPiece.getCounterAttackChanceModifier() > 0 ? "increased" : "reduced"} by{" "}
+            {Math.abs(Math.round(100 * armourPiece.getCounterAttackChanceModifier()))}%
+          </IonItem>
+        ) : null}
+        {armourPiece.getBonusActionsModifier() != 0 ? (
+          <IonItem>
+            {armourPiece.getBonusActionsModifier() > 0 ? "+" : null}
+            {armourPiece.getBonusActionsModifier()} bonus action
+            {armourPiece.getBonusActionsModifier() != 1 ? "s" : null} each turn
+          </IonItem>
+        ) : null}
+        {armourPiece.getInitiativeModifier() != 0 ? (
+          <IonItem>
+            {armourPiece.getInitiativeModifier() > 0 ? "+" : null}
+            {armourPiece.getInitiativeModifier()} initiative
+          </IonItem>
+        ) : null}
+      </IonList>
+    );
+  }
 }
 
-type DisplayArmourStatsProps = { armourPiece: armour };
-/**Displays armour's stats */
-export function DisplayArmourStats({ armourPiece }: DisplayArmourStatsProps): React.ReactNode {
-  return (
-    <IonList className="ion-text-center">
-      <IonListHeader>{armourPiece.getDescription()}</IonListHeader>
-      {armourPiece.getMaxHealthModifier() != 0 ? (
-        <IonItem>
-          {armourPiece.getMaxHealthModifier() > 0 ? "+" : null}
-          {armourPiece.getMaxHealthModifier()} maximum health
-        </IonItem>
-      ) : null}
-      {armourPiece.getTurnRegenModifier() != 0 ? (
-        <IonItem>
-          {armourPiece.getTurnRegenModifier() > 0 ? "+" : null}
-          {armourPiece.getTurnRegenModifier()} health regeneration per turn
-        </IonItem>
-      ) : null}
-      {armourPiece.getBattleRegenModifier() != 0 ? (
-        <IonItem>
-          {armourPiece.getBattleRegenModifier() > 0 ? "+" : null}
-          {armourPiece.getBattleRegenModifier()} health regeneration at end of battle
-        </IonItem>
-      ) : null}
-      {armourPiece.getMaxManaModifier() != 0 ? (
-        <IonItem>
-          {armourPiece.getMaxManaModifier() > 0 ? "+" : null}
-          {armourPiece.getMaxManaModifier()} maximum mana
-        </IonItem>
-      ) : null}
-      {armourPiece.getTurnManaRegenModifier() != 0 ? (
-        <IonItem>
-          {armourPiece.getTurnManaRegenModifier() > 0 ? "+" : null}
-          {armourPiece.getTurnManaRegenModifier()} mana regeneration per turn
-        </IonItem>
-      ) : null}
-      {armourPiece.getBattleManaRegenModifier() != 0 ? (
-        <IonItem>
-          {armourPiece.getBattleManaRegenModifier() > 0 ? "+" : null}
-          {armourPiece.getBattleManaRegenModifier()} mana regeneration at end of battle
-        </IonItem>
-      ) : null}
-      {armourPiece.getFlatArmourModifier() != 0 ? (
-        <IonItem>
-          {armourPiece.getFlatArmourModifier() > 0 ? "+" : null}
-          {armourPiece.getFlatArmourModifier()} physical armour rating
-        </IonItem>
-      ) : null}
-      {armourPiece.getPropArmourModifier() != 0 ? (
-        <IonItem>
-          Incoming physical damage {armourPiece.getPropArmourModifier() > 0 ? "increased" : "reduced"} by{" "}
-          {Math.abs(Math.round(100 * armourPiece.getPropArmourModifier()))}%
-        </IonItem>
-      ) : null}
-      {armourPiece.getFlatMagicArmourModifier() != 0 ? (
-        <IonItem>
-          {armourPiece.getFlatMagicArmourModifier() > 0 ? "+" : null}
-          {armourPiece.getFlatMagicArmourModifier()} magic armour rating
-        </IonItem>
-      ) : null}
-      {armourPiece.getPropMagicArmourModifier() != 0 ? (
-        <IonItem>
-          Incoming magic damage {armourPiece.getPropMagicArmourModifier() > 0 ? "increased" : "reduced"} by{" "}
-          {Math.abs(Math.round(100 * armourPiece.getPropMagicArmourModifier()))}%
-        </IonItem>
-      ) : null}
-      {armourPiece.getFlatDamageModifier() != 0 ? (
-        <IonItem>
-          Deal {Math.abs(armourPiece.getFlatDamageModifier())}{" "}
-          {armourPiece.getFlatDamageModifier() > 0 ? "more" : "less"} physical damage
-        </IonItem>
-      ) : null}
-      {armourPiece.getPropDamageModifier() != 0 ? (
-        <IonItem>
-          Physical damage {armourPiece.getPropDamageModifier() > 0 ? "increased" : "reduced"} by{" "}
-          {Math.abs(Math.round(100 * armourPiece.getPropDamageModifier()))}%
-        </IonItem>
-      ) : null}
-      {armourPiece.getFlatMagicDamageModifier() != 0 ? (
-        <IonItem>
-          Deal {Math.abs(armourPiece.getFlatMagicDamageModifier())}{" "}
-          {armourPiece.getFlatMagicDamageModifier() > 0 ? "more" : "less"} magic damage
-        </IonItem>
-      ) : null}
-      {armourPiece.getPropMagicDamageModifier() != 0 ? (
-        <IonItem>
-          Magic damage {armourPiece.getPropMagicDamageModifier() > 0 ? "increased" : "reduced"} by{" "}
-          {Math.abs(Math.round(100 * armourPiece.getPropMagicDamageModifier()))}%
-        </IonItem>
-      ) : null}
-      {armourPiece.getFlatArmourPiercingDamageModifier() != 0 ? (
-        <IonItem>
-          Deal {Math.abs(armourPiece.getFlatArmourPiercingDamageModifier())}{" "}
-          {armourPiece.getFlatArmourPiercingDamageModifier() > 0 ? "more" : "less"} armour piercing damage
-        </IonItem>
-      ) : null}
-      {armourPiece.getPropArmourPiercingDamageModifier() != 0 ? (
-        <IonItem>
-          Armour piercing damage {armourPiece.getPropArmourPiercingDamageModifier() > 0 ? "increased" : "reduced"} by{" "}
-          {Math.abs(Math.round(100 * armourPiece.getPropArmourPiercingDamageModifier()))}%
-        </IonItem>
-      ) : null}
-      {armourPiece.getPoisonResistModifier() != 0 ? (
-        <IonItem>
-          Poison resistance {armourPiece.getPoisonResistModifier() > 0 ? "increased" : "reduced"} by{" "}
-          {Math.abs(Math.round(100 * armourPiece.getPoisonResistModifier()))}%
-        </IonItem>
-      ) : null}
-      {armourPiece.getBleedResistModifier() != 0 ? (
-        <IonItem>
-          Bleed resistance {armourPiece.getBleedResistModifier() > 0 ? "increased" : "reduced"} by{" "}
-          {Math.abs(Math.round(100 * armourPiece.getBleedResistModifier()))}%
-        </IonItem>
-      ) : null}
-      {armourPiece.getEvadeChanceModifier() != 0 ? (
-        <IonItem>
-          Evade chance {armourPiece.getEvadeChanceModifier() > 0 ? "increased" : "reduced"} by{" "}
-          {Math.abs(Math.round(100 * armourPiece.getEvadeChanceModifier()))}%
-        </IonItem>
-      ) : null}
-      {armourPiece.getCounterAttackChanceModifier() != 0 ? (
-        <IonItem>
-          Counter attack chance {armourPiece.getCounterAttackChanceModifier() > 0 ? "increased" : "reduced"} by{" "}
-          {Math.abs(Math.round(100 * armourPiece.getCounterAttackChanceModifier()))}%
-        </IonItem>
-      ) : null}
-      {armourPiece.getBonusActionsModifier() != 0 ? (
-        <IonItem>
-          {armourPiece.getBonusActionsModifier() > 0 ? "+" : null}
-          {armourPiece.getBonusActionsModifier()} bonus action
-          {armourPiece.getBonusActionsModifier() != 1 ? "s" : null} each turn
-        </IonItem>
-      ) : null}
-      {armourPiece.getInitiativeModifier() != 0 ? (
-        <IonItem>
-          {armourPiece.getInitiativeModifier() > 0 ? "+" : null}
-          {armourPiece.getInitiativeModifier()} initiative
-        </IonItem>
-      ) : null}
-    </IonList>
-  );
-}
 export class armourHead extends armour {
   armourType(): string {
     return "HEAD";

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fn } from "../functionality/interfaces";
 
 /**Takes an iterator for a generator function, provides it with a function to advance itself, then returns the returned JSX
@@ -6,15 +6,12 @@ import { fn } from "../functionality/interfaces";
  * @returns JSX (or null) held in state
  */
 export function useGenerator(generator: Generator<React.ReactNode, React.ReactNode, void | fn>): React.ReactNode {
-  const [iterator] = useState<Generator<React.ReactNode, React.ReactNode, void | fn>>(generator);
+  const iteratorRef = useRef<Generator<React.ReactNode, React.ReactNode, void | fn>>(generator);
   const [displayBuffer, setDisplayBuffer] = useState<React.ReactNode>(null);
-  useEffect(
-    function (): fn {
-      iterator.next();
-      setDisplayBuffer(iterator.next(() => setDisplayBuffer(iterator.next().value)).value);
-      return () => iterator.return(null);
-    },
-    [iterator, setDisplayBuffer]
-  );
+  useEffect(function (): fn {
+    iteratorRef.current.next();
+    setDisplayBuffer(iteratorRef.current.next(() => setDisplayBuffer(iteratorRef.current.next().value)).value);
+    return () => iteratorRef.current.return(null);
+  }, []);
   return displayBuffer;
 }

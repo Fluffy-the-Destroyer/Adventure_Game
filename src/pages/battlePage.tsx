@@ -10,8 +10,8 @@ import {
   IonToolbar,
 } from "@ionic/react";
 import { enemy } from "../functionality/enemies";
-import { ChoosePlayerAction, ShowPlayerInventory, player } from "../functionality/player";
-import { useState } from "react";
+import { player } from "../functionality/player";
+import { Fragment, useRef, useState } from "react";
 import { actionChoice, fn } from "../functionality/interfaces";
 import { close } from "ionicons/icons";
 import { SpellCast, WeaponAttack, spellDeclare, weaponDeclare } from "../components/attacks";
@@ -30,33 +30,61 @@ type BattlePageProps = { playerCharacter: player; opponent: enemy; endBattle: fn
  */
 export function BattlePage({ playerCharacter, opponent, endBattle }: BattlePageProps): React.ReactNode {
   /**Holds the battle log */
-  const [battleLog] = useState<string[]>([]);
+  const battleLogRef = useRef<string[]>([]);
+  /**Holds the battle wrapper */
+  const wrapperRef = useRef<React.FC<React.PropsWithChildren>>();
+  if (wrapperRef.current == null) {
+    wrapperRef.current = function BoundWrapper({ children }) {
+      return (
+        <BattleWrapper playerCharacter={playerCharacter} endBattle={endBattle} battleLog={battleLogRef.current}>
+          {children}
+        </BattleWrapper>
+      );
+    };
+  }
+  /**Holds the battle display buffer */
+  const displayBuffer: React.ReactNode = useGenerator(
+    battleHandler(playerCharacter, opponent, battleLogRef.current, endBattle, wrapperRef.current)
+  );
+  return displayBuffer;
+}
+
+type BattleWrapperProps = { playerCharacter: player; endBattle?: fn; battleLog: string[]; children: React.ReactNode };
+export function BattleWrapper({
+  playerCharacter,
+  endBattle,
+  battleLog,
+  children,
+}: BattleWrapperProps): React.ReactNode {
   /**Tracks whether the battle log is open */
   const [isBattleLogOpen, setIsBattleLogOpen] = useState<boolean>(false);
   /**Tracks whether the inventory is open */
   const [isInventoryOpen, setIsInventoryOpen] = useState<boolean>(false);
-  /**Holds the battle display buffer */
-  const displayBuffer: React.ReactNode = useGenerator(battleHandler(playerCharacter, opponent, endBattle, battleLog));
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonButtons slot="start">
-            <IonButton mode="ios" onClick={() => endBattle()}>
-              End Battle
-            </IonButton>
-          </IonButtons>
+          {endBattle != undefined ? (
+            <IonButtons slot="start">
+              <IonButton mode="ios" onClick={endBattle}>
+                End Battle
+              </IonButton>
+            </IonButtons>
+          ) : null}
           <IonButtons slot="end">
             <IonButton mode="ios" onClick={() => setIsInventoryOpen(true)}>
               Inventory
             </IonButton>
             <IonModal isOpen={isInventoryOpen} onDidDismiss={() => setIsInventoryOpen(false)}>
-              <ShowPlayerInventory playerCharacter={playerCharacter} closeInventory={() => setIsInventoryOpen(false)} />
+              <player.ShowInventory
+                playerCharacter={playerCharacter}
+                closeInventory={() => setIsInventoryOpen(false)}
+              />
             </IonModal>
           </IonButtons>
         </IonToolbar>
       </IonHeader>
-      {displayBuffer}
+      {children}
       <IonFooter>
         <IonToolbar>
           <IonButtons slot="end">
@@ -73,7 +101,11 @@ export function BattlePage({ playerCharacter, opponent, endBattle }: BattlePageP
                   </IonButtons>
                 </IonToolbar>
               </IonHeader>
-              <IonContent></IonContent>
+              <IonContent>
+                {battleLog.map((log, index) => (
+                  <p key={index}>{log}</p>
+                ))}
+              </IonContent>
             </IonModal>
           </IonButtons>
         </IonToolbar>
@@ -90,11 +122,12 @@ export function BattlePage({ playerCharacter, opponent, endBattle }: BattlePageP
  * @yields Anything that should be displayed
  * @returns Display for end of battle
  */
-function* battleHandler(
+export function* battleHandler(
   playerCharacter: player,
   opponent: enemy,
-  endBattle: fn,
   battleLog: string[],
+  endBattle?: fn,
+  Wrapper: React.FC<React.PropsWithChildren> = Fragment,
   firstGo: -1 | 0 | 1 = 0
 ): Generator<React.ReactNode, React.ReactNode, void | fn> {
   let playerTurn: boolean;
@@ -109,21 +142,23 @@ function* battleHandler(
       playerTurn = false;
   }
   let firstTurn: boolean = true;
-  const advanceCombat: fn =
-    (yield) ??
-    function () {
-      console.log("No function to advance combat provided, ending battle");
-      endBattle();
-    };
+  const advanceCombatFn: fn | void = yield;
+  if (advanceCombatFn == undefined) {
+    throw Error("No advance combat function provided");
+  }
+  const advanceCombat: fn = advanceCombatFn;
+  endBattle ??= advanceCombat;
   //Display enemy introduction and who goes first
   battleLog.push(opponent.getIntroduction());
   battleLog.push(`${playerTurn ? "You go first" : `${opponent} goes first`}`);
   yield (
-    <IonContent>
-      <div className="ion-text-center">{battleLog.at(-2)}</div>
-      <div className="ion-text-center">{battleLog.at(-1)}</div>
-      <ContinueButton />
-    </IonContent>
+    <Wrapper>
+      <IonContent>
+        <div className="ion-text-center">{battleLog.at(-2)}</div>
+        <div className="ion-text-center">{battleLog.at(-1)}</div>
+        <ContinueButton />
+      </IonContent>
+    </Wrapper>
   );
   //Check if enemy dies immediately
   if (deathCheck()) {
@@ -147,12 +182,14 @@ function* battleHandler(
         return <EndOfCombat />;
       }
       yield (
-        <ChoosePlayerAction
-          playerCharacter={playerCharacter}
-          enemyName={opponent.getName()}
-          timing={0}
-          submitChoice={submitChoice}
-        />
+        <Wrapper>
+          <player.ChooseAction
+            playerCharacter={playerCharacter}
+            enemyName={opponent.getName()}
+            timing={0}
+            submitChoice={submitChoice}
+          />
+        </Wrapper>
       );
       playerTurn: switch (playerSelection!.actionType) {
         case 0:
@@ -171,17 +208,19 @@ function* battleHandler(
             battleLog.push(`${opponent} casts ${responseSpellBuffer} in response`);
             spellDeclare(responseSpellBuffer, opponent);
             yield (
-              <IonContent>
-                <div className="ion-text-center">{battleLog.at(-1)}</div>
-                <SpellCast
-                  magic={responseSpellBuffer}
-                  caster={opponent}
-                  target={playerCharacter}
-                  timing={1}
-                  battleLog={battleLog}
-                />
-                <ContinueButton />
-              </IonContent>
+              <Wrapper>
+                <IonContent>
+                  <div className="ion-text-center">{battleLog.at(-1)}</div>
+                  <SpellCast
+                    magic={responseSpellBuffer}
+                    caster={opponent}
+                    target={playerCharacter}
+                    timing={1}
+                    battleLog={battleLog}
+                  />
+                  <ContinueButton />
+                </IonContent>
+              </Wrapper>
             );
             if ((responseSpellBuffer.getPropDamage() > 0 || playerCharacter.getHealth() < health) && deathCheck()) {
               return <EndOfCombat />;
@@ -201,15 +240,17 @@ function* battleHandler(
             }
           }
           yield (
-            <IonContent>
-              <WeaponAttack
-                weapon1={weaponBuffer1}
-                attacker={playerCharacter}
-                target={opponent}
-                battleLog={battleLog}
-              />
-              <ContinueButton />
-            </IonContent>
+            <Wrapper>
+              <IonContent>
+                <WeaponAttack
+                  weapon1={weaponBuffer1}
+                  attacker={playerCharacter}
+                  target={opponent}
+                  battleLog={battleLog}
+                />
+                <ContinueButton />
+              </IonContent>
+            </Wrapper>
           );
           if (deathCheck()) {
             return <EndOfCombat />;
@@ -226,16 +267,18 @@ function* battleHandler(
                 yield <ContinuePage />;
                 weaponDeclare(opponent, weaponBuffer1);
                 yield (
-                  <IonContent>
-                    <WeaponAttack
-                      weapon1={weaponBuffer1}
-                      attacker={opponent}
-                      target={playerCharacter}
-                      counter
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <WeaponAttack
+                        weapon1={weaponBuffer1}
+                        attacker={opponent}
+                        target={playerCharacter}
+                        counter
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -248,17 +291,19 @@ function* battleHandler(
                 yield <ContinuePage />;
                 weaponDeclare(opponent, weaponBuffer1, weaponBuffer2);
                 yield (
-                  <IonContent>
-                    <WeaponAttack
-                      weapon1={weaponBuffer1}
-                      weapon2={weaponBuffer2}
-                      attacker={opponent}
-                      target={playerCharacter}
-                      counter
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <WeaponAttack
+                        weapon1={weaponBuffer1}
+                        weapon2={weaponBuffer2}
+                        attacker={opponent}
+                        target={playerCharacter}
+                        counter
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -270,16 +315,18 @@ function* battleHandler(
                 yield <ContinuePage />;
                 spellDeclare(spellBuffer, opponent);
                 yield (
-                  <IonContent>
-                    <SpellCast
-                      magic={spellBuffer}
-                      caster={opponent}
-                      target={playerCharacter}
-                      timing={3}
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <SpellCast
+                        magic={spellBuffer}
+                        caster={opponent}
+                        target={playerCharacter}
+                        timing={3}
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -301,17 +348,19 @@ function* battleHandler(
               battleLog.push(`${opponent} casts ${responseSpellBuffer} in response`);
               spellDeclare(responseSpellBuffer, opponent);
               yield (
-                <IonContent>
-                  <div className="ion-text-center">{battleLog.at(-1)}</div>
-                  <SpellCast
-                    magic={responseSpellBuffer}
-                    caster={opponent}
-                    target={playerCharacter}
-                    timing={4}
-                    battleLog={battleLog}
-                  />
-                  <ContinueButton />
-                </IonContent>
+                <Wrapper>
+                  <IonContent>
+                    <div className="ion-text-center">{battleLog.at(-1)}</div>
+                    <SpellCast
+                      magic={responseSpellBuffer}
+                      caster={opponent}
+                      target={playerCharacter}
+                      timing={4}
+                      battleLog={battleLog}
+                    />
+                    <ContinueButton />
+                  </IonContent>
+                </Wrapper>
               );
               if ((responseSpellBuffer.getPropDamage() > 0 || playerCharacter.getHealth() < health) && deathCheck()) {
                 return <EndOfCombat />;
@@ -332,15 +381,17 @@ function* battleHandler(
                   );
                   yield <ContinuePage />;
                   yield (
-                    <IonContent>
-                      <WeaponAttack
-                        weapon1={weaponBuffer2}
-                        attacker={playerCharacter}
-                        target={opponent}
-                        battleLog={battleLog}
-                      />
-                      <ContinueButton />
-                    </IonContent>
+                    <Wrapper>
+                      <IonContent>
+                        <WeaponAttack
+                          weapon1={weaponBuffer2}
+                          attacker={playerCharacter}
+                          target={opponent}
+                          battleLog={battleLog}
+                        />
+                        <ContinueButton />
+                      </IonContent>
+                    </Wrapper>
                   );
                   if (deathCheck()) {
                     return <EndOfCombat />;
@@ -357,15 +408,17 @@ function* battleHandler(
                   );
                   yield <ContinuePage />;
                   yield (
-                    <IonContent>
-                      <WeaponAttack
-                        weapon1={weaponBuffer1}
-                        attacker={playerCharacter}
-                        target={opponent}
-                        battleLog={battleLog}
-                      />
-                      <ContinueButton />
-                    </IonContent>
+                    <Wrapper>
+                      <IonContent>
+                        <WeaponAttack
+                          weapon1={weaponBuffer1}
+                          attacker={playerCharacter}
+                          target={opponent}
+                          battleLog={battleLog}
+                        />
+                        <ContinueButton />
+                      </IonContent>
+                    </Wrapper>
                   );
                   if (deathCheck()) {
                     return <EndOfCombat />;
@@ -381,16 +434,18 @@ function* battleHandler(
               }
             }
             yield (
-              <IonContent>
-                <WeaponAttack
-                  weapon1={weaponBuffer1}
-                  weapon2={weaponBuffer2}
-                  attacker={playerCharacter}
-                  target={opponent}
-                  battleLog={battleLog}
-                />
-                <ContinueButton />
-              </IonContent>
+              <Wrapper>
+                <IonContent>
+                  <WeaponAttack
+                    weapon1={weaponBuffer1}
+                    weapon2={weaponBuffer2}
+                    attacker={playerCharacter}
+                    target={opponent}
+                    battleLog={battleLog}
+                  />
+                  <ContinueButton />
+                </IonContent>
+              </Wrapper>
             );
             if (deathCheck()) {
               return <EndOfCombat />;
@@ -408,16 +463,18 @@ function* battleHandler(
                 yield <ContinuePage />;
                 weaponDeclare(opponent, weaponBuffer1);
                 yield (
-                  <IonContent>
-                    <WeaponAttack
-                      weapon1={weaponBuffer1}
-                      attacker={opponent}
-                      target={playerCharacter}
-                      counter
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <WeaponAttack
+                        weapon1={weaponBuffer1}
+                        attacker={opponent}
+                        target={playerCharacter}
+                        counter
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -430,17 +487,19 @@ function* battleHandler(
                 yield <ContinuePage />;
                 weaponDeclare(opponent, weaponBuffer1, weaponBuffer2);
                 yield (
-                  <IonContent>
-                    <WeaponAttack
-                      weapon1={weaponBuffer1}
-                      weapon2={weaponBuffer2}
-                      attacker={opponent}
-                      target={playerCharacter}
-                      counter
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <WeaponAttack
+                        weapon1={weaponBuffer1}
+                        weapon2={weaponBuffer2}
+                        attacker={opponent}
+                        target={playerCharacter}
+                        counter
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -452,16 +511,18 @@ function* battleHandler(
                 yield <ContinuePage />;
                 spellDeclare(spellBuffer, opponent);
                 yield (
-                  <IonContent>
-                    <SpellCast
-                      magic={spellBuffer}
-                      caster={opponent}
-                      target={playerCharacter}
-                      timing={3}
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <SpellCast
+                        magic={spellBuffer}
+                        caster={opponent}
+                        target={playerCharacter}
+                        timing={3}
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -481,17 +542,19 @@ function* battleHandler(
             battleLog.push(`${opponent} casts ${responseSpellBuffer} in response`);
             spellDeclare(responseSpellBuffer, opponent);
             yield (
-              <IonContent>
-                <div className="ion-text-center">{battleLog.at(-1)}</div>
-                <SpellCast
-                  magic={responseSpellBuffer}
-                  caster={opponent}
-                  target={playerCharacter}
-                  timing={2}
-                  battleLog={battleLog}
-                />
-                <ContinueButton />
-              </IonContent>
+              <Wrapper>
+                <IonContent>
+                  <div className="ion-text-center">{battleLog.at(-1)}</div>
+                  <SpellCast
+                    magic={responseSpellBuffer}
+                    caster={opponent}
+                    target={playerCharacter}
+                    timing={2}
+                    battleLog={battleLog}
+                  />
+                  <ContinueButton />
+                </IonContent>
+              </Wrapper>
             );
             if ((responseSpellBuffer.getPropDamage() > 0 || playerCharacter.getHealth() < health) && deathCheck()) {
               return <EndOfCombat />;
@@ -512,16 +575,18 @@ function* battleHandler(
             }
           }
           yield (
-            <IonContent>
-              <SpellCast
-                magic={spellBuffer}
-                caster={playerCharacter}
-                target={opponent}
-                timing={0}
-                battleLog={battleLog}
-              />
-              <ContinueButton />
-            </IonContent>
+            <Wrapper>
+              <IonContent>
+                <SpellCast
+                  magic={spellBuffer}
+                  caster={playerCharacter}
+                  target={opponent}
+                  timing={0}
+                  battleLog={battleLog}
+                />
+                <ContinueButton />
+              </IonContent>
+            </Wrapper>
           );
           if (deathCheck()) {
             return <EndOfCombat />;
@@ -538,16 +603,18 @@ function* battleHandler(
                 yield <ContinuePage />;
                 weaponDeclare(opponent, weaponBuffer1);
                 yield (
-                  <IonContent>
-                    <WeaponAttack
-                      weapon1={weaponBuffer1}
-                      attacker={opponent}
-                      target={playerCharacter}
-                      counter
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <WeaponAttack
+                        weapon1={weaponBuffer1}
+                        attacker={opponent}
+                        target={playerCharacter}
+                        counter
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -560,17 +627,19 @@ function* battleHandler(
                 yield <ContinuePage />;
                 weaponDeclare(opponent, weaponBuffer1, weaponBuffer2);
                 yield (
-                  <IonContent>
-                    <WeaponAttack
-                      weapon1={weaponBuffer1}
-                      weapon2={weaponBuffer2}
-                      attacker={opponent}
-                      target={playerCharacter}
-                      counter
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <WeaponAttack
+                        weapon1={weaponBuffer1}
+                        weapon2={weaponBuffer2}
+                        attacker={opponent}
+                        target={playerCharacter}
+                        counter
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -582,16 +651,18 @@ function* battleHandler(
                 yield <ContinuePage />;
                 spellDeclare(spellBuffer, opponent);
                 yield (
-                  <IonContent>
-                    <SpellCast
-                      magic={spellBuffer}
-                      caster={opponent}
-                      target={playerCharacter}
-                      timing={3}
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <SpellCast
+                        magic={spellBuffer}
+                        caster={opponent}
+                        target={playerCharacter}
+                        timing={3}
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -619,13 +690,15 @@ function* battleHandler(
           yield <ContinuePage />;
           if (playerCharacter.checkPlayerActions(1)) {
             yield (
-              <ChoosePlayerAction
-                playerCharacter={playerCharacter}
-                enemyName={opponent.getName()}
-                timing={1}
-                submitChoice={submitChoice}
-                itemName1={weaponBuffer1.getName()}
-              />
+              <Wrapper>
+                <player.ChooseAction
+                  playerCharacter={playerCharacter}
+                  enemyName={opponent.getName()}
+                  timing={1}
+                  submitChoice={submitChoice}
+                  itemName1={weaponBuffer1.getName()}
+                />
+              </Wrapper>
             );
           } else {
             playerSelection = { actionType: 0 };
@@ -635,17 +708,19 @@ function* battleHandler(
             battleLog.push(`You cast ${responseSpellBuffer} in response`);
             spellDeclare(responseSpellBuffer, playerCharacter);
             yield (
-              <IonContent>
-                <div className="ion-text-center">{battleLog.at(-1)}</div>
-                <SpellCast
-                  magic={responseSpellBuffer}
-                  caster={playerCharacter}
-                  target={opponent}
-                  timing={1}
-                  battleLog={battleLog}
-                />
-                <ContinueButton />
-              </IonContent>
+              <Wrapper>
+                <IonContent>
+                  <div className="ion-text-center">{battleLog.at(-1)}</div>
+                  <SpellCast
+                    magic={responseSpellBuffer}
+                    caster={playerCharacter}
+                    target={opponent}
+                    timing={1}
+                    battleLog={battleLog}
+                  />
+                  <ContinueButton />
+                </IonContent>
+              </Wrapper>
             );
             if ((responseSpellBuffer.getPropDamage() > 0 || opponent.getHealth() < health) && deathCheck()) {
               return <EndOfCombat />;
@@ -664,15 +739,17 @@ function* battleHandler(
             }
           }
           yield (
-            <IonContent>
-              <WeaponAttack
-                weapon1={weaponBuffer1}
-                attacker={opponent}
-                target={playerCharacter}
-                battleLog={battleLog}
-              />
-              <ContinueButton />
-            </IonContent>
+            <Wrapper>
+              <IonContent>
+                <WeaponAttack
+                  weapon1={weaponBuffer1}
+                  attacker={opponent}
+                  target={playerCharacter}
+                  battleLog={battleLog}
+                />
+                <ContinueButton />
+              </IonContent>
+            </Wrapper>
           );
           if (deathCheck()) {
             return <EndOfCombat />;
@@ -683,12 +760,14 @@ function* battleHandler(
           if (Math.random() < playerCharacter.getCounterAttackChance()) {
             if (playerCharacter.checkPlayerActions(3)) {
               yield (
-                <ChoosePlayerAction
-                  playerCharacter={playerCharacter}
-                  enemyName={opponent.getName()}
-                  timing={3}
-                  submitChoice={submitChoice}
-                />
+                <Wrapper>
+                  <player.ChooseAction
+                    playerCharacter={playerCharacter}
+                    enemyName={opponent.getName()}
+                    timing={3}
+                    submitChoice={submitChoice}
+                  />
+                </Wrapper>
               );
             } else {
               playerSelection = { actionType: 0 };
@@ -700,16 +779,18 @@ function* battleHandler(
                 yield <ContinuePage />;
                 weaponDeclare(playerCharacter, weaponBuffer1);
                 yield (
-                  <IonContent>
-                    <WeaponAttack
-                      weapon1={weaponBuffer1}
-                      attacker={playerCharacter}
-                      target={opponent}
-                      counter
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <WeaponAttack
+                        weapon1={weaponBuffer1}
+                        attacker={playerCharacter}
+                        target={opponent}
+                        counter
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -722,17 +803,19 @@ function* battleHandler(
                 yield <ContinuePage />;
                 weaponDeclare(playerCharacter, weaponBuffer1, weaponBuffer2);
                 yield (
-                  <IonContent>
-                    <WeaponAttack
-                      weapon1={weaponBuffer1}
-                      weapon2={weaponBuffer2}
-                      attacker={playerCharacter}
-                      target={opponent}
-                      counter
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <WeaponAttack
+                        weapon1={weaponBuffer1}
+                        weapon2={weaponBuffer2}
+                        attacker={playerCharacter}
+                        target={opponent}
+                        counter
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -744,16 +827,18 @@ function* battleHandler(
                 yield <ContinuePage />;
                 spellDeclare(spellBuffer, playerCharacter);
                 yield (
-                  <IonContent>
-                    <SpellCast
-                      magic={spellBuffer}
-                      caster={playerCharacter}
-                      target={opponent}
-                      timing={3}
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <SpellCast
+                        magic={spellBuffer}
+                        caster={playerCharacter}
+                        target={opponent}
+                        timing={3}
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -770,14 +855,16 @@ function* battleHandler(
           yield <ContinuePage />;
           if (playerCharacter.checkPlayerActions(4)) {
             yield (
-              <ChoosePlayerAction
-                playerCharacter={playerCharacter}
-                enemyName={opponent.getName()}
-                timing={4}
-                submitChoice={submitChoice}
-                itemName1={weaponBuffer1.getName()}
-                itemName2={weaponBuffer2.getName()}
-              />
+              <Wrapper>
+                <player.ChooseAction
+                  playerCharacter={playerCharacter}
+                  enemyName={opponent.getName()}
+                  timing={4}
+                  submitChoice={submitChoice}
+                  itemName1={weaponBuffer1.getName()}
+                  itemName2={weaponBuffer2.getName()}
+                />
+              </Wrapper>
             );
           } else {
             playerSelection = { actionType: 0 };
@@ -788,17 +875,19 @@ function* battleHandler(
               battleLog.push(`You cast ${responseSpellBuffer} in response`);
               spellDeclare(responseSpellBuffer, playerCharacter);
               yield (
-                <IonContent>
-                  <div className="ion-text-center">{battleLog.at(-1)}</div>
-                  <SpellCast
-                    magic={responseSpellBuffer}
-                    caster={playerCharacter}
-                    target={opponent}
-                    timing={4}
-                    battleLog={battleLog}
-                  />
-                  <ContinueButton />
-                </IonContent>
+                <Wrapper>
+                  <IonContent>
+                    <div className="ion-text-center">{battleLog.at(-1)}</div>
+                    <SpellCast
+                      magic={responseSpellBuffer}
+                      caster={playerCharacter}
+                      target={opponent}
+                      timing={4}
+                      battleLog={battleLog}
+                    />
+                    <ContinueButton />
+                  </IonContent>
+                </Wrapper>
               );
               if ((responseSpellBuffer.getPropDamage() > 0 || opponent.getHealth() < health) && deathCheck()) {
                 return <EndOfCombat />;
@@ -818,15 +907,17 @@ function* battleHandler(
                   );
                   yield <ContinuePage />;
                   yield (
-                    <IonContent>
-                      <WeaponAttack
-                        weapon1={weaponBuffer2}
-                        attacker={opponent}
-                        target={playerCharacter}
-                        battleLog={battleLog}
-                      />
-                      <ContinueButton />
-                    </IonContent>
+                    <Wrapper>
+                      <IonContent>
+                        <WeaponAttack
+                          weapon1={weaponBuffer2}
+                          attacker={opponent}
+                          target={playerCharacter}
+                          battleLog={battleLog}
+                        />
+                        <ContinueButton />
+                      </IonContent>
+                    </Wrapper>
                   );
                   if (deathCheck()) {
                     return <EndOfCombat />;
@@ -842,15 +933,17 @@ function* battleHandler(
                   );
                   yield <ContinuePage />;
                   yield (
-                    <IonContent>
-                      <WeaponAttack
-                        weapon1={weaponBuffer1}
-                        attacker={opponent}
-                        target={playerCharacter}
-                        battleLog={battleLog}
-                      />
-                      <ContinueButton />
-                    </IonContent>
+                    <Wrapper>
+                      <IonContent>
+                        <WeaponAttack
+                          weapon1={weaponBuffer1}
+                          attacker={opponent}
+                          target={playerCharacter}
+                          battleLog={battleLog}
+                        />
+                        <ContinueButton />
+                      </IonContent>
+                    </Wrapper>
                   );
                   if (deathCheck()) {
                     return <EndOfCombat />;
@@ -865,16 +958,18 @@ function* battleHandler(
               }
             }
             yield (
-              <IonContent>
-                <WeaponAttack
-                  weapon1={weaponBuffer1}
-                  weapon2={weaponBuffer2}
-                  attacker={opponent}
-                  target={playerCharacter}
-                  battleLog={battleLog}
-                />
-                <ContinueButton />
-              </IonContent>
+              <Wrapper>
+                <IonContent>
+                  <WeaponAttack
+                    weapon1={weaponBuffer1}
+                    weapon2={weaponBuffer2}
+                    attacker={opponent}
+                    target={playerCharacter}
+                    battleLog={battleLog}
+                  />
+                  <ContinueButton />
+                </IonContent>
+              </Wrapper>
             );
             if (deathCheck()) {
               return <EndOfCombat />;
@@ -886,12 +981,14 @@ function* battleHandler(
           if (Math.random() < playerCharacter.getCounterAttackChance()) {
             if (playerCharacter.checkPlayerActions(3)) {
               yield (
-                <ChoosePlayerAction
-                  playerCharacter={playerCharacter}
-                  enemyName={opponent.getName()}
-                  timing={3}
-                  submitChoice={submitChoice}
-                />
+                <Wrapper>
+                  <player.ChooseAction
+                    playerCharacter={playerCharacter}
+                    enemyName={opponent.getName()}
+                    timing={3}
+                    submitChoice={submitChoice}
+                  />
+                </Wrapper>
               );
             } else {
               playerSelection = { actionType: 0 };
@@ -903,16 +1000,18 @@ function* battleHandler(
                 yield <ContinuePage />;
                 weaponDeclare(playerCharacter, weaponBuffer1);
                 yield (
-                  <IonContent>
-                    <WeaponAttack
-                      weapon1={weaponBuffer1}
-                      attacker={playerCharacter}
-                      target={opponent}
-                      counter
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <WeaponAttack
+                        weapon1={weaponBuffer1}
+                        attacker={playerCharacter}
+                        target={opponent}
+                        counter
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -925,17 +1024,19 @@ function* battleHandler(
                 yield <ContinuePage />;
                 weaponDeclare(playerCharacter, weaponBuffer1, weaponBuffer2);
                 yield (
-                  <IonContent>
-                    <WeaponAttack
-                      weapon1={weaponBuffer1}
-                      weapon2={weaponBuffer2}
-                      attacker={playerCharacter}
-                      target={opponent}
-                      counter
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <WeaponAttack
+                        weapon1={weaponBuffer1}
+                        weapon2={weaponBuffer2}
+                        attacker={playerCharacter}
+                        target={opponent}
+                        counter
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -947,16 +1048,18 @@ function* battleHandler(
                 yield <ContinuePage />;
                 spellDeclare(spellBuffer, playerCharacter);
                 yield (
-                  <IonContent>
-                    <SpellCast
-                      magic={spellBuffer}
-                      caster={playerCharacter}
-                      target={opponent}
-                      timing={3}
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <SpellCast
+                        magic={spellBuffer}
+                        caster={playerCharacter}
+                        target={opponent}
+                        timing={3}
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -972,13 +1075,15 @@ function* battleHandler(
           yield <ContinuePage />;
           if (playerCharacter.checkPlayerActions(2)) {
             yield (
-              <ChoosePlayerAction
-                playerCharacter={playerCharacter}
-                enemyName={opponent.getName()}
-                timing={2}
-                submitChoice={submitChoice}
-                itemName1={spellBuffer.getName()}
-              />
+              <Wrapper>
+                <player.ChooseAction
+                  playerCharacter={playerCharacter}
+                  enemyName={opponent.getName()}
+                  timing={2}
+                  submitChoice={submitChoice}
+                  itemName1={spellBuffer.getName()}
+                />
+              </Wrapper>
             );
           } else {
             playerSelection = { actionType: 0 };
@@ -988,17 +1093,19 @@ function* battleHandler(
             battleLog.push(`You cast ${responseSpellBuffer.getName()} in response`);
             spellDeclare(responseSpellBuffer, playerCharacter);
             yield (
-              <IonContent>
-                <div className="ion-text-center">{battleLog.at(-1)}</div>
-                <SpellCast
-                  magic={responseSpellBuffer}
-                  caster={playerCharacter}
-                  target={opponent}
-                  timing={2}
-                  battleLog={battleLog}
-                />
-                <ContinueButton />
-              </IonContent>
+              <Wrapper>
+                <IonContent>
+                  <div className="ion-text-center">{battleLog.at(-1)}</div>
+                  <SpellCast
+                    magic={responseSpellBuffer}
+                    caster={playerCharacter}
+                    target={opponent}
+                    timing={2}
+                    battleLog={battleLog}
+                  />
+                  <ContinueButton />
+                </IonContent>
+              </Wrapper>
             );
             if (responseSpellBuffer.getCounterSpell() == 1 || responseSpellBuffer.getCounterSpell() == 3) {
               if (spellBuffer.getNoCounter()) {
@@ -1015,16 +1122,18 @@ function* battleHandler(
             }
           }
           yield (
-            <IonContent>
-              <SpellCast
-                magic={spellBuffer}
-                caster={opponent}
-                target={playerCharacter}
-                timing={0}
-                battleLog={battleLog}
-              />
-              <ContinueButton />
-            </IonContent>
+            <Wrapper>
+              <IonContent>
+                <SpellCast
+                  magic={spellBuffer}
+                  caster={opponent}
+                  target={playerCharacter}
+                  timing={0}
+                  battleLog={battleLog}
+                />
+                <ContinueButton />
+              </IonContent>
+            </Wrapper>
           );
           if (deathCheck()) {
             return <EndOfCombat />;
@@ -1035,12 +1144,14 @@ function* battleHandler(
           if (Math.random() < playerCharacter.getCounterAttackChance()) {
             if (playerCharacter.checkPlayerActions(3)) {
               yield (
-                <ChoosePlayerAction
-                  playerCharacter={playerCharacter}
-                  enemyName={opponent.getName()}
-                  timing={3}
-                  submitChoice={submitChoice}
-                />
+                <Wrapper>
+                  <player.ChooseAction
+                    playerCharacter={playerCharacter}
+                    enemyName={opponent.getName()}
+                    timing={3}
+                    submitChoice={submitChoice}
+                  />
+                </Wrapper>
               );
             } else {
               playerSelection = { actionType: 0 };
@@ -1052,16 +1163,18 @@ function* battleHandler(
                 yield <ContinuePage />;
                 weaponDeclare(playerCharacter, weaponBuffer1);
                 yield (
-                  <IonContent>
-                    <WeaponAttack
-                      weapon1={weaponBuffer1}
-                      attacker={playerCharacter}
-                      target={opponent}
-                      counter
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <WeaponAttack
+                        weapon1={weaponBuffer1}
+                        attacker={playerCharacter}
+                        target={opponent}
+                        counter
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -1074,17 +1187,19 @@ function* battleHandler(
                 yield <ContinuePage />;
                 weaponDeclare(playerCharacter, weaponBuffer1, weaponBuffer2);
                 yield (
-                  <IonContent>
-                    <WeaponAttack
-                      weapon1={weaponBuffer1}
-                      weapon2={weaponBuffer2}
-                      attacker={playerCharacter}
-                      target={opponent}
-                      counter
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <WeaponAttack
+                        weapon1={weaponBuffer1}
+                        weapon2={weaponBuffer2}
+                        attacker={playerCharacter}
+                        target={opponent}
+                        counter
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -1096,16 +1211,18 @@ function* battleHandler(
                 yield <ContinuePage />;
                 spellDeclare(spellBuffer, playerCharacter);
                 yield (
-                  <IonContent>
-                    <SpellCast
-                      magic={spellBuffer}
-                      caster={playerCharacter}
-                      target={opponent}
-                      timing={3}
-                      battleLog={battleLog}
-                    />
-                    <ContinueButton />
-                  </IonContent>
+                  <Wrapper>
+                    <IonContent>
+                      <SpellCast
+                        magic={spellBuffer}
+                        caster={playerCharacter}
+                        target={opponent}
+                        timing={3}
+                        battleLog={battleLog}
+                      />
+                      <ContinueButton />
+                    </IonContent>
+                  </Wrapper>
                 );
                 if (deathCheck()) {
                   return <EndOfCombat />;
@@ -1135,54 +1252,67 @@ function* battleHandler(
     if (opponent.getHealth() <= 0) {
       if (opponent.getDeathSpell()?.getReal()) {
         battleLog.push(`${opponent} is dead. On death, it casts ${opponent.getDeathSpell()}`);
+        let deathSpellJSX: React.ReactNode = (
+          <SpellCast magic={opponent.getDeathSpell()!} target={playerCharacter} battleLog={battleLog} />
+        );
         return (
-          <IonContent>
-            {message != undefined ? <div className="ion-text-center">{message}</div> : null}
-            <div className="ion-text-center">
-              {opponent.getName()} is dead. On death, it casts {opponent.getDeathSpell()!.getName()}
-            </div>
-            <SpellCast magic={opponent.getDeathSpell()!} target={playerCharacter} battleLog={battleLog} />
-            {playerCharacter.getHealth() <= 0 && (battleLog.push("You are dead") || true) ? (
-              <div className="ion-text-center">You are dead</div>
-            ) : null}
-            <EndBattleButton />
-          </IonContent>
+          <Wrapper>
+            <IonContent>
+              {message != undefined ? <div className="ion-text-center">{message}</div> : null}
+              <div className="ion-text-center">
+                {opponent.getName()} is dead. On death, it casts {opponent.getDeathSpell()!.getName()}
+              </div>
+              {deathSpellJSX}
+              {playerCharacter.getHealth() <= 0 && (battleLog.push("You are dead") || true) ? (
+                <div className="ion-text-center">You are dead</div>
+              ) : null}
+              <EndBattleButton />
+            </IonContent>
+          </Wrapper>
         );
       }
       if (playerCharacter.getHealth() <= 0) {
         battleLog.push("You are dead");
         return (
-          <IonContent>
-            {message != undefined ? <div className="ion-text-center">{message}</div> : null}
-            <div className="ion-text-center">You are dead</div>
-            <EndBattleButton />
-          </IonContent>
+          <Wrapper>
+            <IonContent>
+              {message != undefined ? <div className="ion-text-center">{message}</div> : null}
+              <div className="ion-text-center">You are dead</div>
+              <EndBattleButton />
+            </IonContent>
+          </Wrapper>
         );
       }
       battleLog.push(`${opponent} is dead`);
       return (
-        <IonContent>
-          {message != undefined ? <div className="ion-text-center">{message}</div> : null}
-          <div className="ion-text-center">{opponent.getName()} is dead</div>
-          <EndBattleButton />
-        </IonContent>
+        <Wrapper>
+          <IonContent>
+            {message != undefined ? <div className="ion-text-center">{message}</div> : null}
+            <div className="ion-text-center">{opponent.getName()} is dead</div>
+            <EndBattleButton />
+          </IonContent>
+        </Wrapper>
       );
     }
     battleLog.push("You are dead");
     return (
-      <IonContent>
-        {message != undefined ? <div className="ion-text-center">{message}</div> : null}
-        <div className="ion-text-center">You are dead</div>
-        <EndBattleButton />
-      </IonContent>
+      <Wrapper>
+        <IonContent>
+          {message != undefined ? <div className="ion-text-center">{message}</div> : null}
+          <div className="ion-text-center">You are dead</div>
+          <EndBattleButton />
+        </IonContent>
+      </Wrapper>
     );
   }
   function ContinuePage(): React.ReactNode {
     return (
-      <IonContent>
-        <div className="ion-text-center">{battleLog.at(-1)}</div>
-        <ContinueButton />
-      </IonContent>
+      <Wrapper>
+        <IonContent>
+          <div className="ion-text-center">{battleLog.at(-1)}</div>
+          <ContinueButton />
+        </IonContent>
+      </Wrapper>
     );
   }
   function ContinueButton(): React.ReactNode {

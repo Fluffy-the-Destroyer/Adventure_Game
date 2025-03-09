@@ -34,7 +34,7 @@ export type command =
   | { command: "defeat" }
   | { command: "text"; text: string }
   | { command: "event"; event: string }
-  | { command: "var"; var: string; operation: "display" }
+  | { command: "var"; var: string; operation: "display" | "delete" }
   | {
       command: "var";
       var: string;

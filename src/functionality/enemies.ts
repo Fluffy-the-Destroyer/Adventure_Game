@@ -494,11 +494,7 @@ export class enemy {
     for (let magic of this.spells) {
       magic.decCooldown();
     }
-    if (this.bonusActions < 0) {
-      this.currentBonusActions = 0;
-    } else {
-      this.currentBonusActions = this.bonusActions;
-    }
+    this.resetBonusActions();
   }
   rollInitiative(): number {
     return randomInt(0, Math.max(0, this.initiative));

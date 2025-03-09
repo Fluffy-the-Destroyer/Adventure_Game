@@ -23,5 +23,13 @@
       "upgradePoints": 0,
       "xp": 0
     }
+  },
+  "TEST_EVENT_2": {
+    "preBattleText": "Test event 2",
+    "choices": [
+      { "text": "Choice 1" },
+      { "text": "Choice 2", "healthChange": -1, "manaChange": -1, "projectileChange": -1 },
+      { "text": "Choice 3" }
+    ]
   }
 }

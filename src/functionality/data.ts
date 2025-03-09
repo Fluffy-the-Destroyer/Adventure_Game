@@ -50,7 +50,7 @@ export function numFromString(input: string, vars?: variables): { value: number;
     if (endIndex == -1) {
       return { value: 0, output: input };
     }
-    value = Math.trunc(vars.vars[input.slice(0, endIndex)] ?? 0);
+    value = Math.trunc(vars.vars.get(input.slice(0, endIndex)) ?? 0);
     if (minus) {
       value *= -1;
     }
@@ -112,7 +112,7 @@ export function floatFromString(
     if (endIndex == -1) {
       return { value: 0, output: input };
     }
-    value = vars.vars[input.slice(0, endIndex)] ?? 0;
+    value = vars.vars.get(input.slice(0, endIndex)) ?? 0;
     if (minus) {
       value *= -1;
     }
@@ -247,13 +247,171 @@ export function floatFromString(
   return { value: value, output: input };
 }
 
-//export function deepCopy<Type = number | boolean | string | bigint>(
-//	arr: Type[]
-//): Type[] {
-//	let newArr: Type[] = [];
-//	let count: number = arr.length;
-//	for (let i: number = 0; i < count; i++) {
-//		newArr.push(arr[i]);
-//	}
-//	return newArr;
-//}
+export function evalCond(cond: string, playerCharacter: player, vars: variables): boolean {
+  cond = cond.trim();
+  if (cond.length == 0) {
+    errorMessages.push("Empty condition");
+    return false;
+  }
+  let cond1: string;
+  let cond2: string = cond;
+  let condBuff: string;
+  let var1: number;
+  let var2: number;
+  let op: "==" | "!=" | "<" | "<=" | ">" | ">=";
+  //Check for brackets
+  if (cond2[0] == "(") {
+    ({ cond1, cond2 } = endBracket(cond2));
+    if (cond2.length == 0) {
+      return evalCond(cond1.slice(1, -1), playerCharacter, vars);
+    }
+    cond2 = cond;
+  }
+  cond1 = "";
+  //Check for ||
+  while (true) {
+    switch (cond2[0]) {
+      case "(":
+        ({ cond1: condBuff, cond2 } = endBracket(cond2));
+        cond1 += condBuff;
+        break;
+      case "|":
+        if (cond2[1] != "|") {
+          errorMessages.push("Invalid condition");
+          return false;
+        }
+        cond2 = cond2.slice(2);
+        return evalCond(cond1, playerCharacter, vars) || evalCond(cond2, playerCharacter, vars);
+      default:
+        cond1 += cond2[0];
+        cond2 = cond2.slice(1);
+    }
+    if (cond2.length == 0) {
+      break;
+    }
+  }
+  cond1 = "";
+  cond2 = cond;
+  //Check for &&
+  while (true) {
+    switch (cond2[0]) {
+      case "(":
+        ({ cond1: condBuff, cond2 } = endBracket(cond2));
+        cond1 += condBuff;
+        break;
+      case "&":
+        if (cond2[1] != "&") {
+          errorMessages.push("Invalid condition");
+          return false;
+        }
+        cond2 = cond2.slice(2);
+        return evalCond(cond1, playerCharacter, vars) && evalCond(cond2, playerCharacter, vars);
+      default:
+        cond1 += cond2[0];
+        cond2 = cond2.slice(1);
+    }
+    if (cond2.length == 0) {
+      break;
+    }
+  }
+  cond2 = cond;
+  //Check for !
+  if (cond2[0] == "!") {
+    cond2 = cond2.slice(1);
+    return !evalCond(cond2, playerCharacter, vars);
+  }
+  //Check for literals
+  if (cond == "true") {
+    return true;
+  }
+  if (cond == "false") {
+    return false;
+  }
+  ({ value: var1, output: cond } = floatFromString(cond, vars, playerCharacter));
+  cond = cond.trimStart();
+  switch (cond[0]) {
+    case "=":
+      if (cond[1] != "=") {
+        errorMessages.push("Invalid condition");
+        return false;
+      }
+      op = "==";
+      cond = cond.slice(2);
+      break;
+    case "!":
+      if (cond[1] != "=") {
+        errorMessages.push("Invalid condition");
+        return false;
+      }
+      op = "!=";
+      cond = cond.slice(2);
+      break;
+    case "<":
+      if (cond[1] == "=") {
+        op = "<=";
+        cond = cond.slice(2);
+      } else {
+        op = "<";
+        cond = cond.slice(1);
+      }
+      break;
+    case ">":
+      if (cond[1] == "=") {
+        op = ">=";
+        cond = cond.slice(2);
+      } else {
+        op = ">";
+        cond = cond.slice(1);
+      }
+      break;
+    default:
+      errorMessages.push("Invalid condition");
+      return false;
+  }
+  cond = cond.trimStart();
+  ({ value: var2, output: cond } = floatFromString(cond, vars, playerCharacter));
+  if (cond.length != 0) {
+    errorMessages.push("Invalid condition");
+    return false;
+  }
+  switch (op) {
+    case "==":
+      return var1 == var2;
+    case "!=":
+      return var1 != var2;
+    case "<":
+      return var1 < var2;
+    case "<=":
+      return var1 <= var2;
+    case ">":
+      return var1 > var2;
+    case ">=":
+      return var1 >= var2;
+  }
+}
+
+function endBracket(cond2: string): { cond1: string; cond2: string } {
+  let cond1: string = "(";
+  let condBuff: string;
+  cond2 = cond2.slice(1);
+  if (cond2.length == 0) {
+    errorMessages.push("Invalid condition");
+    return { cond1, cond2 };
+  }
+  while (cond2[0] != ")") {
+    if (cond2[0] == "(") {
+      ({ cond1: condBuff, cond2 } = endBracket(cond2));
+      cond1 += condBuff;
+    } else {
+      cond1 += cond2[0];
+      cond2 = cond2.slice(1);
+    }
+    if (cond2.length == 0) {
+      errorMessages.push("Invalid condition");
+      return { cond1, cond2 };
+    }
+  }
+  cond1 += ")";
+  cond2 = cond2.slice(1);
+  return { cond1, cond2 };
+}

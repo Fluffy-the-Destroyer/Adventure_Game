@@ -1,12 +1,12 @@
 import { Fragment, useState } from "react";
-import { DisplayWeaponName, weapon } from "./weapons";
-import { DisplaySpellName, spell } from "./spells";
-import { DisplayArmourName, armourFeet, armourHead, armourLegs, armourTorso } from "./armour";
+import { weapon } from "./weapons";
+import { spell } from "./spells";
+import { armourFeet, armourHead, armourLegs, armourTorso } from "./armour";
 import { randomInt } from "./rng";
 import { BATTLE_VALUES } from "../pages/battlePage";
 import classData from "../data/classes.json";
 import { floatFromString, numFromString } from "./data";
-import { actionChoice, fn } from "./interfaces";
+import { actionChoice, fn, statChanges } from "./interfaces";
 import {
   IonButton,
   IonCol,
@@ -29,6 +29,18 @@ const enum PLAYER_VALUES {
   PLAYER_OVERHEAL_DECAY = 5,
   MANA_DECAY = 5,
 }
+
+type ShowPlayerEquipmentProps = { playerCharacter: player };
+type DisplayPlayerStatsProps = { playerCharacter: player };
+type ShowPlayerInventoryProps = { playerCharacter: player; closeInventory: fn };
+type ChoosePlayerActionProps = {
+  playerCharacter: player;
+  enemyName: string;
+  timing: 0 | 1 | 2 | 3 | 4;
+  submitChoice: fn<[actionChoice]>;
+  itemName1?: string;
+  itemName2?: string;
+};
 
 export class player {
   private className: string = "";
@@ -619,7 +631,7 @@ export class player {
     for (let magic of this.spells) {
       magic.decCooldown();
     }
-    this.currentBonusActions = Math.max(0, Math.min(4, this.bonusActions));
+    this.resetBonusActions();
   }
   getHealth(): number {
     return this.health;
@@ -819,7 +831,7 @@ export class player {
   getLevel(): number {
     return this.level;
   }
-  constructor(playerClass?: string | player) {
+  constructor(playerClass?: string | player | null) {
     if (playerClass) {
       if (typeof playerClass == "string") {
         this.loadClass(playerClass);
@@ -1208,6 +1220,9 @@ export class player {
       magic.resetCooldown();
     }
     this.calculateModifiers();
+    this.removeStatusEffects();
+  }
+  removeStatusEffects(): void {
     this.cureBleed();
     this.curePoison();
     this.removeTempRegen();
@@ -1390,6 +1405,530 @@ export class player {
         );
     }
   }
+  static ShowEquipment({ playerCharacter }: ShowPlayerEquipmentProps): React.ReactNode {
+    let playerWeapons: weapon[] = [];
+    let playerSpells: spell[] = [];
+    for (let i = 0; i < playerCharacter.weapons.length; i++) {
+      playerWeapons.push(playerCharacter.getWeapon(i));
+    }
+    for (let i = 0; i < playerCharacter.spells.length; i++) {
+      playerSpells.push(playerCharacter.getSpell(i));
+    }
+    return (
+      <Fragment>
+        <h5 className="ion-text-center">Armour</h5>
+        <IonGrid>
+          <IonRow>
+            <IonCol>
+              <armourHead.DisplayName armourPiece={playerCharacter.helmet} />
+            </IonCol>
+            <IonCol>
+              <armourTorso.DisplayName armourPiece={playerCharacter.chestPlate} />
+            </IonCol>
+          </IonRow>
+          <IonRow>
+            <IonCol>
+              <armourLegs.DisplayName armourPiece={playerCharacter.greaves} />
+            </IonCol>
+            <IonCol>
+              <armourFeet.DisplayName armourPiece={playerCharacter.boots} />
+            </IonCol>
+          </IonRow>
+        </IonGrid>
+        <IonGrid>
+          <IonRow>
+            <IonCol>
+              <IonList>
+                <IonListHeader>Weapons</IonListHeader>
+                {playerWeapons.map((w) => (
+                  <weapon.DisplayName weaponry={w} key={w.getKey()} />
+                ))}
+              </IonList>
+            </IonCol>
+            <IonCol>
+              <IonList>
+                <IonListHeader>Spells</IonListHeader>
+                {playerSpells.map((s) => (
+                  <spell.DisplayName magic={s} key={s.getKey()} />
+                ))}
+              </IonList>
+            </IonCol>
+          </IonRow>
+        </IonGrid>
+      </Fragment>
+    );
+  }
+  static DisplayStats({ playerCharacter }: DisplayPlayerStatsProps): React.ReactNode {
+    return (
+      <IonGrid className="ion-text-center ion-no-padding">
+        <IonRow className="player-stats-row">
+          <IonCol>
+            {Math.abs(playerCharacter.turnRegen)} health {playerCharacter.turnRegen >= 0 ? "gained" : "lost"} per turn
+          </IonCol>
+          <IonCol>
+            {Math.abs(playerCharacter.battleRegen)} health {playerCharacter.battleRegen >= 0 ? "gained" : "lost"} at end
+            of battle
+          </IonCol>
+        </IonRow>
+        <IonRow className="player-stats-row">
+          <IonCol>
+            {Math.abs(playerCharacter.turnManaRegen)} mana {playerCharacter.turnManaRegen >= 0 ? "gained" : "lost"} per
+            turn
+          </IonCol>
+          <IonCol>
+            {Math.abs(playerCharacter.battleManaRegen)} mana {playerCharacter.battleManaRegen >= 0 ? "gained" : "lost"}{" "}
+            at end of battle
+          </IonCol>
+        </IonRow>
+        <IonRow className="player-stats-row">
+          <IonCol>{Math.round(playerCharacter.poisonResist * 100)}% poison resist</IonCol>
+          <IonCol>{Math.round(playerCharacter.bleedResist * 100)}% bleed resist</IonCol>
+        </IonRow>
+        <IonRow className="player-stats-row">
+          {playerCharacter.flatArmour == 0 && playerCharacter.propArmour == 0 ? (
+            <IonCol>No physical armour</IonCol>
+          ) : null}
+          {playerCharacter.flatArmour != 0 ? (
+            <IonCol>
+              Incoming physical damage {playerCharacter.flatArmour > 0 ? "reduced" : "increased"} by{" "}
+              {Math.abs(playerCharacter.flatArmour)}
+            </IonCol>
+          ) : null}
+          {playerCharacter.propArmour != 0 ? (
+            <IonCol>
+              Incoming physical damage {playerCharacter.propArmour > 0 ? "increased" : "reduced"} by{" "}
+              {Math.abs(Math.round(playerCharacter.propArmour))}%
+            </IonCol>
+          ) : null}
+        </IonRow>
+        <IonRow className="player-stats-row">
+          {playerCharacter.flatMagicArmour == 0 && playerCharacter.propMagicArmour == 0 ? (
+            <IonCol>No magic armour</IonCol>
+          ) : null}
+          {playerCharacter.flatMagicArmour != 0 ? (
+            <IonCol>
+              Incoming magic damage {playerCharacter.flatMagicArmour > 0 ? "reduced" : "increased"} by{" "}
+              {Math.abs(playerCharacter.flatMagicArmour)}
+            </IonCol>
+          ) : null}
+          {playerCharacter.propMagicArmour != 0 ? (
+            <IonCol>
+              Incoming magic damage {playerCharacter.propMagicArmour > 0 ? "increased" : "reduced"} by{" "}
+              {Math.abs(Math.round(playerCharacter.propMagicArmour))}%
+            </IonCol>
+          ) : null}
+        </IonRow>
+        <IonRow className="player-stats-row">
+          {playerCharacter.flatDamageModifier == 0 && playerCharacter.propDamageModifier == 0 ? (
+            <IonCol>No physical damage modifier</IonCol>
+          ) : null}
+          {playerCharacter.flatDamageModifier != 0 ? (
+            <IonCol>
+              {playerCharacter.flatDamageModifier > 0 ? "+" : null}
+              {playerCharacter.flatDamageModifier} physical damage
+            </IonCol>
+          ) : null}
+          {playerCharacter.propDamageModifier != 0 ? (
+            <IonCol>
+              {playerCharacter.propDamageModifier > 0 ? "+" : null}
+              {Math.round(playerCharacter.propDamageModifier * 100)}% physical damage
+            </IonCol>
+          ) : null}
+        </IonRow>
+        <IonRow className="player-stats-row">
+          {playerCharacter.flatMagicDamageModifier == 0 && playerCharacter.propMagicDamageModifier == 0 ? (
+            <IonCol>No magic damage modifier</IonCol>
+          ) : null}
+          {playerCharacter.flatMagicDamageModifier != 0 ? (
+            <IonCol>
+              {playerCharacter.flatMagicDamageModifier > 0 ? "+" : null}
+              {playerCharacter.flatMagicDamageModifier} magic damage
+            </IonCol>
+          ) : null}
+          {playerCharacter.propMagicDamageModifier != 0 ? (
+            <IonCol>
+              {playerCharacter.propMagicDamageModifier > 0 ? "+" : null}
+              {Math.round(playerCharacter.propMagicDamageModifier * 100)}% magic damage
+            </IonCol>
+          ) : null}
+        </IonRow>
+        <IonRow className="player-stats-row">
+          {playerCharacter.flatArmourPiercingDamageModifier == 0 &&
+          playerCharacter.propArmourPiercingDamageModifier == 0 ? (
+            <IonCol>No armour piercing damage modifier</IonCol>
+          ) : null}
+          {playerCharacter.flatArmourPiercingDamageModifier != 0 ? (
+            <IonCol>
+              {playerCharacter.flatArmourPiercingDamageModifier > 0 ? "+" : null}
+              {playerCharacter.flatArmourPiercingDamageModifier} armour piercing damage
+            </IonCol>
+          ) : null}
+          {playerCharacter.propArmourPiercingDamageModifier != 0 ? (
+            <IonCol>
+              {playerCharacter.propArmourPiercingDamageModifier > 0 ? "+" : null}
+              {Math.round(playerCharacter.propArmourPiercingDamageModifier * 100)}% armour piercing damage
+            </IonCol>
+          ) : null}
+        </IonRow>
+        <IonRow className="player-stats-row">
+          <IonCol>{Math.round(playerCharacter.evadeChance * 100)}% evade chance</IonCol>
+          <IonCol>{Math.round(playerCharacter.counterAttackChance * 100)}% counter attack chance</IonCol>
+        </IonRow>
+        <IonRow className="player-stats-row">
+          <IonCol>
+            {Math.max(0, playerCharacter.bonusActions)} bonus action
+            {playerCharacter.bonusActions == 1 ? null : "s"} per turn
+          </IonCol>
+          <IonCol>{playerCharacter.initiative} initiative</IonCol>
+        </IonRow>
+      </IonGrid>
+    );
+  }
+  static ShowInventory({ playerCharacter, closeInventory }: ShowPlayerInventoryProps): React.ReactNode {
+    /**True is inventory, false is stats */
+    const [segment, setSegment] = useState<boolean>(true);
+    return (
+      <Fragment>
+        <IonHeader>
+          <IonToolbar>
+            <IonGrid className="ion-no-padding">
+              <IonRow>
+                <IonCol size="1">
+                  <IonButton size="small" fill="clear" color="dark" onClick={closeInventory}>
+                    <IonIcon slot="icon-only" icon={close} />
+                  </IonButton>
+                </IonCol>
+                <IonCol size="10">
+                  <IonTitle className="ion-text-center">
+                    Level {playerCharacter.level} {playerCharacter.className}
+                  </IonTitle>
+                </IonCol>
+              </IonRow>
+            </IonGrid>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent>
+          <h5 className="ion-text-center">Current stats</h5>
+          <IonGrid>
+            <IonRow>
+              <IonCol className="ion-text-center">
+                Health: {playerCharacter.health}/{playerCharacter.maxHealth}
+              </IonCol>
+              <IonCol className="ion-text-center">
+                Mana: {playerCharacter.mana}/{playerCharacter.maxMana}
+              </IonCol>
+              <IonCol className="ion-text-center">Arrows: {playerCharacter.projectiles}</IonCol>
+            </IonRow>
+            {playerCharacter.getStatusEffect() ? (
+              <IonRow>
+                {playerCharacter.poison ? (
+                  <IonCol className="ion-text-center">Poison: {playerCharacter.poison}</IonCol>
+                ) : null}
+                {playerCharacter.bleed ? (
+                  <IonCol className="ion-text-center">Bleed: {playerCharacter.bleed}</IonCol>
+                ) : null}
+                {playerCharacter.tempRegen ? (
+                  <IonCol className="ion-text-center">Regeneration: {playerCharacter.tempRegen}</IonCol>
+                ) : null}
+              </IonRow>
+            ) : null}
+          </IonGrid>
+          <IonSegment mode="ios" value={segment ? "inventory" : "stats"} onIonChange={() => setSegment(!segment)}>
+            <IonSegmentButton value="inventory">
+              <IonLabel>Inventory</IonLabel>
+            </IonSegmentButton>
+            <IonSegmentButton value="stats">
+              <IonLabel>Stats</IonLabel>
+            </IonSegmentButton>
+          </IonSegment>
+          {segment ? (
+            <player.ShowEquipment playerCharacter={playerCharacter} />
+          ) : (
+            <player.DisplayStats playerCharacter={playerCharacter} />
+          )}
+        </IonContent>
+      </Fragment>
+    );
+  }
+  static ChooseAction({
+    playerCharacter,
+    enemyName,
+    timing,
+    submitChoice,
+    itemName1,
+    itemName2,
+  }: ChoosePlayerActionProps): React.ReactNode {
+    /**Tracks currently selected weapons/spells */
+    const [currentChoice, setCurrentChoice] = useState<actionChoice>({ actionType: 0 });
+    let weaponArray: boolean[] = Array(playerCharacter.weapons.length).fill(false);
+    let spellArray: boolean[] = Array(playerCharacter.spells.length).fill(false);
+    switch (currentChoice.actionType) {
+      case 3:
+        weaponArray[currentChoice.slot2] = true;
+      //Fallthrough
+      case 1:
+        weaponArray[currentChoice.slot1] = true;
+        break;
+      case 2:
+        spellArray[currentChoice.slot1] = true;
+    }
+    return (
+      <IonContent>
+        <div className="ion-text-center">
+          {timing == 0
+            ? "Choose an action"
+            : (timing == 1
+                ? `${enemyName} attacks with ${itemName1}`
+                : timing == 2
+                ? `${enemyName} casts ${itemName1}`
+                : timing == 3
+                ? "Counter attack opportunity"
+                : `${enemyName} attacks with ${itemName1} and ${itemName2}`) + ", choose an action"}
+        </div>
+        <IonGrid>
+          <IonRow>
+            <IonCol>
+              <IonList>
+                <IonListHeader>Weapons</IonListHeader>
+                {weaponArray.map((v, i) => (
+                  <weapon.DisplayName
+                    key={playerCharacter.getWeapon(i).getKey()}
+                    weaponry={playerCharacter.getWeapon(i)}
+                    inBattle
+                    selected={v}
+                    canUse={playerCharacter.check(false, timing, i)}
+                    onToggle={() => selectHandler(false, i)}
+                  />
+                ))}
+              </IonList>
+            </IonCol>
+            <IonCol>
+              <IonList>
+                <IonListHeader>Spells</IonListHeader>
+                {spellArray.map((v, i) => (
+                  <spell.DisplayName
+                    key={playerCharacter.getSpell(i).getKey()}
+                    magic={playerCharacter.getSpell(i)}
+                    inBattle
+                    selected={v}
+                    canUse={playerCharacter.check(true, timing, i)}
+                    onToggle={() => selectHandler(true, i)}
+                  />
+                ))}
+              </IonList>
+            </IonCol>
+          </IonRow>
+        </IonGrid>
+        <IonButton
+          mode="ios"
+          onClick={function () {
+            if (currentChoice.actionType != 0) {
+              if (currentChoice.actionType == 3) {
+                playerCharacter.decBonusActions();
+              }
+              if (timing != 0) {
+                playerCharacter.decBonusActions();
+              }
+            }
+            submitChoice(currentChoice);
+          }}
+        >
+          Submit
+        </IonButton>
+      </IonContent>
+    );
+    /**Handles the toggling of a weapon/spell
+     * @param action - false is a weapon, true is a spell
+     * @param slot - the weapon or spell slot toggled
+     */
+    function selectHandler(action: boolean, slot: number): void {
+      if (action) {
+        if (currentChoice.actionType == 2 && currentChoice.slot1 == slot) {
+          //Deselecting
+          setCurrentChoice({ actionType: 0 });
+          return;
+        }
+        setCurrentChoice({ actionType: 2, slot1: slot });
+        return;
+      }
+      if (currentChoice.actionType == 1 && currentChoice.slot1 == slot) {
+        //Deselecting
+        setCurrentChoice({ actionType: 0 });
+        return;
+      }
+      if (currentChoice.actionType == 3) {
+        if (currentChoice.slot1 == slot) {
+          //Deselecting
+          setCurrentChoice({ actionType: 1, slot1: currentChoice.slot2 });
+          return;
+        }
+        if (currentChoice.slot2 == slot) {
+          //Deselecting
+          setCurrentChoice({ actionType: 1, slot1: currentChoice.slot1 });
+          return;
+        }
+      }
+      //Selecting a new weapon
+      if (playerCharacter.getWeapon(slot).getDualWield()) {
+        if (currentChoice.actionType == 1) {
+          if (currentChoice.slot1 != undefined) {
+            if (playerCharacter.checkDualWeapons(timing, currentChoice.slot1, slot)) {
+              setCurrentChoice({ actionType: 3, slot1: currentChoice.slot1, slot2: slot });
+              return;
+            }
+          }
+        }
+      }
+      setCurrentChoice({ actionType: 1, slot1: slot });
+      return;
+    }
+  }
+  static statChanges(playerCharacter: player, statChanges: statChanges): React.ReactNode[] {
+    let changes: React.ReactNode[] = [];
+    if (statChanges.health) {
+      playerCharacter.modifyHealth(statChanges.health);
+      changes.push(
+        <div key="health">
+          {statChanges.health > 0 ? "+" : ""}
+          {statChanges.health} health
+        </div>
+      );
+    }
+    if (statChanges.maxHealth! > 0) {
+      playerCharacter.maxHealthBase += statChanges.maxHealth!;
+      playerCharacter.health += statChanges.maxHealth!;
+      changes.push(<div key="maxHealth">+{statChanges.maxHealth} maximum health</div>);
+    } else if (statChanges.maxHealth! < 0) {
+      playerCharacter.maxHealthBase += statChanges.maxHealth!;
+      changes.push(<div key="maxHealth">{statChanges.maxHealth} maximum health</div>);
+    }
+    if (statChanges.turnRegen) {
+      playerCharacter.turnRegenBase += statChanges.turnRegen;
+      changes.push(
+        <div key="turnRegen">
+          {statChanges.turnRegen > 0 ? "+" : ""}
+          {statChanges.turnRegen} health per turn
+        </div>
+      );
+    }
+    if (statChanges.battleRegen) {
+      playerCharacter.battleRegenBase += statChanges.battleRegen;
+      changes.push(
+        <div key="battleRegen">
+          {statChanges.battleRegen > 0 ? "+" : ""}
+          {statChanges.battleRegen} health at end of battle
+        </div>
+      );
+    }
+    if (statChanges.mana) {
+      playerCharacter.modifyMana(statChanges.mana);
+      changes.push(
+        <div key="mana">
+          {statChanges.mana > 0 ? "+" : ""}
+          {statChanges.mana} mana
+        </div>
+      );
+    }
+    if (statChanges.maxMana! > 0) {
+      playerCharacter.maxManaBase += statChanges.maxMana!;
+      playerCharacter.mana += statChanges.maxMana!;
+      changes.push(<div key="maxMana">+{statChanges.maxMana} maximum mana</div>);
+    } else if (statChanges.maxMana! < 0) {
+      playerCharacter.maxManaBase += statChanges.maxMana!;
+      changes.push(<div key="maxMana">{statChanges.maxMana} maximum mana</div>);
+    }
+    if (statChanges.turnManaRegen) {
+      playerCharacter.turnManaRegenBase += statChanges.turnManaRegen;
+      changes.push(
+        <div key="turnManaRegen">
+          {statChanges.turnManaRegen > 0 ? "+" : ""}
+          {statChanges.turnManaRegen} mana per turn
+        </div>
+      );
+    }
+    if (statChanges.battleManaRegen) {
+      playerCharacter.battleManaRegenBase += statChanges.battleManaRegen;
+      changes.push(
+        <div key="battleManaRegen">
+          {statChanges.battleManaRegen > 0 ? "+" : ""}
+          {statChanges.battleManaRegen} mana at end of battle
+        </div>
+      );
+    }
+    if (statChanges.projectiles) {
+      playerCharacter.modifyProjectiles(statChanges.projectiles);
+      changes.push(
+        <div key="projectiles">
+          {statChanges.projectiles > 0 ? "+" : ""}
+          {statChanges.projectiles} arrow{Math.abs(statChanges.projectiles) != 1 ? "s" : ""}
+        </div>
+      );
+    }
+    if (statChanges.flatArmour) {
+      playerCharacter.flatArmourBase += statChanges.flatArmour;
+      changes.push(
+        <div key="flatArmour">
+          {statChanges.flatArmour > 0 ? "+" : ""}
+          {statChanges.flatArmour} physical armour
+        </div>
+      );
+    }
+    if (statChanges.flatMagicArmour) {
+      playerCharacter.flatMagicArmourBase += statChanges.flatMagicArmour;
+      changes.push(
+        <div key="flatMagicArmour">
+          {statChanges.flatMagicArmour > 0 ? "+" : ""}
+          {statChanges.flatMagicArmour} magic armour
+        </div>
+      );
+    }
+    if (statChanges.flatDamageModifier) {
+      playerCharacter.flatDamageModifierBase += statChanges.flatDamageModifier;
+      changes.push(
+        <div key="flatDamageModifier">
+          {statChanges.flatDamageModifier > 0 ? "+" : ""}
+          {statChanges.flatDamageModifier} physical damage dealt
+        </div>
+      );
+    }
+    if (statChanges.flatMagicDamageModifier) {
+      playerCharacter.flatMagicDamageModifierBase += statChanges.flatMagicDamageModifier;
+      changes.push(
+        <div key="flatMagicDamageModifier">
+          {statChanges.flatMagicDamageModifier > 0 ? "+" : ""}
+          {statChanges.flatMagicDamageModifier} magic damage dealt
+        </div>
+      );
+    }
+    if (statChanges.flatArmourPiercingDamageModifier) {
+      playerCharacter.flatArmourPiercingDamageModifierBase += statChanges.flatArmourPiercingDamageModifier;
+      changes.push(
+        <div key="flatArmourPiercingDamageModifier">
+          {statChanges.flatArmourPiercingDamageModifier > 0 ? "+" : ""}
+          {statChanges.flatArmourPiercingDamageModifier} armour piercing damage dealt
+        </div>
+      );
+    }
+    if (statChanges.bonusActions) {
+      playerCharacter.bonusActionsBase += statChanges.bonusActions;
+      changes.push(
+        <div key="bonusActions">
+          {statChanges.bonusActions > 0 ? "+" : ""}
+          {statChanges.bonusActions} bonus actions
+        </div>
+      );
+    }
+    if (statChanges.initiative) {
+      playerCharacter.initiativeBase += statChanges.initiative;
+      changes.push(
+        <div key="initiative">
+          {statChanges.initiative > 0 ? "+" : ""}
+          {statChanges.initiative} speed
+        </div>
+      );
+    }
+    return changes;
+  }
 }
 //type EquipWeaponProps = { playerCharacter: player; weaponry: weapon };
 ///**Equips a weapon */
@@ -1421,403 +1960,3 @@ export class player {
 //export function EquipBoots({ playerCharacter, boots }: EquipBootsProps): React.ReactNode {
 //  return <Fragment></Fragment>;
 //}
-type ShowPlayerEquipmentProps = { playerCharacter: player };
-/**Displays the player's equipment */
-export function ShowPlayerEquipment({ playerCharacter }: ShowPlayerEquipmentProps): React.ReactNode {
-  let playerWeapons: weapon[] = [];
-  let playerSpells: spell[] = [];
-  let weaponCount: number = playerCharacter.getWeaponSlots();
-  let spellCount: number = playerCharacter.getSpellSlots();
-  for (let i = 0; i < weaponCount; i++) {
-    playerWeapons.push(playerCharacter.getWeapon(i));
-  }
-  for (let i = 0; i < spellCount; i++) {
-    playerSpells.push(playerCharacter.getSpell(i));
-  }
-  return (
-    <Fragment>
-      <h5 className="ion-text-center">Armour</h5>
-      <IonGrid>
-        <IonRow>
-          <IonCol>
-            <DisplayArmourName armourPiece={playerCharacter.getHelmet()} />
-          </IonCol>
-          <IonCol>
-            <DisplayArmourName armourPiece={playerCharacter.getChestPlate()} />
-          </IonCol>
-        </IonRow>
-        <IonRow>
-          <IonCol>
-            <DisplayArmourName armourPiece={playerCharacter.getGreaves()} />
-          </IonCol>
-          <IonCol>
-            <DisplayArmourName armourPiece={playerCharacter.getBoots()} />
-          </IonCol>
-        </IonRow>
-      </IonGrid>
-      <IonGrid>
-        <IonRow>
-          <IonCol>
-            <IonList>
-              <IonListHeader>Weapons</IonListHeader>
-              {playerWeapons.map((w) => (
-                <DisplayWeaponName weaponry={w} key={w.getKey()} />
-              ))}
-            </IonList>
-          </IonCol>
-          <IonCol>
-            <IonList>
-              <IonListHeader>Spells</IonListHeader>
-              {playerSpells.map((s) => (
-                <DisplaySpellName magic={s} key={s.getKey()} />
-              ))}
-            </IonList>
-          </IonCol>
-        </IonRow>
-      </IonGrid>
-    </Fragment>
-  );
-}
-type DisplayPlayerStatsProps = { playerCharacter: player };
-/**Displays the player's stats */
-export function DisplayPlayerStats({ playerCharacter }: DisplayPlayerStatsProps): React.ReactNode {
-  return (
-    <IonGrid className="ion-text-center ion-no-padding">
-      <IonRow className="player-stats-row">
-        <IonCol>
-          {Math.abs(playerCharacter.getTurnRegen())} health {playerCharacter.getTurnRegen() >= 0 ? "gained" : "lost"}{" "}
-          per turn
-        </IonCol>
-        <IonCol>
-          {Math.abs(playerCharacter.getBattleRegen())} health{" "}
-          {playerCharacter.getBattleRegen() >= 0 ? "gained" : "lost"} at end of battle
-        </IonCol>
-      </IonRow>
-      <IonRow className="player-stats-row">
-        <IonCol>
-          {Math.abs(playerCharacter.getTurnManaRegen())} mana{" "}
-          {playerCharacter.getTurnManaRegen() >= 0 ? "gained" : "lost"} per turn
-        </IonCol>
-        <IonCol>
-          {Math.abs(playerCharacter.getBattleManaRegen())} mana{" "}
-          {playerCharacter.getBattleManaRegen() >= 0 ? "gained" : "lost"} at end of battle
-        </IonCol>
-      </IonRow>
-      <IonRow className="player-stats-row">
-        <IonCol>{Math.round(playerCharacter.getPoisonResist() * 100)}% poison resist</IonCol>
-        <IonCol>{Math.round(playerCharacter.getBleedResist() * 100)}% bleed resist</IonCol>
-      </IonRow>
-      <IonRow className="player-stats-row">
-        {playerCharacter.getFlatArmour() == 0 && playerCharacter.getPropArmour() == 0 ? (
-          <IonCol>No physical armour</IonCol>
-        ) : null}
-        {playerCharacter.getFlatArmour() != 0 ? (
-          <IonCol>
-            Incoming physical damage {playerCharacter.getFlatArmour() > 0 ? "reduced" : "increased"} by{" "}
-            {Math.abs(playerCharacter.getFlatArmour())}
-          </IonCol>
-        ) : null}
-        {playerCharacter.getPropArmour() != 0 ? (
-          <IonCol>
-            Incoming physical damage {playerCharacter.getPropArmour() > 0 ? "increased" : "reduced"} by{" "}
-            {Math.abs(Math.round(playerCharacter.getPropArmour()))}%
-          </IonCol>
-        ) : null}
-      </IonRow>
-      <IonRow className="player-stats-row">
-        {playerCharacter.getFlatMagicArmour() == 0 && playerCharacter.getPropMagicArmour() == 0 ? (
-          <IonCol>No magic armour</IonCol>
-        ) : null}
-        {playerCharacter.getFlatMagicArmour() != 0 ? (
-          <IonCol>
-            Incoming magic damage {playerCharacter.getFlatMagicArmour() > 0 ? "reduced" : "increased"} by{" "}
-            {Math.abs(playerCharacter.getFlatMagicArmour())}
-          </IonCol>
-        ) : null}
-        {playerCharacter.getPropMagicArmour() != 0 ? (
-          <IonCol>
-            Incoming magic damage {playerCharacter.getPropMagicArmour() > 0 ? "increased" : "reduced"} by{" "}
-            {Math.abs(Math.round(playerCharacter.getPropMagicArmour()))}%
-          </IonCol>
-        ) : null}
-      </IonRow>
-      <IonRow className="player-stats-row">
-        {playerCharacter.getFlatDamageModifier() == 0 && playerCharacter.getPropDamageModifier() == 0 ? (
-          <IonCol>No physical damage modifier</IonCol>
-        ) : null}
-        {playerCharacter.getFlatDamageModifier() != 0 ? (
-          <IonCol>
-            {playerCharacter.getFlatDamageModifier() > 0 ? "+" : null}
-            {playerCharacter.getFlatDamageModifier()} physical damage
-          </IonCol>
-        ) : null}
-        {playerCharacter.getPropDamageModifier() != 0 ? (
-          <IonCol>
-            {playerCharacter.getPropDamageModifier() > 0 ? "+" : null}
-            {Math.round(playerCharacter.getPropDamageModifier() * 100)}% physical damage
-          </IonCol>
-        ) : null}
-      </IonRow>
-      <IonRow className="player-stats-row">
-        {playerCharacter.getFlatMagicDamageModifier() == 0 && playerCharacter.getPropMagicDamageModifier() == 0 ? (
-          <IonCol>No magic damage modifier</IonCol>
-        ) : null}
-        {playerCharacter.getFlatMagicDamageModifier() != 0 ? (
-          <IonCol>
-            {playerCharacter.getFlatMagicDamageModifier() > 0 ? "+" : null}
-            {playerCharacter.getFlatMagicDamageModifier()} magic damage
-          </IonCol>
-        ) : null}
-        {playerCharacter.getPropMagicDamageModifier() != 0 ? (
-          <IonCol>
-            {playerCharacter.getPropMagicDamageModifier() > 0 ? "+" : null}
-            {Math.round(playerCharacter.getPropMagicDamageModifier() * 100)}% magic damage
-          </IonCol>
-        ) : null}
-      </IonRow>
-      <IonRow className="player-stats-row">
-        {playerCharacter.getFlatArmourPiercingDamageModifier() == 0 &&
-        playerCharacter.getPropArmourPiercingDamageModifier() == 0 ? (
-          <IonCol>No armour piercing damage modifier</IonCol>
-        ) : null}
-        {playerCharacter.getFlatArmourPiercingDamageModifier() != 0 ? (
-          <IonCol>
-            {playerCharacter.getFlatArmourPiercingDamageModifier() > 0 ? "+" : null}
-            {playerCharacter.getFlatArmourPiercingDamageModifier()} armour piercing damage
-          </IonCol>
-        ) : null}
-        {playerCharacter.getPropArmourPiercingDamageModifier() != 0 ? (
-          <IonCol>
-            {playerCharacter.getPropArmourPiercingDamageModifier() > 0 ? "+" : null}
-            {Math.round(playerCharacter.getPropArmourPiercingDamageModifier() * 100)}% armour piercing damage
-          </IonCol>
-        ) : null}
-      </IonRow>
-      <IonRow className="player-stats-row">
-        <IonCol>{Math.round(playerCharacter.getEvadeChance() * 100)}% evade chance</IonCol>
-        <IonCol>{Math.round(playerCharacter.getCounterAttackChance() * 100)}% counter attack chance</IonCol>
-      </IonRow>
-      <IonRow className="player-stats-row">
-        <IonCol>
-          {Math.max(0, playerCharacter.getBonusActions())} bonus action
-          {playerCharacter.getBonusActions() == 1 ? null : "s"} per turn
-        </IonCol>
-        <IonCol>{playerCharacter.getInitiative()} initiative</IonCol>
-      </IonRow>
-    </IonGrid>
-  );
-}
-type ShowPlayerInventoryProps = { playerCharacter: player; closeInventory: fn };
-/**Displays the player's inventory
- * @hook
- */
-export function ShowPlayerInventory({ playerCharacter, closeInventory }: ShowPlayerInventoryProps): React.ReactNode {
-  /**True is inventory, false is stats */
-  const [segment, setSegment] = useState<boolean>(true);
-  return (
-    <Fragment>
-      <IonHeader>
-        <IonToolbar>
-          <IonGrid className="ion-no-padding">
-            <IonRow>
-              <IonCol size="1">
-                <IonButton size="small" fill="clear" color="dark" onClick={closeInventory}>
-                  <IonIcon slot="icon-only" icon={close} />
-                </IonButton>
-              </IonCol>
-              <IonCol size="10">
-                <IonTitle className="ion-text-center">
-                  Level {playerCharacter.getLevel()} {playerCharacter.getClassName()}
-                </IonTitle>
-              </IonCol>
-            </IonRow>
-          </IonGrid>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent>
-        <h5 className="ion-text-center">Current stats</h5>
-        <IonGrid>
-          <IonRow>
-            <IonCol className="ion-text-center">
-              Health: {playerCharacter.getHealth()}/{playerCharacter.getMaxHealth()}
-            </IonCol>
-            <IonCol className="ion-text-center">
-              Mana: {playerCharacter.getMana()}/{playerCharacter.getMaxMana()}
-            </IonCol>
-            <IonCol className="ion-text-center">Arrows: {playerCharacter.getProjectiles()}</IonCol>
-          </IonRow>
-          {playerCharacter.getStatusEffect() ? (
-            <IonRow>
-              {playerCharacter.getPoison() ? (
-                <IonCol className="ion-text-center">Poison: {playerCharacter.getPoison()}</IonCol>
-              ) : null}
-              {playerCharacter.getBleed() ? (
-                <IonCol className="ion-text-center">Bleed: {playerCharacter.getBleed()}</IonCol>
-              ) : null}
-              {playerCharacter.getRegen() ? (
-                <IonCol className="ion-text-center">Regeneration: {playerCharacter.getRegen()}</IonCol>
-              ) : null}
-            </IonRow>
-          ) : null}
-        </IonGrid>
-        <IonSegment mode="ios" value={segment ? "inventory" : "stats"} onIonChange={() => setSegment(!segment)}>
-          <IonSegmentButton value="inventory">
-            <IonLabel>Inventory</IonLabel>
-          </IonSegmentButton>
-          <IonSegmentButton value="stats">
-            <IonLabel>Stats</IonLabel>
-          </IonSegmentButton>
-        </IonSegment>
-        {segment ? (
-          <ShowPlayerEquipment playerCharacter={playerCharacter} />
-        ) : (
-          <DisplayPlayerStats playerCharacter={playerCharacter} />
-        )}
-      </IonContent>
-    </Fragment>
-  );
-}
-type ChoosePlayerActionProps = {
-  playerCharacter: player;
-  enemyName: string;
-  timing: 0 | 1 | 2 | 3 | 4;
-  submitChoice: fn<[actionChoice]>;
-  itemName1?: string;
-  itemName2?: string;
-};
-/**Allows the player to choose an action
- * @hook
- */
-export function ChoosePlayerAction({
-  playerCharacter,
-  enemyName,
-  timing,
-  submitChoice,
-  itemName1,
-  itemName2,
-}: ChoosePlayerActionProps): React.ReactNode {
-  /**Tracks currently selected weapons/spells */
-  const [currentChoice, setCurrentChoice] = useState<actionChoice>({ actionType: 0 });
-  let weaponArray: boolean[] = Array(playerCharacter.getWeaponSlots()).fill(false);
-  let spellArray: boolean[] = Array(playerCharacter.getSpellSlots()).fill(false);
-  switch (currentChoice.actionType) {
-    case 3:
-      weaponArray[currentChoice.slot2] = true;
-    //Fallthrough
-    case 1:
-      weaponArray[currentChoice.slot1] = true;
-      break;
-    case 2:
-      spellArray[currentChoice.slot1] = true;
-  }
-  return (
-    <IonContent>
-      <div className="ion-text-center">
-        {timing == 0
-          ? "Choose an action"
-          : (timing == 1
-              ? `${enemyName} attacks with ${itemName1}`
-              : timing == 2
-              ? `${enemyName} casts ${itemName1}`
-              : timing == 3
-              ? "Counter attack opportunity"
-              : `${enemyName} attacks with ${itemName1} and ${itemName2}`) + ", choose an action"}
-      </div>
-      <IonGrid>
-        <IonRow>
-          <IonCol>
-            <IonList>
-              <IonListHeader>Weapons</IonListHeader>
-              {weaponArray.map((v, i) => (
-                <DisplayWeaponName
-                  key={playerCharacter.getWeapon(i).getKey()}
-                  weaponry={playerCharacter.getWeapon(i)}
-                  inBattle
-                  selected={v}
-                  canUse={playerCharacter.check(false, timing, i)}
-                  onToggle={() => selectHandler(false, i)}
-                />
-              ))}
-            </IonList>
-          </IonCol>
-          <IonCol>
-            <IonList>
-              <IonListHeader>Spells</IonListHeader>
-              {spellArray.map((v, i) => (
-                <DisplaySpellName
-                  key={playerCharacter.getSpell(i).getKey()}
-                  magic={playerCharacter.getSpell(i)}
-                  inBattle
-                  selected={v}
-                  canUse={playerCharacter.check(true, timing, i)}
-                  onToggle={() => selectHandler(true, i)}
-                />
-              ))}
-            </IonList>
-          </IonCol>
-        </IonRow>
-      </IonGrid>
-      <IonButton
-        mode="ios"
-        onClick={function () {
-          if (currentChoice.actionType != 0) {
-            if (currentChoice.actionType == 3) {
-              playerCharacter.decBonusActions();
-            }
-            if (timing != 0) {
-              playerCharacter.decBonusActions();
-            }
-          }
-          submitChoice(currentChoice);
-        }}
-      >
-        Submit
-      </IonButton>
-    </IonContent>
-  );
-  /**Handles the toggling of a weapon/spell
-   * @param action - false is a weapon, true is a spell
-   * @param slot - the weapon or spell slot toggled
-   */
-  function selectHandler(action: boolean, slot: number): void {
-    if (action) {
-      if (currentChoice.actionType == 2 && currentChoice.slot1 == slot) {
-        //Deselecting
-        setCurrentChoice({ actionType: 0 });
-        return;
-      }
-      setCurrentChoice({ actionType: 2, slot1: slot });
-      return;
-    }
-    if (currentChoice.actionType == 1 && currentChoice.slot1 == slot) {
-      //Deselecting
-      setCurrentChoice({ actionType: 0 });
-      return;
-    }
-    if (currentChoice.actionType == 3) {
-      if (currentChoice.slot1 == slot) {
-        //Deselecting
-        setCurrentChoice({ actionType: 1, slot1: currentChoice.slot2 });
-        return;
-      }
-      if (currentChoice.slot2 == slot) {
-        //Deselecting
-        setCurrentChoice({ actionType: 1, slot1: currentChoice.slot1 });
-        return;
-      }
-    }
-    //Selecting a new weapon
-    if (playerCharacter.getWeapon(slot).getDualWield()) {
-      if (currentChoice.actionType == 1) {
-        if (currentChoice.slot1 != undefined) {
-          if (playerCharacter.checkDualWeapons(timing, currentChoice.slot1, slot)) {
-            setCurrentChoice({ actionType: 3, slot1: currentChoice.slot1, slot2: slot });
-            return;
-          }
-        }
-      }
-    }
-    setCurrentChoice({ actionType: 1, slot1: slot });
-    return;
-  }
-}

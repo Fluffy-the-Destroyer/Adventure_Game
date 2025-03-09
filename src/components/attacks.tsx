@@ -407,7 +407,8 @@ export function spellDeclare(magic: spell, caster: player | enemy): void {
 
 type SpellCastProps =
   | { magic: spell; caster: player; target: enemy; timing?: 0 | 1 | 2 | 3 | 4; battleLog: string[] }
-  | { magic: spell; caster?: enemy; target: player; timing?: 0 | 1 | 2 | 3 | 4; battleLog: string[] };
+  | { magic: spell; caster: enemy; target: player; timing?: 0 | 1 | 2 | 3 | 4; battleLog: string[] }
+  | { magic: spell; caster?: undefined; target: player; timing?: undefined; battleLog?: string[] };
 /**Spell cast */
 export function SpellCast({ magic, caster, target, timing, battleLog }: SpellCastProps): React.ReactNode {
   let attackerEffects: React.ReactNode[] = [];
@@ -500,9 +501,7 @@ export function SpellCast({ magic, caster, target, timing, battleLog }: SpellCas
       if (magic.getPoisonResistModifier() != 0 || magic.getBleedResistModifier() != 0) {
         outputText = "";
         if (magic.getPoisonResistModifier() != 0) {
-          console.log(caster);
           caster.modifyPoisonResist(magic.getPoisonResistModifier());
-          console.log(caster);
           outputText += `${magic.getPoisonResistModifier() > 0 ? "+" : ""}${Math.round(
             100 * magic.getPoisonResistModifier()
           )}% poison resist, `;
@@ -754,19 +753,22 @@ export function SpellCast({ magic, caster, target, timing, battleLog }: SpellCas
 
 type SpellHitProps =
   | { magic: spell; caster: player; target: enemy; battleLog: string[] }
-  | { magic: spell; caster?: enemy; target: player; battleLog: string[] };
+  | { magic: spell; caster: enemy; target: player; battleLog: string[] }
+  | { magic: spell; caster?: undefined; target: player; battleLog?: string[] };
 function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.ReactNode {
   let outputText: string;
   let hitEffects: React.ReactNode[] = [];
   if (!magic.getNoEvade() && Math.random() < target.getEvadeChance()) {
-    battleLog.push((outputText = "Evade!"));
+    outputText = "Evade!";
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="hit">
         {outputText}
       </div>
     );
   }
-  battleLog.push((outputText = "Hit!"));
+  outputText = "Hit!";
+  battleLog?.push(outputText);
   hitEffects.push(
     <div className="ion-text-center" key="hit">
       {outputText}
@@ -774,14 +776,16 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
   );
   target.propDamage(magic.getPropDamage());
   if (magic.getPropDamage() > 0) {
-    battleLog.push((outputText = `${-Math.round(100 * magic.getPropDamage())}% health`));
+    outputText = `${-Math.round(100 * magic.getPropDamage())}% health`;
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="propDamage">
         {outputText}
       </div>
     );
   } else if (magic.getPropDamage() < 0) {
-    battleLog.push((outputText = `${-Math.round(100 * magic.getPropDamage())}% of health recovered`));
+    outputText = `${-Math.round(100 * magic.getPropDamage())}% of health recovered`;
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="propDamage">
         {outputText}
@@ -811,7 +815,7 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
     } else {
       outputText = "No damage";
     }
-    battleLog.push(outputText);
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="flatDamage">
         {outputText}
@@ -841,7 +845,8 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
       target.modifyTempRegen(magic.getTempRegen());
       outputText += `${magic.getTempRegen() > 0 ? "+" : ""}${magic.getTempRegen()} regeneration, `;
     }
-    battleLog.push((outputText = outputText.slice(0, -2)));
+    outputText = outputText.slice(0, -2);
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="dot">
         {outputText}
@@ -872,7 +877,8 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
         magic.getBattleRegenModifierEnemy() > 0 ? "+" : ""
       }${magic.getBattleRegenModifierEnemy()} health at end of battle, `;
     }
-    battleLog.push((outputText = outputText.slice(0, -2)));
+    outputText = outputText.slice(0, -2);
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="healthModifiers">
         {outputText}
@@ -908,7 +914,8 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
         magic.getBattleManaRegenModifierEnemy() > 0 ? "+" : ""
       }${magic.getBattleManaRegenModifierEnemy()} mana at end of battle, `;
     }
-    battleLog.push((outputText = outputText.slice(0, -2)));
+    outputText = outputText.slice(0, -2);
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="manaModifiers">
         {outputText}
@@ -929,7 +936,8 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
         100 * magic.getBleedResistModifierEnemy()
       )} bleed resist, `;
     }
-    battleLog.push((outputText = outputText.slice(0, -2)));
+    outputText = outputText.slice(0, -2);
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="resistModifiers">
         {outputText}
@@ -950,7 +958,8 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
         magic.getFlatMagicArmourModifierEnemy() > 0 ? "+" : ""
       }${magic.getFlatMagicArmourModifierEnemy()} magic armour, `;
     }
-    battleLog.push((outputText = outputText.slice(0, -2)));
+    outputText = outputText.slice(0, -2);
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="flatArmourModifiers">
         {outputText}
@@ -971,7 +980,8 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
         100 * magic.getPropMagicArmourModifierEnemy()
       )}% magic damage received, `;
     }
-    battleLog.push((outputText = outputText.slice(0, -2)));
+    outputText = outputText.slice(0, -2);
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="propArmourModifiers">
         {outputText}
@@ -1002,7 +1012,8 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
         magic.getFlatArmourPiercingDamageModifierEnemy() > 0 ? "+" : ""
       }${magic.getFlatArmourPiercingDamageModifierEnemy()} armour piercing damage dealt, `;
     }
-    battleLog.push((outputText = outputText.slice(0, -2)));
+    outputText = outputText.slice(0, -2);
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="flatDamageModifiers">
         {outputText}
@@ -1033,7 +1044,8 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
         100 * magic.getPropArmourPiercingDamageModifierEnemy()
       )}% armour piercing damage dealt, `;
     }
-    battleLog.push((outputText = outputText.slice(0, -2)));
+    outputText = outputText.slice(0, -2);
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="propDamageModifiers">
         {outputText}
@@ -1042,11 +1054,10 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
   }
   if (magic.getEvadeChanceModifierEnemy() != 0) {
     target.modifyEvadeChance(magic.getEvadeChanceModifierEnemy());
-    battleLog.push(
-      (outputText = `${magic.getEvadeChanceModifierEnemy() > 0 ? "+" : ""}${Math.round(
-        100 * magic.getEvadeChanceModifierEnemy()
-      )}% evade chance`)
-    );
+    outputText = `${magic.getEvadeChanceModifierEnemy() > 0 ? "+" : ""}${Math.round(
+      100 * magic.getEvadeChanceModifierEnemy()
+    )}% evade chance`;
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="evadeChanceModifier">
         {outputText}
@@ -1055,11 +1066,10 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
   }
   if (magic.getCounterAttackChanceModifierEnemy() != 0) {
     target.modifyCounterAttackChance(magic.getCounterAttackChanceModifierEnemy());
-    battleLog.push(
-      (outputText = `${magic.getCounterAttackChanceModifierEnemy() > 0 ? "+" : ""}${Math.round(
-        100 * magic.getCounterAttackChanceModifierEnemy()
-      )}% counter attack chance`)
-    );
+    outputText = `${magic.getCounterAttackChanceModifierEnemy() > 0 ? "+" : ""}${Math.round(
+      100 * magic.getCounterAttackChanceModifierEnemy()
+    )}% counter attack chance`;
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="counterAttackChanceModifier">
         {outputText}
@@ -1068,11 +1078,10 @@ function SpellHit({ magic, caster, target, battleLog }: SpellHitProps): React.Re
   }
   if (magic.getBonusActionsModifierEnemy() != 0) {
     target.modifyBonusActions(magic.getBonusActionsModifierEnemy());
-    battleLog.push(
-      (outputText = `${
-        magic.getBonusActionsModifierEnemy() > 0 ? "+" : ""
-      }${magic.getBonusActionsModifierEnemy()} bonus actions`)
-    );
+    outputText = `${
+      magic.getBonusActionsModifierEnemy() > 0 ? "+" : ""
+    }${magic.getBonusActionsModifierEnemy()} bonus actions`;
+    battleLog?.push(outputText);
     hitEffects.push(
       <div className="ion-text-center" key="bonusActionModifier">
         {outputText}
