@@ -1,7 +1,7 @@
 import { Fragment, useState } from "react";
 import { weapon } from "./weapons";
 import { spell } from "./spells";
-import { armourFeet, armourHead, armourLegs, armourTorso } from "./armour";
+import { armour, armourFeet, armourHead, armourLegs, armourTorso } from "./armour";
 import { randomInt } from "./rng";
 import { BATTLE_VALUES } from "../pages/battlePage";
 import classData from "../data/classes.json";
@@ -33,6 +33,9 @@ const enum PLAYER_VALUES {
 type ShowPlayerEquipmentProps = { playerCharacter: player };
 type DisplayPlayerStatsProps = { playerCharacter: player };
 type ShowPlayerInventoryProps = { playerCharacter: player; closeInventory: fn };
+type EquipWeaponProps = { playerCharacter: player; weaponry: weapon; advanceFn: fn };
+type EquipSpellProps = { playerCharacter: player; magic: spell; advanceFn: fn };
+type EquipArmourProps = { playerCharacter: player; armour: armour; advanceFn: fn };
 type ChoosePlayerActionProps = {
   playerCharacter: player;
   enemyName: string;
@@ -1929,34 +1932,13 @@ export class player {
     }
     return changes;
   }
+  static EquipWeapon({ playerCharacter, weaponry, advanceFn }: EquipWeaponProps): React.ReactNode {
+    return <Fragment />;
+  }
+  static EquipSpell({ playerCharacter, magic, advanceFn }: EquipSpellProps): React.ReactNode {
+    return <Fragment />;
+  }
+  static EquipArmour({ playerCharacter, armour, advanceFn }: EquipArmourProps): React.ReactNode {
+    return <Fragment />;
+  }
 }
-//type EquipWeaponProps = { playerCharacter: player; weaponry: weapon };
-///**Equips a weapon */
-//export function EquipWeapon({ playerCharacter, weaponry }: EquipWeaponProps): React.ReactNode {
-//  return <Fragment></Fragment>;
-//}
-//type EquipSpellProps = { playerCharacter: player; magic: spell };
-///**Equips a spell */
-//export function EquipSpell({ playerCharacter, magic }: EquipSpellProps): React.ReactNode {
-//  return <Fragment></Fragment>;
-//}
-//type EquipHelmetProps = { playerCharacter: player; helmet: armourHead };
-///**Equips a helmet */
-//export function EquipHelmet({ playerCharacter, helmet }: EquipHelmetProps): React.ReactNode {
-//  return <Fragment></Fragment>;
-//}
-//type EquipChestPlateProps = { playerCharacter: player; chestPlate: armourTorso };
-///**Equips a chestplate */
-//export function EquipChestPlate({ playerCharacter, chestPlate }: EquipChestPlateProps): React.ReactNode {
-//  return <Fragment></Fragment>;
-//}
-//type EquipGreavesProps = { playerCharacter: player; greaves: armourLegs };
-///**Equips greaves */
-//export function EquipGreaves({ playerCharacter, greaves }: EquipGreavesProps): React.ReactNode {
-//  return <Fragment></Fragment>;
-//}
-//type EquipBootsProps = { playerCharacter: player; boots: armourFeet };
-///**Equips boots */
-//export function EquipBoots({ playerCharacter, boots }: EquipBootsProps): React.ReactNode {
-//  return <Fragment></Fragment>;
-//}

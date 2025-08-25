@@ -1,4 +1,4 @@
-import { fn, statChanges } from "./interfaces";
+import { fn, itemBlueprint, statChanges } from "./interfaces";
 import { variables } from "./variables";
 import eventData from "../data/events.json";
 import { errorMessages, evalCond, itemKeyGen, numFromString } from "./data";
@@ -10,6 +10,9 @@ import { spell } from "./spells";
 import { enemy } from "./enemies";
 import { SpellCast } from "../components/attacks";
 import { battleHandler, BattleWrapper } from "../pages/battlePage";
+import { blueprintListSelector } from "./blueprintLists";
+import { weapon } from "./weapons";
+import { armourFeet, armourHead, armourLegs, armourTorso } from "./armour";
 
 class choice {
   private key: number | undefined;
@@ -433,7 +436,7 @@ export class event {
       if (opponent.getReal()) {
         const battleLog: string[] = [];
         const BoundWrapper: React.FC<React.PropsWithChildren> = ({ children }) => (
-          <BattleWrapper playerCharacter={playerCharacter} battleLog={battleLog}>
+          <BattleWrapper playerCharacter={playerCharacter} battleLog={battleLog} endBattle={endEvent}>
             {children}
           </BattleWrapper>
         );
@@ -495,7 +498,96 @@ export class event {
         }
       }
       //TODO: add xp change
-      //TODO: add reward
+      if (this.reward) {
+        let { type, blueprint }: itemBlueprint = blueprintListSelector(this.reward);
+        switch (type) {
+          case "weapon": {
+            let weaponry = new weapon(blueprint, vars);
+            if (weaponry.getReal()) {
+              yield (
+                <Wrapper>
+                  <IonContent>
+                    <player.EquipWeapon
+                      weaponry={weaponry}
+                      playerCharacter={playerCharacter}
+                      advanceFn={advanceEvent}
+                    />
+                  </IonContent>
+                </Wrapper>
+              );
+            }
+            break;
+          }
+          case "spell": {
+            let magic = new spell(blueprint, vars);
+            if (magic.getReal()) {
+              yield (
+                <Wrapper>
+                  <IonContent>
+                    <player.EquipSpell magic={magic} playerCharacter={playerCharacter} advanceFn={advanceEvent} />
+                  </IonContent>
+                </Wrapper>
+              );
+            }
+            break;
+          }
+          case "head": {
+            let helmet = new armourHead(blueprint, vars);
+            if (helmet.getReal()) {
+              yield (
+                <Wrapper>
+                  <IonContent>
+                    <player.EquipArmour armour={helmet} playerCharacter={playerCharacter} advanceFn={advanceEvent} />
+                  </IonContent>
+                </Wrapper>
+              );
+            }
+            break;
+          }
+          case "torso": {
+            let chestPlate = new armourTorso(blueprint, vars);
+            if (chestPlate.getReal()) {
+              yield (
+                <Wrapper>
+                  <IonContent>
+                    <player.EquipArmour
+                      armour={chestPlate}
+                      playerCharacter={playerCharacter}
+                      advanceFn={advanceEvent}
+                    />
+                  </IonContent>
+                </Wrapper>
+              );
+            }
+            break;
+          }
+          case "legs": {
+            let greaves = new armourLegs(blueprint, vars);
+            if (greaves.getReal()) {
+              yield (
+                <Wrapper>
+                  <IonContent>
+                    <player.EquipArmour armour={greaves} playerCharacter={playerCharacter} advanceFn={advanceEvent} />
+                  </IonContent>
+                </Wrapper>
+              );
+            }
+            break;
+          }
+          case "feet": {
+            let boots = new armourFeet(blueprint, vars);
+            if (boots.getReal()) {
+              yield (
+                <Wrapper>
+                  <IonContent>
+                    <player.EquipArmour armour={boots} playerCharacter={playerCharacter} advanceFn={advanceEvent} />
+                  </IonContent>
+                </Wrapper>
+              );
+            }
+          }
+        }
+      }
       playerCharacter.calculateModifiers();
       //Check if stat changes have caused the player to die
       if (playerCharacter.getHealth() <= 0) {
@@ -579,7 +671,6 @@ export class event {
       }
     }
     endEvent?.();
-    return;
     function ContinueButton(): React.ReactNode {
       return (
         <IonButton mode="ios" onClick={advanceEvent}>

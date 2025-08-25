@@ -26,7 +26,7 @@ import { variables } from "./variables";
 type DisplayArmourNameProps = { armourPiece: armour };
 type DisplayArmourStatsProps = { armourPiece: armour };
 
-abstract class armour {
+export abstract class armour {
   protected key: number | undefined;
   protected real: boolean = false;
   protected maxHealthModifier: number | undefined;

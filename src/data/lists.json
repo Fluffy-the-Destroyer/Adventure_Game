@@ -1,0 +1,12 @@
+{
+  "REWARD_LIST_1": [
+    "w_LONGSWORD_1",
+    "h_IRON_HELMET_1",
+    "t_IRON_CHESTPLATE_1",
+    "l_IRON_GREAVES_1",
+    "f_IRON_BOOTS_1",
+    "s_COUNTERSPELL",
+    "i_REWARD_LIST_2"
+  ],
+  "REWARD_LIST_2": ["w_STAFF_1"]
+}

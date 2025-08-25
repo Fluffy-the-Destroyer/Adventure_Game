@@ -73,3 +73,7 @@ export interface statChanges {
   statPoints?: number;
   upgradePoints?: number;
 }
+
+export type itemBlueprint =
+  | { type: "weapon" | "spell" | "head" | "torso" | "legs" | "feet"; blueprint: string }
+  | { type: "none"; blueprint?: undefined };
